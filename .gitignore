@@ -1,0 +1,12 @@
+*
+!src/
+!src/sb2cpp/
+!src/sb2cpp/*.cpp
+!src/sb2cpp/*.hpp
+!src/std/
+!src/std/*.cpp
+!src/std/*.hpp
+!.gitignore
+!.gitattributes
+!README.md
+!sb-compile.sh
