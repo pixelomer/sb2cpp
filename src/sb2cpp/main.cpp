@@ -335,7 +335,7 @@ std::vector<std::unique_ptr<Node>> parse(std::vector<std::wstring> &tokens,
 				throw std::runtime_error("expected 'EndSub'");
 			}
 			node = std::make_unique<Node>(Node());
-			node->sub_name = sub_name;
+			node->sub_name = L"_" + sub_name;
 			node->type = SUB;
 			node->sub_statements = std::move(statements);
 		}
@@ -611,7 +611,7 @@ void sb2cpp_decl_single(std::unique_ptr<Node> const &node,
 			sb2cpp_decl_multi(node->value_list, defined);
 			break;
 		case FUNCTION_CALL:
-			sb2cpp_decl_write(L"Mixed " + node->function_call + L"()", defined);
+			sb2cpp_decl_write(L"void " + node->function_call + L"()", defined);
 			break;
 		case FOR_LOOP:
 		case NUMBER_LITERAL:
