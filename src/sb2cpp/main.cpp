@@ -48,7 +48,7 @@ public:
 			std::unique_ptr<Node> for_start;
 			std::unique_ptr<Node> for_end;
 			std::unique_ptr<Node> for_step;
-			std::vector<Node> for_statements;
+			std::vector<std::unique_ptr<Node>> for_statements;
 		};
 		struct {
 			// VALUE_LIST
@@ -325,7 +325,28 @@ std::vector<std::unique_ptr<Node>> parse(std::vector<std::wstring> &tokens,
 			break;
 		}
 		if (token1 == L"For") {
-
+			// For (from) To (to) [Step (step)]
+			// Done
+			node = std::make_unique<Node>(Node());
+			node->type = FOR_LOOP;
+			index++;
+			auto from_value = parse_value(tokens, &index);
+			if (get_token(tokens, index++) != L"To") {
+				throw std::runtime_error("expected 'To'");
+			}
+			auto to_value = parse_value(tokens, &index);
+			node->for_start = std::move(from_value);
+			node->for_end = std::move(to_value);
+			if (get_token(tokens, index) == L"Step") {
+				index++;
+				auto step_value = parse_value(tokens, &index);
+				node->for_step = std::move(step_value);
+			}
+			auto statements = parse(tokens, &index, { L"EndFor" });
+			if (get_token(tokens, index++) != L"EndFor") {
+				throw std::runtime_error("expected 'EndFor'");
+			}
+			node->for_statements = std::move(statements);
 		}
 		else if (token1 == L"Sub") {
 			index++;
@@ -538,6 +559,21 @@ void sb2cpp_single(std::unique_ptr<Node> const& node, bool root = false) {
 			if (root) std::wcout << ";";
 			break;
 		case FOR_LOOP:
+			std::wcout << "for (Mixed i = ";
+			sb2cpp_single(node->for_start);
+			std::wcout << "; i <= ";
+			sb2cpp_single(node->for_end);
+			std::wcout << "; i = i + ";
+			if (node->for_step == nullptr) {
+				std::wcout << "Mixed(1.L)";
+			}
+			else {
+				sb2cpp_single(node->for_step);
+			}
+			std::wcout << ") {\n";
+			sb2cpp_multi(node->for_statements, L"\n", true);
+			std::wcout << "\n}";
+			break;
 		case SUB:
 			throw std::runtime_error("not implemented");
 	}
