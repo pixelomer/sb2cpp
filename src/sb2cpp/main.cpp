@@ -496,22 +496,29 @@ std::vector<std::wstring> tokenize(std::wstring const& source) {
 }
 
 void sb2cpp_multi(std::vector<std::unique_ptr<Node>> const& parsed, std::wstring
-	const& delim, bool root = false);
+	const& delim, int indent = 0, bool root = false);
 
-void sb2cpp_single(std::unique_ptr<Node> const& node, bool root = false) {
+void sb2cpp_single(std::unique_ptr<Node> const& node, int indent = 0, bool root
+	= false)
+{
+	if (root) {
+		for (int i=0; i<indent; i++) {
+			std::wcout << "  ";
+		}
+	}
 	switch (node->type) {
 		case VALUE_LIST:
 			std::wcout << "(";
-			sb2cpp_multi(node->value_list, L" ");
+			sb2cpp_multi(node->value_list, L" ", indent);
 			std::wcout << ")";
 			break;
 		case VARIABLE:
 			std::wcout << node->variable_name;
 			break;
 		case ASSIGNMENT:
-			sb2cpp_single(node->assignment_to);
+			sb2cpp_single(node->assignment_to, indent);
 			std::wcout << " = ";
-			sb2cpp_single(node->assignment_value);
+			sb2cpp_single(node->assignment_value, indent);
 			if (root) std::wcout << ";";
 			break;
 		case STRING_LITERAL:
@@ -526,32 +533,32 @@ void sb2cpp_single(std::unique_ptr<Node> const& node, bool root = false) {
 		case IF_ELSE:
 			if (node->if_condition != nullptr) {
 				std::wcout << L"if (";
-				sb2cpp_single(node->if_condition);
+				sb2cpp_single(node->if_condition, indent);
 				std::wcout << L") ";
 			}
 			std::wcout << L"{\n";
-			sb2cpp_multi(node->if_statements, L"\n", true);
+			sb2cpp_multi(node->if_statements, L"\n", indent+1, true);
 			std::wcout << L"\n}";
 			break;
 		case IF_ELSE_LIST:
-			sb2cpp_multi(node->if_list, L"else ");
+			sb2cpp_multi(node->if_list, L"else ", indent);
 			break;
 		case ARRAY_VALUE:
 			std::wcout << node->array_name << ".GetArray()" << "[";
-			sb2cpp_multi(node->array_indexes, L"][");
+			sb2cpp_multi(node->array_indexes, L"][", indent);
 			std::wcout << "]";
 			break;
 		case STDLIB_CALL:
 			std::wcout << node->stdlib_class << "::" << node->stdlib_function << "(";
-			sb2cpp_multi(node->stdlib_arguments, L", ");
+			sb2cpp_multi(node->stdlib_arguments, L", ", indent);
 			std::wcout << ")";
 			if (root) std::wcout << ";";
 			break;
 		case WHILE_LOOP:
 			std::wcout << "while (";
-			sb2cpp_single(node->while_condition);
+			sb2cpp_single(node->while_condition, indent);
 			std::wcout << ") {\n";
-			sb2cpp_multi(node->while_statements, L"\n", true);
+			sb2cpp_multi(node->while_statements, L"\n", indent+1, true);
 			std::wcout << "\n}";
 			break;
 		case FUNCTION_CALL:
@@ -560,18 +567,18 @@ void sb2cpp_single(std::unique_ptr<Node> const& node, bool root = false) {
 			break;
 		case FOR_LOOP:
 			std::wcout << "for (Mixed i = ";
-			sb2cpp_single(node->for_start);
+			sb2cpp_single(node->for_start, indent);
 			std::wcout << "; i <= ";
-			sb2cpp_single(node->for_end);
+			sb2cpp_single(node->for_end, indent);
 			std::wcout << "; i = i + ";
 			if (node->for_step == nullptr) {
 				std::wcout << "Mixed(1.L)";
 			}
 			else {
-				sb2cpp_single(node->for_step);
+				sb2cpp_single(node->for_step, indent);
 			}
 			std::wcout << ") {\n";
-			sb2cpp_multi(node->for_statements, L"\n", true);
+			sb2cpp_multi(node->for_statements, L"\n", indent+1, true);
 			std::wcout << "\n}";
 			break;
 		case SUB:
@@ -580,11 +587,11 @@ void sb2cpp_single(std::unique_ptr<Node> const& node, bool root = false) {
 }
 
 void sb2cpp_multi(std::vector<std::unique_ptr<Node>> const& parsed, std::wstring
-	const& delim, bool root)
+	const& delim, int indent, bool root)
 {
 	for (int i=0; i<parsed.size(); i++) {
 		auto const& node = parsed[i];
-		sb2cpp_single(node, root);
+		sb2cpp_single(node, indent, root);
 		if ((i + 1) != parsed.size()) {
 			std::wcout << delim;
 		}
@@ -604,7 +611,7 @@ void sb2cpp_impl(std::wstring const &name,
 	std::vector<std::unique_ptr<Node>> const &statements)
 {
 	std::wcout << L"void " << name << "() {" << std::endl;
-	sb2cpp_multi(statements, L"\n", true);
+	sb2cpp_multi(statements, L"\n", 1, true);
 	std::wcout << L"\n}" << std::endl;
 }
 
@@ -693,6 +700,7 @@ void sb2cpp(std::wstring const& source) {
 
 	sb2cpp_impl(L"SmallBasic_Main", parsed);
 
+	std::wcout << L"" << std::endl;
 	std::wcout << L"int main(int argc, char **argv) {" << std::endl;
 	std::wcout << L"  srandom(time(NULL));" << std::endl;
 	std::wcout << L"  SmallBasic_Main();" << std::endl;
