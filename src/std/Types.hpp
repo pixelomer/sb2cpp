@@ -82,6 +82,9 @@ namespace SmallBasic {
 		bool operator==(const Mixed &b) const {
 			return !(*this > b) && !(*this < b);
 		}
+		Mixed &operator[](const Mixed &i) {
+			return GetArray()[i];
+		}
 		operator bool() const {
 			if (IsNumber()) return GetNumber() != 0;
 			else Die("Cannot implicitly convert value to boolean");
