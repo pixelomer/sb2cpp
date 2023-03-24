@@ -19,9 +19,14 @@ namespace SmallBasic {
 			return stacks[stackName].size();
 		}
 		static Mixed PopValue(Mixed const& stackName) {
+			if (GetCount(stackName) == 0) {
+				Die("Stack is empty");
+			}
 			Mixed value = stacks[stackName].top();
 			stacks[stackName].pop();
 			return value;
 		}
 	};
+
+	auto Stack::stacks = std::map<Mixed, std::stack<Mixed>>{};
 }
