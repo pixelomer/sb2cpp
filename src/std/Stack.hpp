@@ -14,13 +14,13 @@ namespace SmallBasic {
 		static void PushValue(Mixed const& stackName, Mixed const& value) {
 			stacks[stackName].push(value);
 		}
-		static Number GetCount(Mixed const& stackName) {
+		static Mixed GetCount(Mixed const& stackName) {
 			if (!StackExists(stackName)) return 0;
 			return stacks[stackName].size();
 		}
 		static Mixed PopValue(Mixed const& stackName) {
-			if (GetCount(stackName) == 0) {
-				Die("Stack is empty");
+			if (GetCount(stackName) == Mixed(0.L)) {
+				Die("Stack empty.");
 			}
 			Mixed value = stacks[stackName].top();
 			stacks[stackName].pop();
