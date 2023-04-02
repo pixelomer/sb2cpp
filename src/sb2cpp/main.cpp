@@ -633,7 +633,7 @@ void sb2cpp_single(std::unique_ptr<Node> const& node, int indent = 0, bool root
 			std::wcout << "\n" << sb2cpp_indent(indent) << "}";
 			break;
 		case GOTO_LABEL:
-			std::wcout << node->label_name << ":";
+			std::wcout << node->label_name << ":;";
 			break;
 		case GOTO:
 			std::wcout << "goto " << node->goto_name << ";";
@@ -706,6 +706,7 @@ void sb2cpp_decl_single(std::unique_ptr<Node> const &node,
 			break;
 		case WHILE_LOOP:
 			sb2cpp_decl_single(node->while_condition, defined);
+			sb2cpp_decl_multi(node->while_statements, defined);
 			break;
 		case VALUE_LIST:
 			sb2cpp_decl_multi(node->value_list, defined);
