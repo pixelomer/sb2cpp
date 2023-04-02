@@ -326,16 +326,32 @@ std::vector<std::unique_ptr<Node>> parse(std::vector<std::wstring> &tokens,
 		}
 		if (token1 == L"For") {
 			// For (from) To (to) [Step (step)]
-			// Done
+			// For var = (from) To (to) [Step (step)]
+			// EndFor
 			node = std::make_unique<Node>(Node());
 			node->type = FOR_LOOP;
 			index++;
-			auto from_value = parse_value(tokens, &index);
+			std::unique_ptr<Node> for_assignment;
+			try {
+				size_t _index = index;
+				for_assignment = std::move(parse_assignment(tokens, &_index));
+				index = _index;
+			}
+			catch (...) {
+				auto i_variable = std::make_unique<Node>();
+				i_variable->type = VARIABLE;
+				i_variable->variable_name = L"i";
+				auto value = parse_value(tokens, &index);
+				for_assignment = std::make_unique<Node>();
+				for_assignment->type = ASSIGNMENT;
+				for_assignment->assignment_to = std::move(i_variable);
+				for_assignment->assignment_value = std::move(value);
+			}
 			if (get_token(tokens, index++) != L"To") {
 				throw std::runtime_error("expected 'To'");
 			}
 			auto to_value = parse_value(tokens, &index);
-			node->for_start = std::move(from_value);
+			node->for_start = std::move(for_assignment);
 			node->for_end = std::move(to_value);
 			if (get_token(tokens, index) == L"Step") {
 				index++;
@@ -566,11 +582,17 @@ void sb2cpp_single(std::unique_ptr<Node> const& node, int indent = 0, bool root
 			if (root) std::wcout << ";";
 			break;
 		case FOR_LOOP:
-			std::wcout << "for (Mixed i = ";
+			std::wcout << "for (Mixed ";
 			sb2cpp_single(node->for_start, indent);
-			std::wcout << "; i <= ";
+			std::wcout << "; ";
+			sb2cpp_single(node->for_start->assignment_to, indent);
+			std::wcout << " <= ";
 			sb2cpp_single(node->for_end, indent);
-			std::wcout << "; i = i + ";
+			std::wcout << "; ";
+			sb2cpp_single(node->for_start->assignment_to, indent);
+			std::wcout << " = ";
+			sb2cpp_single(node->for_start->assignment_to, indent);
+			std::wcout << " + ";
 			if (node->for_step == nullptr) {
 				std::wcout << "Mixed(1.L)";
 			}
