@@ -27,7 +27,9 @@ enum node_type {
 	IF_ELSE,        // If ... ElseIf ... Else
 	NUMBER_LITERAL, // 10.0
 	STRING_LITERAL, // "Hello"
-	OPERATOR        // +
+	OPERATOR,       // +
+	GOTO_LABEL,     // label:
+	GOTO            // Goto label
 };
 
 class Node;
@@ -109,6 +111,14 @@ public:
 			// SUB
 			std::wstring sub_name;
 			std::vector<std::unique_ptr<Node>> sub_statements;
+		};
+		struct {
+			// GOTO_LABEL
+			std::wstring label_name;
+		};
+		struct {
+			// GOTO
+			std::wstring goto_name;
 		};
 	};
 };
@@ -408,10 +418,13 @@ std::vector<std::unique_ptr<Node>> parse(std::vector<std::wstring> &tokens,
 			}
 		}
 		else if (token1 == L"Goto") {
-
+			node = std::make_unique<Node>();
+			node->type = GOTO;
+			node->goto_name = get_token(tokens, ++index);
+			index++;
 		}
 		else if (token1 == L"While") {
-			node = std::make_unique<Node>(Node());
+			node = std::make_unique<Node>();
 			index++;
 			auto condition = parse_value(tokens, &index, all_ops);
 			auto statements = parse(tokens, &index, { L"EndWhile" });
@@ -425,9 +438,16 @@ std::vector<std::unique_ptr<Node>> parse(std::vector<std::wstring> &tokens,
 			node->while_statements = std::move(statements);
 		}
 		else {
-			// Assignment or function call
+			// Assignment, function call or label
 			std::wstring &token2 = get_token(tokens, index+1);
-			if (token2 == L"(" || token2 == L".") {
+			if (token2 == L":") {
+				// Label
+				node = std::make_unique<Node>();
+				node->type = GOTO_LABEL;
+				node->label_name = token1;
+				index += 2;
+			}
+			else if (token2 == L"(" || token2 == L".") {
 				// Function call
 				node = parse_call(tokens, &index);
 			}
@@ -451,7 +471,7 @@ std::vector<std::unique_ptr<Node>> parse(std::vector<std::wstring> &tokens,
 std::vector<std::wstring> tokenize(std::wstring const& source) {
 	std::vector<std::wstring> tokens;
 	std::wstring token;
-	const std::wstring special = L"()[]<>+-/*=.',";
+	const std::wstring special = L"()[]<>+-/*=.',:";
 	size_t len = source.length();
 	for (int i=0; i<len; i++) {
 		wchar_t c = source[i];
@@ -612,6 +632,12 @@ void sb2cpp_single(std::unique_ptr<Node> const& node, int indent = 0, bool root
 			sb2cpp_multi(node->for_statements, L"\n", indent+1, true);
 			std::wcout << "\n" << sb2cpp_indent(indent) << "}";
 			break;
+		case GOTO_LABEL:
+			std::wcout << node->label_name << ":";
+			break;
+		case GOTO:
+			std::wcout << "goto " << node->goto_name << ";";
+			break;
 		case SUB:
 			throw std::runtime_error("not implemented");
 	}
@@ -695,6 +721,8 @@ void sb2cpp_decl_single(std::unique_ptr<Node> const &node,
 			break;
 		case NUMBER_LITERAL:
 		case STRING_LITERAL:
+		case GOTO_LABEL:
+		case GOTO:
 		case OPERATOR:
 			break;
 	}
