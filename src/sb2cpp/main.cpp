@@ -517,19 +517,25 @@ std::vector<std::wstring> tokenize(std::wstring const& source) {
 void sb2cpp_multi(std::vector<std::unique_ptr<Node>> const& parsed, std::wstring
 	const& delim, int indent = 0, bool root = false);
 
+std::wstring sb2cpp_indent(int indent) {
+	std::wstring str;
+	for (int i=0; i<indent; i++) {
+		str += L"  ";
+	}
+	return str;
+}
+
 void sb2cpp_single(std::unique_ptr<Node> const& node, int indent = 0, bool root
 	= false)
 {
 	if (root) {
-		for (int i=0; i<indent; i++) {
-			std::wcout << "  ";
-		}
+		std::wcout << sb2cpp_indent(indent);
 	}
 	switch (node->type) {
 		case VALUE_LIST:
-			std::wcout << "(";
+			if (node->value_list.size() > 1) std::wcout << "(";
 			sb2cpp_multi(node->value_list, L" ", indent);
-			std::wcout << ")";
+			if (node->value_list.size() > 1) std::wcout << ")";
 			break;
 		case VARIABLE:
 			std::wcout << node->variable_name;
@@ -557,7 +563,7 @@ void sb2cpp_single(std::unique_ptr<Node> const& node, int indent = 0, bool root
 			}
 			std::wcout << L"{\n";
 			sb2cpp_multi(node->if_statements, L"\n", indent+1, true);
-			std::wcout << L"\n}";
+			std::wcout << "\n" << sb2cpp_indent(indent) << "}";
 			break;
 		case IF_ELSE_LIST:
 			sb2cpp_multi(node->if_list, L"else ", indent);
@@ -578,7 +584,7 @@ void sb2cpp_single(std::unique_ptr<Node> const& node, int indent = 0, bool root
 			sb2cpp_single(node->while_condition, indent);
 			std::wcout << ") {\n";
 			sb2cpp_multi(node->while_statements, L"\n", indent+1, true);
-			std::wcout << "\n}";
+			std::wcout << "\n" << sb2cpp_indent(indent) << "}";
 			break;
 		case FUNCTION_CALL:
 			std::wcout << node->function_call << "()";
@@ -604,7 +610,7 @@ void sb2cpp_single(std::unique_ptr<Node> const& node, int indent = 0, bool root
 			}
 			std::wcout << ") {\n";
 			sb2cpp_multi(node->for_statements, L"\n", indent+1, true);
-			std::wcout << "\n}";
+			std::wcout << "\n" << sb2cpp_indent(indent) << "}";
 			break;
 		case SUB:
 			throw std::runtime_error("not implemented");
