@@ -586,7 +586,7 @@ void sb2cpp_single(std::unique_ptr<Node> const& node, int indent = 0, bool root
 			std::wcout << "\n" << sb2cpp_indent(indent) << "}";
 			break;
 		case IF_ELSE_LIST:
-			sb2cpp_multi(node->if_list, L"else ", indent);
+			sb2cpp_multi(node->if_list, L"\n" + sb2cpp_indent(indent) + L"else ", indent);
 			break;
 		case ARRAY_VALUE:
 			std::wcout << node->array_name << "[";
