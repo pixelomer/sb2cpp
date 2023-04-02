@@ -11,6 +11,8 @@
 #include <vector>
 #include <string>
 
+//FIXME: The way arrays works is very inefficient and unnecessarily complex
+
 namespace SmallBasic {
 	[[ noreturn ]] void Die(std::string message) {
 		std::cerr << "*** SmallBasic runtime error: " << message << std::endl;
@@ -155,13 +157,21 @@ namespace SmallBasic {
 			}
 			return std::get<Array>(**this);
 		}
+		bool ElementExists() {
+			if (!_IsArray()) {
+				Die("Called ElementExists() on variable");
+			}
+			return _GetArray().count(_index) > 0;
+		}
+		void RemoveElement() {
+			_GetArray().erase(_index);
+		}
 	};
 
 	typedef Mixed::Number Number;
 	typedef Mixed::String String;
-	typedef Mixed::Array Array;
 
-	Array Mixed::_nullArray = Array();
+	Mixed::Array Mixed::_nullArray = Array();
 }
 
 #endif
