@@ -247,7 +247,7 @@ std::unique_ptr<Node> parse_value(std::vector<std::wstring> &tokens, size_t *ind
 			// ... + (a + b + c)
 			(*index)++;
 			was_operator = false;
-			subnode = parse_value(tokens, index);
+			subnode = parse_value(tokens, index, ops);
 			if (get_token(tokens, *index) != L")") {
 				throw std::runtime_error("expected ')'");
 			}
@@ -417,7 +417,7 @@ std::vector<std::unique_ptr<Node>> parse(std::vector<std::wstring> &tokens,
 		else if (token1 == L"While") {
 			node = std::make_unique<Node>(Node());
 			index++;
-			auto condition = parse_value(tokens, &index);
+			auto condition = parse_value(tokens, &index, all_ops);
 			auto statements = parse(tokens, &index, { L"EndWhile" });
 			token1 = get_token(tokens, index);
 			if (token1 != L"EndWhile") {
