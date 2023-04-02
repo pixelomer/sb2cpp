@@ -477,7 +477,7 @@ std::vector<std::wstring> tokenize(std::wstring const& source) {
 		}
 		else if (isnumber((int)c)) {
 			// number
-			bool parsed_dot;
+			bool parsed_dot = false;
 			do { token += c; c = source[++i]; }
 			while (isnumber((int)c) || (!parsed_dot && (parsed_dot = (c == L'.'))));
 			i--;
