@@ -264,6 +264,9 @@ std::unique_ptr<Node> parse_value(std::vector<std::wstring> &tokens, size_t *ind
 		}
 		else if (was_operator && token2 == L"." /* || token2 == L"(" */) {
 			// ... + Math.Random()
+			
+			//FIXME: "If Class.Value = Var" will not work
+			//       -- Converted to if (Class::_SetValue(Var)) instead
 			was_operator = false;
 			subnode = parse_call(tokens, index);
 		}
