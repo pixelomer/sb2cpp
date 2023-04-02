@@ -61,7 +61,6 @@ namespace SmallBasic {
 				return *_variant;
 			}
 		}
-		//TODO: unary * operator for getting the real _Mixed (based on _index)
 	public:
 		Mixed() { _variant = std::make_shared<_Mixed>(nullptr); }
 		Mixed(Number val) { _variant = std::make_shared<_Mixed>(val); }
