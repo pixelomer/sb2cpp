@@ -224,24 +224,23 @@ std::unique_ptr<Node> parse_value(std::vector<std::wstring> &tokens, size_t *ind
 	Node node;
 	node.type = VALUE_LIST;
 	bool was_operator = true;
-	bool first = true;
 	while (true) {
 		std::wstring &token1 = get_token(tokens, (*index));
 		std::wstring &token2 = get_token(tokens, (*index)+1);
 		std::unique_ptr<Node> subnode;
-		if (was_operator && token1[0] == L'"') {
-			(*index)++;
-			was_operator = false;
-			subnode = std::make_unique<Node>(Node());
-			subnode->type = STRING_LITERAL;
-			subnode->string_literal = token1;
-		}
-		else if (was_operator && isnumber((int)token1[0])) {
+		if (was_operator && isnumber((int)token1[0])) {
 			(*index)++;
 			was_operator = false;
 			subnode = std::make_unique<Node>(Node());
 			subnode->type = NUMBER_LITERAL;
 			subnode->number_literal = std::stold(token1);
+		}
+		else if (was_operator && token1[0] == L'"') {
+			(*index)++;
+			was_operator = false;
+			subnode = std::make_unique<Node>(Node());
+			subnode->type = STRING_LITERAL;
+			subnode->string_literal = token1;
 		}
 		else if (was_operator && token1 == L"(") {
 			// ... + (a + b + c)
@@ -260,13 +259,11 @@ std::unique_ptr<Node> parse_value(std::vector<std::wstring> &tokens, size_t *ind
 		}
 		else if (ops.count(token1) != 0) {
 			// ... +
-			if (first) {
+			if (was_operator) {
+				// Unary + and -
 				if (token1 != L"-" && token1 != L"+") {
 					throw std::runtime_error("expected '+' or '-'");
 				}
-			}
-			else if (was_operator) {
-				throw std::runtime_error("expected identifier, got operator");
 			}
 			was_operator = true;
 			subnode = std::make_unique<Node>(Node());
@@ -285,7 +282,6 @@ std::unique_ptr<Node> parse_value(std::vector<std::wstring> &tokens, size_t *ind
 				was_operator = false;
 			}
 		}
-		first = false;
 		node.value_list.push_back(std::move(subnode));
 	}
 }
