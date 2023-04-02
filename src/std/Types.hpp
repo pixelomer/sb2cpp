@@ -91,7 +91,7 @@ namespace SmallBasic {
 			return sub;
 		}
 		Mixed &operator=(Mixed const& val) {
-			**this = *val._variant;
+			**this = *val;
 			return *this;
 		}
 		Mixed operator+(const Mixed &b) const {
