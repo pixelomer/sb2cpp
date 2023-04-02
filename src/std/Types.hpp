@@ -29,7 +29,10 @@ namespace SmallBasic {
 		static Array _nullArray;
 		template<typename C>
 		bool Compare(const Mixed &b, C cmp) const {
-			return cmp(GetString(), b.GetString());
+			if (IsNumber() || b.IsNumber())
+				return cmp(GetNumber(), b.GetNumber());
+			else
+				return cmp(GetString(), b.GetString());
 		}
 		bool _IsArray() const { return _variant->index() == 3; }
 		Array &_GetArray() {
