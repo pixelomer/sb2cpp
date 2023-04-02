@@ -96,6 +96,12 @@ namespace SmallBasic {
 		Mixed operator-(const Mixed &b) const {
 			return Mixed(GetNumber() - b.GetNumber());
 		}
+		Mixed operator-() const {
+			return Mixed(-GetNumber());
+		}
+		Mixed operator+() const {
+			return Mixed(GetNumber());
+		}
 		Mixed operator/(const Mixed &b) const {
 			return Mixed(GetNumber() / b.GetNumber());
 		}
