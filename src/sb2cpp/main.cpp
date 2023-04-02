@@ -613,11 +613,11 @@ void sb2cpp_single(std::unique_ptr<Node> const& node, int indent = 0, bool root
 		case FOR_LOOP:
 			std::wcout << "for (Mixed ";
 			sb2cpp_single(node->for_start, indent);
-			std::wcout << "; ";
-			sb2cpp_single(node->for_start->assignment_to, indent);
-			std::wcout << " <= ";
+			std::wcout << ", end = ";
 			sb2cpp_single(node->for_end, indent);
 			std::wcout << "; ";
+			sb2cpp_single(node->for_start->assignment_to, indent);
+			std::wcout << " <= end; ";
 			sb2cpp_single(node->for_start->assignment_to, indent);
 			std::wcout << " = ";
 			sb2cpp_single(node->for_start->assignment_to, indent);
