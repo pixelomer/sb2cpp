@@ -544,7 +544,7 @@ void sb2cpp_single(std::unique_ptr<Node> const& node, int indent = 0, bool root
 			sb2cpp_multi(node->if_list, L"else ", indent);
 			break;
 		case ARRAY_VALUE:
-			std::wcout << node->array_name << ".GetArray()" << "[";
+			std::wcout << node->array_name << "[";
 			sb2cpp_multi(node->array_indexes, L"][", indent);
 			std::wcout << "]";
 			break;
@@ -657,6 +657,11 @@ void sb2cpp_decl_single(std::unique_ptr<Node> const &node,
 			sb2cpp_decl_write(L"void " + node->function_call + L"()", defined);
 			break;
 		case FOR_LOOP:
+			sb2cpp_decl_single(node->for_start, defined);
+			sb2cpp_decl_single(node->for_end, defined);
+			sb2cpp_decl_single(node->for_step, defined);
+			sb2cpp_decl_multi(node->for_statements, defined);
+			break;
 		case NUMBER_LITERAL:
 		case STRING_LITERAL:
 		case OPERATOR:

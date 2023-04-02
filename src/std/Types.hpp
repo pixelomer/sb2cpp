@@ -8,6 +8,7 @@
 #include <sstream>
 #include <locale>
 #include <codecvt>
+#include <vector>
 #include <string>
 
 namespace SmallBasic {
@@ -20,49 +21,77 @@ namespace SmallBasic {
 	public:
 		typedef long double Number;
 		typedef std::wstring String;
-		typedef std::map<Mixed, Mixed> Array;
+		typedef std::map<std::vector<Mixed>, Mixed> Array;
 	private:
 		typedef std::variant<std::nullptr_t, Number, String, Array> _Mixed;
-		_Mixed _variant;
+		std::shared_ptr<_Mixed> _variant;
+		std::vector<Mixed> _index;
+		static Array _nullArray;
 		template<typename C>
 		bool Compare(const Mixed &b, C cmp) const {
-			if (IsString() && b.IsString()) {
-				return cmp(GetString(), b.GetString());
+			return cmp(GetString(), b.GetString());
+		}
+		bool _IsArray() const { return _variant->index() == 3; }
+		Array &_GetArray() {
+			if (!_IsArray()) {
+				*_variant = Array();
 			}
-			else if (IsNumber() && b.IsNumber()) {
-				return cmp(GetNumber(), b.GetNumber());
+			return std::get<Array>(*_variant);
+		}
+		Array &_GetArray() const {
+			if (!_IsArray()) {
+				_nullArray.clear();
+				return _nullArray;
 			}
-			else if (IsArray() || b.IsArray()) {
-				Die("Cannot compare arrays");
+			return std::get<Array>(*_variant);
+		}
+		_Mixed &operator*() {
+			if (_index.size() != 0) {
+				return *((_GetArray())[_index]._variant);
 			}
 			else {
-				//FIXME: Required for std::map, but also allows comparison between
-				// other types and undefined values
-				return cmp(this->_variant.index(), b._variant.index());
+				return *_variant;
 			}
 		}
+		const _Mixed &operator*() const {
+			if (_index.size() != 0) {
+				return *((_GetArray())[_index]._variant);
+			}
+			else {
+				return *_variant;
+			}
+		}
+		//TODO: unary * operator for getting the real _Mixed (based on _index)
 	public:
-		Mixed() { }
-		Mixed(Number val) { _variant = val; }
-		Mixed(String const& val) { _variant = val; }
+		Mixed() { _variant = std::make_shared<_Mixed>(nullptr); }
+		Mixed(Number val) { _variant = std::make_shared<_Mixed>(val); }
+		Mixed(String const& val) { _variant = std::make_shared<_Mixed>(val); }
 		Mixed(std::string const& val) {
 			std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 			String str = converter.from_bytes(val);
-			_variant = str;
+			_variant = std::make_shared<_Mixed>(str);
 		}
-		Mixed(Mixed const& val) { _variant = val._variant; }
-		Mixed &operator=(const Mixed &other) {
-			_variant = other._variant;
+		Mixed(Mixed const& val, bool copy = true) {
+			if (copy) {
+				_variant = std::make_shared<_Mixed>(nullptr);
+				*this = val;
+			}
+			else {
+				_variant = val._variant;
+				_index = val._index;
+			}
+		}
+		Mixed operator[](Mixed const& key) {
+			Mixed sub(*this, false);
+			sub._index.push_back(key);
+			return sub;
+		}
+		Mixed &operator=(Mixed const& val) {
+			**this = *val._variant;
 			return *this;
 		}
 		Mixed operator+(const Mixed &b) const {
-			if (IsNumber() && b.IsNumber()) {
-				return Mixed(GetNumber() + b.GetNumber());
-			}
-			else if (IsString() && b.IsString()) {
-				return Mixed(GetString() + b.GetString());
-			}
-			Die("Cannot add incompatible types");
+			return Mixed(GetNumber() + b.GetNumber());
 		}
 		Mixed operator-(const Mixed &b) const {
 			return Mixed(GetNumber() - b.GetNumber());
@@ -82,62 +111,49 @@ namespace SmallBasic {
 		bool operator==(const Mixed &b) const {
 			return !(*this > b) && !(*this < b);
 		}
-		Mixed &operator[](const Mixed &i) {
-			return GetArray()[i];
-		}
-		operator bool() const {
-			if (IsNumber()) return GetNumber() != 0;
-			else Die("Cannot implicitly convert value to boolean");
-		}
+		operator bool() const { return GetNumber() != 0; }
 		operator Number() const { return GetNumber(); }
 		operator String() const { return GetString(); }
-		operator Array() { return GetArray(); }
 		bool operator>=(const Mixed &b) const { return !(*this < b); }
 		bool operator<=(const Mixed &b) const { return !(*this > b); }
 		bool operator!=(const Mixed &b) const { return !(*this == b); }
-		bool IsUndefined() const { return _variant.index() == 0; }
-		bool IsNumber() const { return _variant.index() == 1; }
-		bool IsString() const { return _variant.index() == 2; }
-		bool IsArray() const { return _variant.index() == 3; }
+		bool IsUndefined() const { return (**this).index() == 0; }
+		bool IsNumber() const { return (**this).index() == 1; }
+		bool IsString() const { return (**this).index() == 2; }
+		bool IsArray() const { return (**this).index() == 3; }
+		bool IsArray() { return (**this).index() == 3; }
 		Number GetNumber() const {
-			if (!IsNumber())
-				Die("Expected a Number");
-			return std::get<Number>(_variant);
+			if (IsNumber())
+				return std::get<Number>(**this);
+			else if (IsString())
+				return std::stold(GetString());
+			return 0.L;
 		}
-		String Describe() const {
+		String GetString() const {
+			if (IsString()) {
+				return std::get<String>(**this);
+			}
 			std::wstringstream stream;
-			if (IsString())
-				stream << GetString();
+			if (IsArray()) {
+				stream << "<array>";
+			}
 			else if (IsNumber())
 				stream << GetNumber();
-			else if (IsArray())
-				stream << L"<array>";
-			else
-				stream << L"(null)";
 			return stream.str();
 		}
-		const String &GetString() const {
-			if (!IsString())
-				Die("Expected a String");
-			return std::get<String>(_variant);
-		}
-		String &GetString() {
-			if (!IsString())
-				Die("Expected a String");
-			return std::get<String>(_variant);
-		}
 		Array &GetArray() {
-			if (IsUndefined())
-				_variant = Array{{}};
-			else if (!IsArray())
-				Die("Expected an Array");
-			return std::get<Array>(_variant);
+			if (!IsArray()) {
+				**this = Array();
+			}
+			return std::get<Array>(**this);
 		}
 	};
 
 	typedef Mixed::Number Number;
 	typedef Mixed::String String;
 	typedef Mixed::Array Array;
+
+	Array Mixed::_nullArray = Array();
 }
 
 #endif

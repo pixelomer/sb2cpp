@@ -37,7 +37,7 @@ namespace SmallBasic {
 			std::wcout << std::endl;
 		}
 		static void Write(Mixed const& mixed) {
-			std::wcout << mixed.Describe();
+			std::wcout << mixed.GetString();
 		}
 		static void VerifyAccess() {}
 	};
