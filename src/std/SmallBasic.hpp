@@ -4,3 +4,4 @@
 #include "Text.hpp"
 #include "TextWindow.hpp"
 #include "Program.hpp"
+#include "Array.hpp"
