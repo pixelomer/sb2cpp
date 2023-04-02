@@ -95,7 +95,10 @@ namespace SmallBasic {
 			return *this;
 		}
 		Mixed operator+(const Mixed &b) const {
-			return Mixed(GetNumber() + b.GetNumber());
+			if (IsString() || b.IsString())
+				return Mixed(GetString() + b.GetString());
+			else
+				return Mixed(GetNumber() + b.GetNumber());
 		}
 		Mixed operator-(const Mixed &b) const {
 			return Mixed(GetNumber() - b.GetNumber());
