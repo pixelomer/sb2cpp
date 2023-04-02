@@ -134,14 +134,20 @@ inline std::wstring &get_token(std::vector<std::wstring> &tokens, size_t index
 const std::set<const std::wstring> keywords{ { L"For", L"EndFor", L"To", L"Step",
 	L"If", L"Then", L"Else", L"ElseIf", L"EndIf", L"Goto", L"Sub", L"EndSub",
 	L"While", L"EndWhile", L"And", L"Or" } };
-std::map<const std::wstring, const std::wstring> operators{
-	{ L"-", L"-" }, { L"+", L"+" }, { L"/", L"/" }, { L"*", L"*" }, { L"<", L"<" },
-	{ L">", L">" }, { L"<>", L"!=" }, { L"Or", L"||" }, { L"And", L"&&" },
-	{ L">=", L">=" }, { L"<=", L"<=" }, { L"=", L"==" }
-};
+
+#define REGULAR_OPS { L"-", L"-" }, { L"+", L"+" }, { L"/", L"/" }, \
+	{ L"*", L"*" }
+#define COMPARE_OPS { L"<", L"<" }, { L">", L">" }, { L"<>", L"!=" }, \
+	{ L"Or", L"||" }, { L"And", L"&&" }, { L">=", L">=" }, { L"<=", L"<=" }, \
+	{ L"=", L"==" }
+
+std::map<const std::wstring, const std::wstring> nologic_ops{ REGULAR_OPS };
+std::map<const std::wstring, const std::wstring> all_ops{ REGULAR_OPS,
+	COMPARE_OPS };
 
 std::unique_ptr<Node> parse_variable(std::vector<std::wstring> &tokens, size_t *index);
-std::unique_ptr<Node> parse_value(std::vector<std::wstring> &tokens, size_t *index);
+std::unique_ptr<Node> parse_value(std::vector<std::wstring> &tokens, size_t *index,
+	std::map<const std::wstring, const std::wstring> &ops = nologic_ops);
 
 std::unique_ptr<Node> parse_call(std::vector<std::wstring> &tokens, size_t *index) {
 	Node node;
@@ -212,7 +218,8 @@ std::unique_ptr<Node> parse_assignment(std::vector<std::wstring> &tokens, size_t
 	return std::make_unique<Node>(std::move(node));
 }
 
-std::unique_ptr<Node> parse_value(std::vector<std::wstring> &tokens, size_t *index)
+std::unique_ptr<Node> parse_value(std::vector<std::wstring> &tokens, size_t *index,
+	std::map<const std::wstring, const std::wstring> &ops)
 {
 	Node node;
 	node.type = VALUE_LIST;
@@ -251,7 +258,7 @@ std::unique_ptr<Node> parse_value(std::vector<std::wstring> &tokens, size_t *ind
 			was_operator = false;
 			subnode = parse_call(tokens, index);
 		}
-		else if (operators.count(token1) != 0) {
+		else if (ops.count(token1) != 0) {
 			// ... +
 			if (first) {
 				if (token1 != L"-" && token1 != L"+") {
@@ -264,7 +271,7 @@ std::unique_ptr<Node> parse_value(std::vector<std::wstring> &tokens, size_t *ind
 			was_operator = true;
 			subnode = std::make_unique<Node>(Node());
 			subnode->type = OPERATOR;
-			subnode->operator_str = operators[token1];
+			subnode->operator_str = ops[token1];
 			(*index)++;
 		}
 		else {
@@ -389,7 +396,7 @@ std::vector<std::unique_ptr<Node>> parse(std::vector<std::wstring> &tokens,
 					end_tokens = {{ L"EndIf" }};
 				}
 				else {
-					auto condition = parse_value(tokens, &index);
+					auto condition = parse_value(tokens, &index, all_ops);
 					if (get_token(tokens, index++) != L"Then") {
 						throw std::runtime_error("expected 'Then'");
 					}
