@@ -20,15 +20,15 @@ namespace SmallBasic {
 		static void PauseWithoutMessage() {
 			Read();
 		}
-		static String Read() {
+		static Mixed Read() {
 			String line;
 			std::getline(std::wcin, line);
 			return line;
 		}
-		static String ReadKey() {
+		static Mixed ReadKey() {
 			throw "Not implemented";
 		}
-		static Number ReadNumber() {
+		static Mixed ReadNumber() {
 			String line = TextWindow::Read();
 			return std::stold(line);
 		}
