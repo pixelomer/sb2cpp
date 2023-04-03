@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <cmath>
 #include <tuple>
 #include <map>
 #include <set>
@@ -578,9 +579,16 @@ void sb2cpp_single(std::unique_ptr<Node> const& node, int indent = 0, bool root
 		case STRING_LITERAL:
 			std::wcout << "Mixed(L" << sb2cpp_escape(node->string_literal) << ")";
 			break;
-		case NUMBER_LITERAL:
-			std::wcout << "Mixed((Number)" << node->number_literal << ")";
+		case NUMBER_LITERAL: {
+			long double int_part;
+			long double fraction_part = std::modfl(node->number_literal, &int_part);
+			std::wcout << "Mixed(" << node->number_literal;
+			if (fraction_part == 0.L) {
+				std::wcout << ".";
+			}
+			std::wcout << "L)";
 			break;
+		}
 		case OPERATOR:
 			std::wcout << node->operator_str;
 			break;
