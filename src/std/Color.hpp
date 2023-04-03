@@ -23,8 +23,10 @@ namespace SmallBasic {
 			return *this;
 		}
 		static Color _FromName(String const& name) {
-			if (_colors.count(name) != 0) {
-				return Color(_colors[name], name);
+			String lowercase;
+			std::transform(name.begin(), name.end(), lowercase.begin(), std::towlower);
+			if (_colors.count(lowercase) != 0) {
+				return Color(_colors[lowercase], name);
 			}
 			else if (name.length() > 0 && name[0] == L'#') {
 				if (name.length() == 4) {
@@ -42,22 +44,22 @@ namespace SmallBasic {
 		}
 	};
 	std::map<String, std::vector<uint8_t>> Color::_colors = {
-		{ L"Black", { 0, 0, 0 } },
-		{ L"DarkBlue", { 0, 0, 128 } },
-		{ L"DarkGreen", { 64, 128, 64 } },
-		{ L"DarkCyan", { 64, 128, 128 } },
-		{ L"DarkRed", { 128, 0, 0 } },
-		{ L"DarkMagenta", { 128, 0, 128 } },
-		{ L"DarkYellow", { 128, 128, 64 } },
-		{ L"Gray", { 192, 192, 192 } },
-		{ L"DarkGray", { 128, 128, 128 } },
-		{ L"Blue", { 0, 0, 255 } },
-		{ L"Green", { 128, 255, 128 } },
-		{ L"Cyan", { 128, 255, 255 } },
-		{ L"Red", { 255, 0, 0 } },
-		{ L"Magenta", { 255, 0, 255 } },
-		{ L"Yellow", { 255, 255, 128 } },
-		{ L"White", { 255, 255, 255 } }
+		{ L"black", { 0, 0, 0 } },
+		{ L"darkblue", { 0, 0, 128 } },
+		{ L"darkgreen", { 64, 128, 64 } },
+		{ L"darkcyan", { 64, 128, 128 } },
+		{ L"darkred", { 128, 0, 0 } },
+		{ L"darkmagenta", { 128, 0, 128 } },
+		{ L"darkyellow", { 128, 128, 64 } },
+		{ L"gray", { 192, 192, 192 } },
+		{ L"darkgray", { 128, 128, 128 } },
+		{ L"blue", { 0, 0, 255 } },
+		{ L"green", { 128, 255, 128 } },
+		{ L"cyan", { 128, 255, 255 } },
+		{ L"red", { 255, 0, 0 } },
+		{ L"magenta", { 255, 0, 255 } },
+		{ L"yellow", { 255, 255, 128 } },
+		{ L"white", { 255, 255, 255 } }
 	};
 }
 
