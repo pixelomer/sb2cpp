@@ -510,16 +510,9 @@ std::vector<std::wstring> tokenize(std::wstring const& source) {
 		}
 		else if (c == '"') {
 			// strings
-			bool backslash = false;
-			do {
-				token += source[i];
-				backslash = source[i] == '\\';
-			}
-			while (i+1 < len && (source[++i] != '"' || backslash));
+			do token += source[i];
+			while ((i+1 < len) && (source[++i] != '"'));
 			token += source[i];
-			if (source[i] != L'"') {
-				throw std::runtime_error("expected '\"'");
-			}
 		}
 		else {
 			// variable names, keywords, etc.
@@ -547,6 +540,20 @@ std::wstring sb2cpp_indent(int indent) {
 	return str;
 }
 
+std::wstring sb2cpp_escape(std::wstring const& str) {
+	std::wstring result;
+	size_t i_start = 0, i_end = 0;
+	while (i_end != std::wstring::npos) {
+		i_end = str.find(L'\\', i_end);
+		if (i_end != std::wstring::npos) {
+			result += str.substr(i_start, i_end - i_start) + L"\\\\";
+			i_start = ++i_end;
+		}
+	}
+	result += str.substr(i_start);
+	return result;
+}
+
 void sb2cpp_single(std::unique_ptr<Node> const& node, int indent = 0, bool root
 	= false)
 {
@@ -569,7 +576,7 @@ void sb2cpp_single(std::unique_ptr<Node> const& node, int indent = 0, bool root
 			if (root) std::wcout << ";";
 			break;
 		case STRING_LITERAL:
-			std::wcout << "Mixed(L" << node->string_literal << ")";
+			std::wcout << "Mixed(L" << sb2cpp_escape(node->string_literal) << ")";
 			break;
 		case NUMBER_LITERAL:
 			std::wcout << "Mixed((Number)" << node->number_literal << ")";
