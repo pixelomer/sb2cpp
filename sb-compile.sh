@@ -13,4 +13,5 @@ fi
 set -ex
 
 ./sb2cpp "${input}" > "${input}.cpp"
-c++ -O3 --std=c++17 -lm "${input}.cpp" -o "${output}"
+c++ -O3 --std=c++17 -lm `pkg-config sdl2 --cflags --libs` "${input}.cpp" \
+	-o "${output}"

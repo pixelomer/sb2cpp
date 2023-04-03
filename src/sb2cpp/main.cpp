@@ -168,6 +168,9 @@ std::unique_ptr<Node> parse_call(std::vector<std::wstring> &tokens, size_t *inde
 	std::wstring &token2 = get_token(tokens, (*index)++);
 	if (token2 == L".") {
 		token2 = get_token(tokens, (*index)++);
+		if (token2[0] == L'_') {
+			throw std::runtime_error("refusing to call private stdlib method");
+		}
 		node.type = STDLIB_CALL;
 		node.stdlib_class = token1;
 		node.stdlib_function = token2;
@@ -796,6 +799,7 @@ void sb2cpp(std::wstring const& source) {
 	std::wcout << L"int main(int argc, char **argv) {" << std::endl;
 	std::wcout << sb2cpp_indent(1) << L"srandom(time(NULL));" << std::endl;
 	std::wcout << sb2cpp_indent(1) << L"SmallBasic_Main();" << std::endl;
+	std::wcout << sb2cpp_indent(1) << L"RunLoop::_Run();" << std::endl;
 	std::wcout << L"}" << std::endl;
 }
 
