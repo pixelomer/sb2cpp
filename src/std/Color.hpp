@@ -7,10 +7,10 @@
 namespace SmallBasic {
 	class Color {
 	private:
-		static std::map<String, std::vector<int>> _colors;
+		static std::map<String, std::vector<uint8_t>> _colors;
 		Color(uint8_t r, uint8_t g, uint8_t b, String const& name): r(r), g(g), b(b),
 			name(name) {}
-		Color(std::vector<int> &comps, String const& name): r(comps[0]), g(comps[1]),
+		Color(std::vector<uint8_t> &comps, String const& name): r(comps[0]), g(comps[1]),
 			b(comps[2]) {}
 	public:
 		uint8_t r, g, b;
@@ -41,7 +41,7 @@ namespace SmallBasic {
 			return Color(0, 0, 0, name);
 		}
 	};
-	std::map<String, std::vector<int>> Color::_colors = {
+	std::map<String, std::vector<uint8_t>> Color::_colors = {
 		{ L"Black", { 0, 0, 0 } },
 		{ L"DarkBlue", { 0, 0, 128 } },
 		{ L"DarkGreen", { 64, 128, 64 } },
