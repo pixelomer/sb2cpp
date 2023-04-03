@@ -123,7 +123,7 @@ public:
 	};
 };
 
-inline std::wstring &get_token(std::vector<std::wstring> &tokens, size_t index
+std::wstring &get_token(std::vector<std::wstring> &tokens, size_t index
 #ifdef DEBUG
 	, const char *func, const char *file, int line
 #endif
@@ -657,7 +657,7 @@ void sb2cpp_multi(std::vector<std::unique_ptr<Node>> const& parsed, std::wstring
 	}
 }
 
-inline void sb2cpp_decl_write(std::wstring const &str,
+void sb2cpp_decl_write(std::wstring const &str,
 	std::set<std::wstring> &defined)
 {
 	if (defined.count(str) == 0) {
