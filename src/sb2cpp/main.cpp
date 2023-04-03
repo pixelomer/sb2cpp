@@ -672,13 +672,21 @@ void sb2cpp_multi(std::vector<std::unique_ptr<Node>> const& parsed, std::wstring
 	}
 }
 
-void sb2cpp_decl_write(std::wstring const &str,
-	std::set<std::wstring> &defined)
-{
-	if (defined.count(str) == 0) {
-		defined.insert(str);
-		std::wcout << str << L";" << std::endl;
+void sb2cpp_decl_commit(std::map<std::wstring, bool> &defined) {
+	for (auto pair : defined) {
+		if (pair.second) {
+			std::wcout << "void " << pair.first << "();" << std::endl;
+		}
+		else {
+			std::wcout << "Mixed " << pair.first << ";" << std::endl;
+		}
 	}
+}
+
+void sb2cpp_decl_write(std::wstring const &str, bool is_function,
+	std::map<std::wstring, bool> &defined)
+{
+	defined[str] = defined[str] || is_function;
 }
 
 void sb2cpp_impl(std::wstring const &name,
@@ -690,17 +698,15 @@ void sb2cpp_impl(std::wstring const &name,
 }
 
 void sb2cpp_decl_multi(std::vector<std::unique_ptr<Node>> const &nodes,
-	std::set<std::wstring> &defined);
+	std::map<std::wstring, bool> &defined);
 
-//FIXME: Prioritize functions over variables
-//       (Functions can be assigned to with stdlib setters)
 void sb2cpp_decl_single(std::unique_ptr<Node> const &node,
-	std::set<std::wstring> &defined)
+	std::map<std::wstring, bool> &defined)
 {
 	if (node == nullptr) return;
 	switch (node->type) {
 		case ARRAY_VALUE:
-			sb2cpp_decl_write(L"Mixed " + node->array_name, defined);
+			sb2cpp_decl_write(node->array_name, false, defined);
 			sb2cpp_decl_multi(node->array_indexes, defined);
 			break;
 		case STDLIB_CALL:
@@ -718,10 +724,11 @@ void sb2cpp_decl_single(std::unique_ptr<Node> const &node,
 			sb2cpp_decl_single(node->if_condition, defined);
 			break;
 		case SUB:
+			sb2cpp_decl_write(node->sub_name, true, defined);
 			sb2cpp_decl_multi(node->sub_statements, defined);
 			break;
 		case VARIABLE:
-			sb2cpp_decl_write(L"Mixed " + node->variable_name, defined);
+			sb2cpp_decl_write(node->variable_name, false, defined);
 			break;
 		case WHILE_LOOP:
 			sb2cpp_decl_single(node->while_condition, defined);
@@ -731,7 +738,7 @@ void sb2cpp_decl_single(std::unique_ptr<Node> const &node,
 			sb2cpp_decl_multi(node->value_list, defined);
 			break;
 		case FUNCTION_CALL:
-			sb2cpp_decl_write(L"void " + node->function_call + L"()", defined);
+			sb2cpp_decl_write(node->function_call, true, defined);
 			break;
 		case FOR_LOOP:
 			sb2cpp_decl_single(node->for_start, defined);
@@ -749,7 +756,7 @@ void sb2cpp_decl_single(std::unique_ptr<Node> const &node,
 }
 
 void sb2cpp_decl_multi(std::vector<std::unique_ptr<Node>> const &nodes,
-	std::set<std::wstring> &defined)
+	std::map<std::wstring, bool> &defined)
 {
 	for (auto const& node : nodes) {
 		sb2cpp_decl_single(node, defined);
@@ -757,8 +764,9 @@ void sb2cpp_decl_multi(std::vector<std::unique_ptr<Node>> const &nodes,
 }
 
 void sb2cpp_vars(std::vector<std::unique_ptr<Node>> const &nodes) {
-	auto defined = std::set<std::wstring>{};
+	std::map<std::wstring, bool> defined;
 	sb2cpp_decl_multi(nodes, defined);
+	sb2cpp_decl_commit(defined);
 }
 
 void sb2cpp(std::wstring const& source) {
