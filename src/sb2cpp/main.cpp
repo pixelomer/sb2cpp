@@ -776,8 +776,8 @@ void sb2cpp(std::wstring const& source) {
 
 	std::wcout << L"" << std::endl;
 	std::wcout << L"int main(int argc, char **argv) {" << std::endl;
-	std::wcout << L"  srandom(time(NULL));" << std::endl;
-	std::wcout << L"  SmallBasic_Main();" << std::endl;
+	std::wcout << sb2cpp_indent(1) << L"srandom(time(NULL));" << std::endl;
+	std::wcout << sb2cpp_indent(1) << L"SmallBasic_Main();" << std::endl;
 	std::wcout << L"}" << std::endl;
 }
 
