@@ -692,6 +692,8 @@ void sb2cpp_impl(std::wstring const &name,
 void sb2cpp_decl_multi(std::vector<std::unique_ptr<Node>> const &nodes,
 	std::set<std::wstring> &defined);
 
+//FIXME: Prioritize functions over variables
+//       (Functions can be assigned to with stdlib setters)
 void sb2cpp_decl_single(std::unique_ptr<Node> const &node,
 	std::set<std::wstring> &defined)
 {
