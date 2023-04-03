@@ -159,7 +159,9 @@ std::unique_ptr<Node> parse_variable(std::vector<std::wstring> &tokens, size_t *
 std::unique_ptr<Node> parse_value(std::vector<std::wstring> &tokens, size_t *index,
 	std::map<const std::wstring, const std::wstring> &ops = nologic_ops);
 
-std::unique_ptr<Node> parse_call(std::vector<std::wstring> &tokens, size_t *index) {
+std::unique_ptr<Node> parse_call(std::vector<std::wstring> &tokens, size_t *index,
+	bool no_set = false)
+{
 	Node node;
 	std::wstring &token1 = get_token(tokens, (*index)++);
 	std::wstring &token2 = get_token(tokens, (*index)++);
@@ -170,7 +172,7 @@ std::unique_ptr<Node> parse_call(std::vector<std::wstring> &tokens, size_t *inde
 		node.stdlib_function = token2;
 		token2 = get_token(tokens, (*index)++);
 		if (token2 != L"(") {
-			if (token2 == L"=") {
+			if (!no_set && token2 == L"=") {
 				// Class.Value = ...
 				auto value = parse_value(tokens, index);
 				node.stdlib_function = L"_Set" + node.stdlib_function;
@@ -264,11 +266,8 @@ std::unique_ptr<Node> parse_value(std::vector<std::wstring> &tokens, size_t *ind
 		}
 		else if (was_operator && token2 == L"." /* || token2 == L"(" */) {
 			// ... + Math.Random()
-			
-			//FIXME: "If Class.Value = Var" will not work
-			//       -- Converted to if (Class::_SetValue(Var)) instead
 			was_operator = false;
-			subnode = parse_call(tokens, index);
+			subnode = parse_call(tokens, index, true);
 		}
 		else if (ops.count(token1) != 0) {
 			// ... +
