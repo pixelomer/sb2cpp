@@ -1,5 +1,5 @@
-#ifndef _SMALLBASIC_TYPES_H
-#define _SMALLBASIC_TYPES_H
+#ifndef _SMALLBASIC_MIXED_H
+#define _SMALLBASIC_MIXED_H
 
 #include <string>
 #include <map>

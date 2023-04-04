@@ -1,4 +1,7 @@
-#include "Types.hpp"
+#ifndef _SMALLBASIC_TEXTWINDOW_H
+#define _SMALLBASIC_TEXTWINDOW_H
+
+#include "Mixed.hpp"
 
 #include <iostream>
 #include <string>
@@ -43,3 +46,5 @@ namespace SmallBasic {
 	};
 
 }
+
+#endif

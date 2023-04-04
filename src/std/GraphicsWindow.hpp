@@ -1,4 +1,7 @@
-#include "Types.hpp"
+#ifndef _SMALLBASIC_GRAPHICSWINDOW_H
+#define _SMALLBASIC_GRAPHICSWINDOW_H
+
+#include "Mixed.hpp"
 #include <SDL2/SDL.h>
 #include "RunLoop.hpp"
 #include "Color.hpp"
@@ -108,3 +111,5 @@ namespace SmallBasic {
 	SDL_Window *GraphicsWindow::_window = NULL;
 	SDL_Renderer *GraphicsWindow::_renderer = NULL;
 }
+
+#endif

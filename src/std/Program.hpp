@@ -1,4 +1,7 @@
-#include "Types.hpp"
+#ifndef _SMALLBASIC_PROGRAM_H
+#define _SMALLBASIC_PROGRAM_H
+
+#include "Mixed.hpp"
 #include <thread>
 #include <chrono>
 #include <filesystem>
@@ -24,3 +27,5 @@ namespace SmallBasic {
 		}
 	};
 }
+
+#endif

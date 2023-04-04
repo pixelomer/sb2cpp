@@ -1,7 +1,7 @@
 #ifndef _SMALLBASIC_COLOR_H
 #define _SMALLBASIC_COLOR_H
 
-#include "Types.hpp"
+#include "Mixed.hpp"
 #include <stdint.h>
 
 namespace SmallBasic {

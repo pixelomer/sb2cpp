@@ -1,4 +1,7 @@
-#include "Types.hpp"
+#ifndef _SMALLBASIC_STACK_H
+#define _SMALLBASIC_STACK_H
+
+#include "Mixed.hpp"
 
 #include <map>
 #include <stack>
@@ -30,3 +33,5 @@ namespace SmallBasic {
 
 	auto Stack::stacks = std::map<Mixed, std::stack<Mixed>>{};
 }
+
+#endif

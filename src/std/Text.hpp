@@ -1,4 +1,7 @@
-#include "Types.hpp"
+#ifndef _SMALLBASIC_TEXT_H
+#define _SMALLBASIC_TEXT_H
+
+#include "Mixed.hpp"
 
 namespace SmallBasic {
 	class Text {
@@ -50,3 +53,5 @@ namespace SmallBasic {
 		}
 	};
 }
+
+#endif

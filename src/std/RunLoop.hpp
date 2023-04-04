@@ -1,7 +1,7 @@
 #ifndef _SMALLBASIC_RUNLOOP_H
 #define _SMALLBASIC_RUNLOOP_H
 
-#include "Types.hpp"
+#include "Mixed.hpp"
 
 namespace SmallBasic {
 	class RunLoop {

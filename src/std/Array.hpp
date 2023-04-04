@@ -1,4 +1,7 @@
-#include "Types.hpp"
+#ifndef _SMALLBASIC_ARRAY_H
+#define _SMALLBASIC_ARRAY_H
+
+#include "Mixed.hpp"
 #include <cmath>
 
 namespace SmallBasic {
@@ -35,3 +38,5 @@ namespace SmallBasic {
 		}
 	};
 }
+
+#endif
