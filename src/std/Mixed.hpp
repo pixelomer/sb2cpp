@@ -124,7 +124,19 @@ namespace SmallBasic {
 		bool operator==(const Mixed &b) const {
 			return !(*this > b) && !(*this < b);
 		}
-		operator bool() const { return GetNumber() != 0; }
+		operator bool() const {
+			if (IsString()) {
+				if (GetString().length() == 5) {
+					String str = GetString();
+					std::transform(str.begin(), str.end(), str.begin(), std::towlower);
+					return str != L"false";
+				}
+				return true;
+			}
+			else {
+				return GetNumber() != 0;
+			}
+		}
 		operator Number() const { return GetNumber(); }
 		operator String() const { return GetString(); }
 		bool operator>=(const Mixed &b) const { return !(*this < b); }
