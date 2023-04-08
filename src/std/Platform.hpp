@@ -15,8 +15,15 @@ namespace SmallBasic {
 #if defined(__APPLE__) && defined(__OBJC__)
 		NSWindow *__strong _window;
 		NSWindow *_GetWindow();
-		CGContextRef _drawContext = NULL;
+		CGContextRef _context = NULL;
 		CGFloat _strokeWidth;
+		CGColorRef _fillColor;
+		CGColorRef _strokeColor;
+		CGColorSpaceRef _colorSpace;
+		void _ReallocateContext(Number ldWidth, Number ldHeight);
+		void _EnsureContext();
+		void _SetColor(Color const& color, void(*setter)(CGContextRef, CGColorRef),
+			CGColorRef *storedColor);
 #endif
 		void _Initialize();
 	public:

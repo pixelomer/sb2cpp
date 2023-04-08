@@ -39,39 +39,43 @@
 @end
 
 namespace SmallBasic {
-	static CGColorSpaceRef _colorSpace = NULL;
-
-	static void ReallocateContext(CGContextRef *context, Number ldWidth, Number ldHeight) {
+	void Platform::_ReallocateContext(Number ldWidth, Number ldHeight) {
 		size_t width = (size_t)std::ceill(ldWidth);
 		size_t height = (size_t)std::ceill(ldHeight);
-		if (*context != NULL) {
-			size_t currentWidth = CGBitmapContextGetHeight(*context);
-			size_t currentHeight = CGBitmapContextGetWidth(*context);
+		if (_context != NULL) {
+			size_t currentWidth = CGBitmapContextGetHeight(_context);
+			size_t currentHeight = CGBitmapContextGetWidth(_context);
 			if (width <= currentWidth && height <= currentHeight) {
 				return;
 			}
 		}
 		CGContextRef newContext = CGBitmapContextCreate(NULL, width, height, 8, 0,
 			_colorSpace, kCGImageAlphaPremultipliedLast);
-		if (*context != NULL) {
-			CGImageRef oldData = CGBitmapContextCreateImage(*context);
+		if (_context != NULL) {
+			// Copy old contents to the new context
+			CGImageRef oldData = CGBitmapContextCreateImage(_context);
 			CGContextDrawImage(newContext, CGRectMake(0, 0, CGImageGetWidth(oldData),
 				CGImageGetHeight(oldData)), oldData);
 			CGImageRelease(oldData);
-			CGContextRelease(*context);
-			//FIXME: CGContext properties not copied
+
+			// Release old context
+			CGContextRelease(_context);
+
+			// Set properties on new context
+			CGContextSetFillColorWithColor(_context, _fillColor);
+			CGContextSetStrokeColorWithColor(_context, _strokeColor);
+			CGContextSetLineWidth(_context, _strokeWidth);
 		}
-		*context = newContext;
+		_context = newContext;
 	}
 
-	static void EnsureContext(CGContextRef *context) {
-		ReallocateContext(context, INITIAL_WIDTH, INITIAL_HEIGHT);
+	void Platform::_EnsureContext() {
+		_ReallocateContext(INITIAL_WIDTH, INITIAL_HEIGHT);
 	}
 
 	void Platform::_Initialize() {
-		if (_colorSpace == NULL) {
-			_colorSpace = CGColorSpaceCreateDeviceRGB();
-		}
+		_colorSpace = CGColorSpaceCreateDeviceRGB();
+		
 	}
 
 	void Platform::SetTitle(String const& title) {
@@ -91,7 +95,7 @@ namespace SmallBasic {
 				styleMask:(NSWindowStyleMaskTitled | NSWindowStyleMaskClosable)
 				backing:NSBackingStoreBuffered defer:YES];
 			_window.contentView = [[SmallBasicView alloc] initWithFrame:frame
-				context:&_drawContext];
+				context:&_context];
 			//[_window cascadeTopLeftFromPoint:NSMakePoint(10, 10)];
 			_window.contentView.wantsLayer = YES;
 			_window.title = @"SmallBasic";
@@ -113,13 +117,32 @@ namespace SmallBasic {
 		}
 	}
 
-	void Platform::SetFillColor(Color const& color) {
-		EnsureContext(&_drawContext);
+	void Platform::_SetColor(Color const& color, void(*setter)(CGContextRef, CGColorRef),
+		CGColorRef *storedColor)
+	{
+		_EnsureContext();
 		CGFloat comps[] = { (CGFloat)color.r / 255.0, (CGFloat)color.g / 255.0,
 			(CGFloat)color.b / 255.0, 1.0 };
 		CGColorRef cgColor = CGColorCreate(_colorSpace, comps);
-		CGContextSetFillColorWithColor(_drawContext, cgColor);
-		CGColorRelease(cgColor);
+		if (*storedColor != NULL) {
+			CGColorRelease(*storedColor);
+		}
+		*storedColor = cgColor;
+		setter(_context, cgColor);
+	}	
+
+	void Platform::SetFillColor(Color const& color) {
+		_SetColor(color, CGContextSetFillColorWithColor, &_fillColor);
+	}
+
+	void Platform::SetStrokeColor(Color const& color) {
+		_SetColor(color, CGContextSetStrokeColorWithColor, &_strokeColor);
+	}
+
+	void Platform::SetStrokeWidth(Number strokeWidth) {
+		_EnsureContext();
+		_strokeWidth = (CGFloat)strokeWidth;
+		CGContextSetLineWidth(_context, _strokeWidth);
 	}
 	
 	void Platform::SetWindowVisible(bool visible) {
@@ -133,20 +156,15 @@ namespace SmallBasic {
 	}
 
 	void Platform::DrawRectangle(Number x, Number y, Number width, Number height, bool fill) {
-		EnsureContext(&_drawContext);
+		_EnsureContext();
 		CGRect rect = CGRectMake(x, y, width, height);
 		if (fill) {
-			CGContextFillRect(_drawContext, rect);
+			CGContextFillRect(_context, rect);
 		}
 		else {
-			CGContextStrokeRect(_drawContext, rect);
+			CGContextStrokeRect(_context, rect);
 		}
 		_GetWindow().contentView.needsDisplay = YES;
-	}
-
-	void Platform::SetStrokeWidth(Number strokeWidth) {
-		EnsureContext(&_drawContext);
-		CGContextSetLineWidth(_drawContext, strokeWidth);
 	}
 }
 
