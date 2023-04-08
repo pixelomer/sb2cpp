@@ -9,12 +9,18 @@
 #define INITIAL_WIDTH 640
 #define INITIAL_HEIGHT 480
 
+std::wstring NSStringToWString(NSString *str) {
+	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+	std::string utf8 = [str UTF8String];
+	return converter.from_bytes(utf8);
+}
+
 @interface SmallBasicView : NSView
-- (instancetype)initWithFrame:(NSRect)frame context:(CGContextRef *)context;
 @end
 
 @implementation SmallBasicView {
 	CGContextRef *_context;
+	SmallBasic::Platform *_platform;
 }
 
 - (instancetype)initWithFrame:(NSRect)frame context:(CGContextRef *)context {
@@ -22,6 +28,10 @@
 		_context = context;
 	}
 	return self;
+}
+
+- (BOOL)acceptsFirstResponder {
+	return YES;
 }
 
 - (BOOL)isFlipped { return YES; }
@@ -34,6 +44,75 @@
 			CGImageGetHeight(image)), image);
 		CGImageRelease(image);
 	}
+}
+
+@end
+
+@interface SmallBasicWindow : NSWindow
+@end
+
+@implementation SmallBasicWindow {
+	SmallBasic::Platform *_platform;
+}
+
+- (instancetype)initWithFrame:(NSRect)frame platform:(SmallBasic::Platform *)platform
+	context:(CGContextRef *)context
+{
+	self = [super initWithContentRect:frame styleMask:(NSWindowStyleMaskTitled |
+		NSWindowStyleMaskClosable) backing:NSBackingStoreBuffered defer:YES];
+	if (self != nil) {
+		_platform = platform;
+		self.contentView = [[SmallBasicView alloc] initWithFrame:frame context:context];
+		self.contentView.wantsLayer = YES;
+		self.title = @"SmallBasic";
+		[self makeKeyAndOrderFront:nil];
+		[self makeFirstResponder:self.contentView];
+		NSTrackingAreaOptions options = (NSTrackingActiveAlways | NSTrackingInVisibleRect |  
+			NSTrackingMouseEnteredAndExited | NSTrackingMouseMoved);
+		NSTrackingArea *trackingArea = [[NSTrackingArea alloc]
+			initWithRect:[self.contentView bounds] options:options owner:self
+			userInfo:nil];
+		[self.contentView addTrackingArea:trackingArea];
+	}
+	return self;
+}
+
+- (void)mouseMoved:(NSEvent *)event {
+	if (_platform != nullptr && _platform->OnMouseMove != NULL) {
+		NSPoint point = [NSEvent mouseLocation];
+		_platform->OnMouseMove(point.x, point.y);
+	}
+	[super mouseMoved:event];
+}
+
+- (void)mouseDown:(NSEvent *)event {
+	if (_platform != nullptr && _platform->OnMouseDown != NULL) {
+		_platform->OnMouseDown();
+	}
+	[super mouseDown:event];
+}
+
+- (void)mouseUp:(NSEvent *)event {
+	if (_platform != nullptr && _platform->OnMouseUp != NULL) {
+		_platform->OnMouseUp();
+	}
+	[super mouseUp:event];
+}
+
+- (void)keyDown:(NSEvent *)event {
+	if (_platform != nullptr && _platform->OnKeyDown != NULL) {
+		NSString *key = event.characters;
+		_platform->OnKeyDown(NSStringToWString(key));
+	}
+	[super keyDown:event];
+}
+
+- (void)keyUp:(NSEvent *)event {
+	if (_platform != nullptr && _platform->OnMouseUp != NULL) {
+		NSString *key = event.characters;
+		_platform->OnKeyUp(NSStringToWString(key));
+	}
+	[super keyUp:event];
 }
 
 @end
@@ -62,11 +141,17 @@ namespace SmallBasic {
 			CGContextRelease(_context);
 
 			// Set properties on new context
-			CGContextSetFillColorWithColor(_context, _fillColor);
-			CGContextSetStrokeColorWithColor(_context, _strokeColor);
 			CGContextSetLineWidth(_context, _strokeWidth);
 		}
 		_context = newContext;
+	}
+
+	void Platform::_PrepareFill() {
+		CGContextSetFillColorWithColor(_context, _fillColor);
+	}
+
+	void Platform::_PrepareStroke() {
+		CGContextSetStrokeColorWithColor(_context, _strokeColor);
 	}
 
 	void Platform::_EnsureContext() {
@@ -91,15 +176,8 @@ namespace SmallBasic {
 			[app setActivationPolicy:NSApplicationActivationPolicyRegular];
 
 			NSRect frame = NSMakeRect(0, 0, INITIAL_WIDTH, INITIAL_HEIGHT);
-			_window = [[NSWindow alloc] initWithContentRect:frame
-				styleMask:(NSWindowStyleMaskTitled | NSWindowStyleMaskClosable)
-				backing:NSBackingStoreBuffered defer:YES];
-			_window.contentView = [[SmallBasicView alloc] initWithFrame:frame
-				context:&_context];
-			//[_window cascadeTopLeftFromPoint:NSMakePoint(10, 10)];
-			_window.contentView.wantsLayer = YES;
-			_window.title = @"SmallBasic";
-			[_window makeKeyAndOrderFront:nil];
+			_window = [[SmallBasicWindow alloc] initWithFrame:frame
+				platform:this context:&_context];
 
 			[[NSNotificationCenter defaultCenter] addObserver:app
 				selector:@selector(terminate:) name:NSWindowWillCloseNotification
@@ -117,26 +195,22 @@ namespace SmallBasic {
 		}
 	}
 
-	void Platform::_SetColor(Color const& color, void(*setter)(CGContextRef, CGColorRef),
-		CGColorRef *storedColor)
-	{
+	void Platform::_SetColor(Color const& color, CGColorRef *storedColor) {
 		_EnsureContext();
-		CGFloat comps[] = { (CGFloat)color.r / 255.0, (CGFloat)color.g / 255.0,
-			(CGFloat)color.b / 255.0, 1.0 };
-		CGColorRef cgColor = CGColorCreate(_colorSpace, comps);
+		CGColorRef cgColor = CGColorCreateGenericRGB((CGFloat)color.r / 255.f,
+			(CGFloat)color.g / 255.f, (CGFloat)color.b / 255.f, 1.0);
 		if (*storedColor != NULL) {
 			CGColorRelease(*storedColor);
 		}
 		*storedColor = cgColor;
-		setter(_context, cgColor);
 	}	
 
 	void Platform::SetFillColor(Color const& color) {
-		_SetColor(color, CGContextSetFillColorWithColor, &_fillColor);
+		_SetColor(color, &_fillColor);
 	}
 
 	void Platform::SetStrokeColor(Color const& color) {
-		_SetColor(color, CGContextSetStrokeColorWithColor, &_strokeColor);
+		_SetColor(color, &_strokeColor);
 	}
 
 	void Platform::SetStrokeWidth(Number strokeWidth) {
@@ -168,10 +242,63 @@ namespace SmallBasic {
 		_EnsureContext();
 		CGRect rect = CGRectMake(x, y, width, height);
 		if (fill) {
+			_PrepareFill();
 			CGContextFillRect(_context, rect);
 		}
 		else {
+			_PrepareStroke();
 			CGContextStrokeRect(_context, rect);
+		}
+		_GetWindow().contentView.needsDisplay = YES;
+	}
+
+	Color Platform::GetPixel(Number x, Number y) {
+		size_t height = CGBitmapContextGetHeight(_context);
+		size_t width = CGBitmapContextGetWidth(_context);
+		if ((size_t)x >= width || (size_t)y >= height) {
+			return Color(L"white");
+		}
+    size_t bytesPerRow = CGBitmapContextGetBytesPerRow(_context);
+		uint8_t *imageData = (uint8_t *)CGBitmapContextGetData(_context);
+		imageData += bytesPerRow * height * (size_t)x + (size_t)y;
+		return Color(imageData[0], imageData[1], imageData[2]);
+	}
+
+	void Platform::ClearWindow() {
+		if (_context != NULL) {
+			CGContextClearRect(_context, CGRectMake(0, 0, CGBitmapContextGetWidth(_context),
+				CGBitmapContextGetHeight(_context)));
+		}
+	}
+
+	void Platform::DrawEllipse(Number x, Number y, Number width, Number height, bool fill) {
+		_EnsureContext();
+		CGRect rect = CGRectMake(x, y, width, height);
+		if (fill) {
+			_PrepareFill();
+			CGContextFillEllipseInRect(_context, rect);
+		}
+		else {
+			_PrepareStroke();
+			CGContextStrokeEllipseInRect(_context, rect);
+		}
+		_GetWindow().contentView.needsDisplay = YES;
+	}
+
+	void Platform::DrawTriangle(Number x1, Number y1, Number x2, Number y2,
+		Number x3, Number y3, bool fill)
+	{
+		CGPoint lines[3] = { CGPointMake(x1, y1), CGPointMake(x2, y2),
+			CGPointMake(x3, y3) };
+		CGContextAddLines(_context, lines, 3);
+		CGContextClosePath(_context);
+		if (fill) {
+			_PrepareFill();
+			CGContextFillPath(_context);
+		}
+		else {
+			_PrepareStroke();
+			CGContextStrokePath(_context);
 		}
 		_GetWindow().contentView.needsDisplay = YES;
 	}
