@@ -78,41 +78,49 @@ std::wstring NSStringToWString(NSString *str) {
 }
 
 - (void)mouseMoved:(NSEvent *)event {
-	if (_platform != nullptr && _platform->OnMouseMove != NULL) {
+	if (_platform != nullptr && _platform->onMouseMove != NULL) {
 		NSPoint point = [NSEvent mouseLocation];
-		_platform->OnMouseMove(point.x, point.y);
+		_platform->onMouseMove(point.x, point.y);
 	}
 	[super mouseMoved:event];
 }
 
 - (void)mouseDown:(NSEvent *)event {
-	if (_platform != nullptr && _platform->OnMouseDown != NULL) {
-		_platform->OnMouseDown();
+	if (_platform != nullptr && _platform->onMouseDown != NULL) {
+		_platform->onMouseDown();
 	}
 	[super mouseDown:event];
 }
 
 - (void)mouseUp:(NSEvent *)event {
-	if (_platform != nullptr && _platform->OnMouseUp != NULL) {
-		_platform->OnMouseUp();
+	if (_platform != nullptr && _platform->onMouseUp != NULL) {
+		_platform->onMouseUp();
 	}
 	[super mouseUp:event];
 }
 
 - (void)keyDown:(NSEvent *)event {
-	if (_platform != nullptr && _platform->OnKeyDown != NULL) {
+	if (_platform != nullptr && !_platform->ignoresKeyEvents &&
+		_platform->onKeyDown != NULL)
+	{
 		NSString *key = event.characters;
-		_platform->OnKeyDown(NSStringToWString(key));
+		_platform->onKeyDown(NSStringToWString(key));
 	}
 	[super keyDown:event];
 }
 
 - (void)keyUp:(NSEvent *)event {
-	if (_platform != nullptr && _platform->OnMouseUp != NULL) {
+	if (_platform != nullptr && !_platform->ignoresKeyEvents &&
+		_platform->onMouseUp != NULL)
+	{
 		NSString *key = event.characters;
-		_platform->OnKeyUp(NSStringToWString(key));
+		_platform->onKeyUp(NSStringToWString(key));
 	}
 	[super keyUp:event];
+}
+
+- (BOOL)performKeyEquivalent:(NSEvent *)event {
+	return [super performKeyEquivalent:event] || !_platform->ignoresKeyEvents;
 }
 
 @end

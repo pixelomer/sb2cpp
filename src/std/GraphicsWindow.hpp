@@ -62,11 +62,11 @@ namespace SmallBasic {
 		static Platform *_GetPlatform() {
 			if (_platform == nullptr) {
 				_platform = new Platform();
-				_platform->OnKeyDown = _OnKeyDown;
-				_platform->OnKeyUp = _OnKeyUp;
-				_platform->OnMouseDown = _OnMouseDown;
-				_platform->OnMouseUp = _OnMouseUp;
-				_platform->OnMouseMove = _OnMouseMove;
+				_platform->onKeyDown = _OnKeyDown;
+				_platform->onKeyUp = _OnKeyUp;
+				_platform->onMouseDown = _OnMouseDown;
+				_platform->onMouseUp = _OnMouseUp;
+				_platform->onMouseMove = _OnMouseMove;
 				RunLoop::_PrepareRunLoop(_RunLoop);
 			}
 			return _platform;
@@ -191,12 +191,14 @@ namespace SmallBasic {
 		// - GraphicsWindow.KeyDown
 		// Raises an event when a key is pressed down on the keyboard.
 		static void _SetKeyDown(void (*keyDown)()) {
+			_platform->ignoresKeyEvents = false;
 			_handleKeyDown = keyDown;
 		}
 
 		// - GraphicsWindow.KeyUp
 		// Raises an event when a key is released on the keyboard.
 		static void _SetKeyUp(void (*keyUp)()) {
+			_platform->ignoresKeyEvents = false;
 			_handleKeyUp = keyUp;
 		}
 

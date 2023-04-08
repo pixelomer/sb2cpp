@@ -28,11 +28,12 @@ namespace SmallBasic {
 #endif
 		void _Initialize();
 	public:
-		void (*OnKeyDown)(String const& key);
-		void (*OnKeyUp)(String const& key);
-		void (*OnMouseDown)();
-		void (*OnMouseUp)();
-		void (*OnMouseMove)(Number x, Number y);
+		bool ignoresKeyEvents = true;
+		void (*onKeyDown)(String const& key);
+		void (*onKeyUp)(String const& key);
+		void (*onMouseDown)();
+		void (*onMouseUp)();
+		void (*onMouseMove)(Number x, Number y);
 
 		Platform() {
 			_Initialize();
