@@ -29,8 +29,7 @@
 - (void)drawRect:(NSRect)dirtyRect {
 	if (*_context != NULL) {
 		CGImageRef image = CGBitmapContextCreateImage(*_context);
-		CGContextRef context = (CGContextRef)[[NSGraphicsContext currentContext]
-			graphicsPort];
+		CGContextRef context = [[NSGraphicsContext currentContext] CGContext];
 		CGContextDrawImage(context, CGRectMake(0, 0, CGImageGetWidth(image),
 			CGImageGetHeight(image)), image);
 		CGImageRelease(image);
@@ -88,9 +87,9 @@ namespace SmallBasic {
 			[app setActivationPolicy:NSApplicationActivationPolicyRegular];
 
 			NSRect frame = NSMakeRect(0, 0, INITIAL_WIDTH, INITIAL_HEIGHT);
-			int mask = NSTitledWindowMask | NSClosableWindowMask;
 			_window = [[NSWindow alloc] initWithContentRect:frame
-				styleMask:mask backing:NSBackingStoreBuffered defer:YES];
+				styleMask:(NSWindowStyleMaskTitled | NSWindowStyleMaskClosable)
+				backing:NSBackingStoreBuffered defer:YES];
 			_window.contentView = [[SmallBasicView alloc] initWithFrame:frame
 				context:&_drawContext];
 			//[_window cascadeTopLeftFromPoint:NSMakePoint(10, 10)];

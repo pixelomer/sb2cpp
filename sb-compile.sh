@@ -14,5 +14,4 @@ set -ex
 
 ./sb2cpp "${input}" > "${input}.cpp"
 c++ --std=c++17 -lm -ObjC++ -framework AppKit -flto -mmacosx-version-min=10.15 \
-	-g -fobjc-arc "${input}.cpp" -Wall -Wno-deprecated-declarations \
-	-fsanitize=address -o "${output}"
+	-fobjc-arc "${input}.cpp" -Wall -O3 -o "${output}"
