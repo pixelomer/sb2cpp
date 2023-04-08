@@ -142,9 +142,16 @@ namespace SmallBasic {
 			return _lastKey;
 		}
 
-		// Operations
+		// - GraphicsWindow.Show()
+		// Shows the Graphics window to enable interactions with it.
 		static void Show() {
 			_GetPlatform()->SetWindowVisible(true);
+		}
+
+		// - GraphicsWindow.Hide()
+		// Hides the Graphics window.
+		static void Hide() {
+			_GetPlatform()->SetWindowVisible(false);
 		}
 
 		// - GraphicsWindow.DrawRectangle(x, y, width, height)
