@@ -146,8 +146,8 @@ namespace SmallBasic {
 	}
 
 	void Platform::SetStrokeWidth(Number strokeWidth) {
-		EnsureContext(&_drawContext)
-		CGContextSetLineWidth(&_drawContext, strokeWidth);
+		EnsureContext(&_drawContext);
+		CGContextSetLineWidth(_drawContext, strokeWidth);
 	}
 }
 
