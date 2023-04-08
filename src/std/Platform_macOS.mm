@@ -150,6 +150,15 @@ namespace SmallBasic {
 		_GetWindow();
 	}
 
+	void Platform::SetCanResize(bool canResize) {
+		if (canResize) {
+			_GetWindow().styleMask |= NSWindowStyleMaskResizable;
+		}
+		else {
+			_GetWindow().styleMask &= ~NSWindowStyleMaskResizable;
+		}
+	}
+
 	void Platform::SetBackgroundColor(Color const& color) {
 		_GetWindow().contentView.layer.backgroundColor = [[NSColor colorWithCalibratedRed:color.r
 			green:color.g blue:color.b alpha:1.0] CGColor];
