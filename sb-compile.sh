@@ -13,5 +13,6 @@ fi
 set -ex
 
 ./sb2cpp "${input}" > "${input}.cpp"
-c++ -O3 --std=c++17 -lm `pkg-config sdl2 --cflags --libs` "${input}.cpp" \
-	-o "${output}"
+c++ --std=c++17 -lm -ObjC++ -framework AppKit -flto -mmacosx-version-min=10.15 \
+	-g -fobjc-arc "${input}.cpp" -Wall -Wno-deprecated-declarations \
+	-fsanitize=address -o "${output}"

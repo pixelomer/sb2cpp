@@ -22,25 +22,26 @@ namespace SmallBasic {
 			name = color.name;
 			return *this;
 		}
-		static Color _FromName(String const& name) {
-			String lowercase;
-			std::transform(name.begin(), name.end(), lowercase.begin(), std::towlower);
-			if (_colors.count(lowercase) != 0) {
-				return Color(_colors[lowercase], name);
+		Color(String name) {
+			this->name = name;
+			std::transform(name.begin(), name.end(), name.begin(), std::towlower);
+			if (_colors.count(name) != 0) {
+				this->r = _colors[name][0];
+				this->g = _colors[name][1];
+				this->b = _colors[name][2];
 			}
 			else if (name.length() > 0 && name[0] == L'#') {
 				if (name.length() == 4) {
-					return Color(std::stoi(name.substr(1, 1), nullptr, 16) << 4,
-						std::stoi(name.substr(2, 1), nullptr, 16) << 4,
-						std::stoi(name.substr(3, 1), nullptr, 16) << 4, name);
+					this->r = std::stoi(name.substr(1, 1), nullptr, 16) << 4;
+					this->g = std::stoi(name.substr(2, 1), nullptr, 16) << 4;
+					this->b = std::stoi(name.substr(3, 1), nullptr, 16) << 4;
 				}
 				else if (name.length() == 7) {
-					return Color(std::stoi(name.substr(1, 2), nullptr, 16),
-						std::stoi(name.substr(3, 2), nullptr, 16),
-						std::stoi(name.substr(5, 2), nullptr, 16), name);
+					this->r = std::stoi(name.substr(1, 2), nullptr, 16);
+					this->g = std::stoi(name.substr(3, 2), nullptr, 16);
+					this->b = std::stoi(name.substr(5, 2), nullptr, 16);
 				}
 			}
-			return Color(0, 0, 0, name);
 		}
 	};
 	std::map<String, std::vector<uint8_t>> Color::_colors = {

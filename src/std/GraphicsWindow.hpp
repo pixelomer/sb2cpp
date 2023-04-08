@@ -2,114 +2,119 @@
 #define _SMALLBASIC_GRAPHICSWINDOW_H
 
 #include "Mixed.hpp"
-#include <SDL2/SDL.h>
+#include "Platform.hpp"
 #include "RunLoop.hpp"
 #include "Color.hpp"
 
 namespace SmallBasic {
 	class GraphicsWindow {
 	private:
-		static SDL_Window *_window;
-		static SDL_Renderer *_renderer;
-		static Color _background;
+		static Platform *_platform;
+		static Color _backgroundColor;
 		static Color _brushColor;
-
-		static std::vector<char> WStringToBytes(std::wstring const& str) {
-			std::mbstate_t state = std::mbstate_t();
-			const wchar_t *str_pt = str.c_str();
-			std::size_t len = 1 + std::wcsrtombs(nullptr, &str_pt, 0, &state);
-			std::vector<char> bytes(len);
-			std::wcsrtombs(&bytes[0], &str_pt, bytes.size(), &state);
-			return bytes;
-		}
+		static Color _penColor;
+		static Number _penWidth;
+		static String _title;
+		static bool _canResize;
+		
 		static void _RunLoop() {
-			bool close = false;
-			while (!close) {
-				SDL_Event event;
-
-				// Events management
-				while (SDL_PollEvent(&event)) {
-					switch (event.type) {
-						case SDL_QUIT:
-							close = true;
-							break;
-					}
-				}
-			}
+			_platform->Run();
 		}
-		static SDL_Window *_GetWindow() {
-			if (_window == NULL) {
-				SDL_Init(SDL_INIT_AUDIO);
-				_window = SDL_CreateWindow("Title", SDL_WINDOWPOS_CENTERED,
-					SDL_WINDOWPOS_CENTERED, 640, 480, 0);
+		static Platform *_GetPlatform() {
+			if (_platform == nullptr) {
+				_platform = new Platform();
 				RunLoop::_PrepareRunLoop(_RunLoop);
 			}
-			return _window;
-		}
-		static SDL_Renderer *_GetRenderer() {
-			if (_renderer == NULL) {
-				_renderer = SDL_CreateRenderer(_GetWindow(), -1, 0);
-			}
-			return _renderer;
+			return _platform;
 		}
 	public:
-		// Properties
-		static void _SetBackgroundColor(String const& colorName) {
-			_background = Color::_FromName(colorName);
+		// - GraphicsWindow.BackgroundColor
+		// Gets or sets the Background color of the Graphics Window.
+		static void _SetBackgroundColor(String const& color) {
+			_backgroundColor = Color(color);
+			_GetPlatform()->SetBackgroundColor(_backgroundColor);
 		}
-		static void _SetBrushColor(String const& colorName) {
-			_brushColor = Color::_FromName(colorName);
+		static Mixed _GetBackgroundColor() {
+			return _backgroundColor.name;
 		}
-		static void _SetCanResize(Mixed const& canResize) {
-			SDL_SetWindowResizable(_GetWindow(), (bool)canResize ? SDL_TRUE
-				: SDL_FALSE);
+
+		// - GraphicsWindow.BrushColor
+		// Gets or sets the brush color to be used to fill shapes drawn
+		// on the Graphics Window.
+		static void _SetBrushColor(String const& brushColor) {
+			_brushColor = Color(brushColor);
+			_GetPlatform()->SetFillColor(_brushColor);
 		}
-		static Mixed _GetHeight() {
-			int oldWidth, oldHeight;
-			SDL_GetWindowSize(_GetWindow(), &oldWidth, &oldHeight);
-			return oldHeight;
+		static Mixed _GetBrushColor() {
+			return _brushColor.name;
 		}
-		static Mixed _GetWidth() {
-			int oldWidth, oldHeight;
-			SDL_GetWindowSize(_GetWindow(), &oldWidth, &oldHeight);
-			return oldWidth;
+
+		// - GraphicsWindow.CanResize
+		// Specifies whether or not the Graphics Window can be resized
+		// by the user. 
+		static void _SetCanResize(bool canResize) {
+			_canResize = canResize;
+			_GetPlatform()->SetCanResize(canResize);
 		}
-		static void _SetHeight(Number height) {
-			SDL_SetWindowSize(_GetWindow(), (int)_GetWidth().GetNumber(), (int)height);
+		static Mixed _GetCanResize() {
+			return _canResize;
 		}
-		static void _SetWidth(Number width) {
-			SDL_SetWindowSize(_GetWindow(), (int)width, (int)_GetHeight().GetNumber());
+
+		// - GraphicsWindow.Title
+		// Gets or sets the title for the graphics window.
+		static void _SetTitle(String const& title) {
+			_title = title;
+			_GetPlatform()->SetTitle(title);
 		}
-		static void _SetTitle(String const& text) {
-			SDL_SetWindowTitle(_GetWindow(), &WStringToBytes(text)[0]);
+		static Mixed _GetTitle() {
+			return _title;
+		}
+		
+		// - GraphicsWindow.PenWidth
+		// Gets or sets the width of the pen used to draw shapes on the
+		// Graphics Window.
+		static void _SetPenWidth(Number penWidth) {
+			_penWidth = penWidth;
+			_GetPlatform()->SetStrokeWidth(penWidth);
+		}
+		static Mixed _GetPenWidth() {
+			return _penWidth;
+		}
+		
+		// - GraphicsWindow.PenColor
+		// Gets or sets the color of the pen used to draw shapes on the
+		// Graphics Window. 
+		static void _SetPenColor(Color const& penColor) {
+			_penColor = Color(penColor);
+			_GetPlatform()->SetStrokeColor(_penColor);
+		}
+		static Mixed _GetPenColor() {
+			return _penColor.name;
 		}
 
 		// Operations
 		static void Show() {
-			SDL_ShowWindow(_GetWindow());
-		}
-		static void Hide() {
-			SDL_HideWindow(_GetWindow());
+			_GetPlatform()->SetWindowVisible(true);
 		}
 		static void DrawRectangle(Number x, Number y, Number width, Number height) {
-
+			_GetPlatform()->DrawRectangle(x, y, width, height, false);
 		}
 		static void FillRectangle(Number x, Number y, Number width, Number height) {
-
+			_GetPlatform()->DrawRectangle(x, y, width, height, true);
 		}
 
 		// Events
 		static void _SetKeyDown(void(*callback)()) {
 
 		}
-		static void ShowMessage(String const& text, String const& title) {
-			SDL_ShowSimpleMessageBox(0, &WStringToBytes(title)[0],
-				&WStringToBytes(text)[0], _GetWindow());
-		}
 	};
 
-	SDL_Window *GraphicsWindow::_window = NULL;
-	SDL_Renderer *GraphicsWindow::_renderer = NULL;
+	Platform *GraphicsWindow::_platform = NULL;
+	Color GraphicsWindow::_backgroundColor = Color(L"white");
+	Color GraphicsWindow::_brushColor = Color(L"black");
+	Color GraphicsWindow::_penColor = Color(L"black");
+	String GraphicsWindow::_title = L"";
+	bool GraphicsWindow::_canResize = false;
 }
 
 #endif

@@ -6,6 +6,7 @@
 !src/std/
 !src/std/*.cpp
 !src/std/*.hpp
+!src/std/*.mm
 !.gitignore
 !.gitattributes
 !README.md

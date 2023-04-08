@@ -34,15 +34,13 @@ namespace SmallBasic {
 			if (pos == String::npos) return 0;
 			return pos + 1;
 		}
-		static Mixed ConvertToLowerCase(String const& str) {
-			String newString(str.length(), 0);
-			std::transform(str.begin(), str.end(), newString.begin(), std::towlower);
-			return newString;
+		static Mixed ConvertToLowerCase(String str) {
+			std::transform(str.begin(), str.end(), str.begin(), std::towlower);
+			return str;
 		}
-		static Mixed ConvertToUpperCase(String const& str) {
-			String newString(str.length(), 0);
-			std::transform(str.begin(), str.end(), newString.begin(), std::towupper);
-			return newString;
+		static Mixed ConvertToUpperCase(String str) {
+			std::transform(str.begin(), str.end(), str.begin(), std::towupper);
+			return str;
 		}
 		static Mixed GetCharacter(Number characterCode) {
 			String str(1, characterCode);
