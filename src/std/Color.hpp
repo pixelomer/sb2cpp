@@ -53,7 +53,7 @@ namespace SmallBasic {
 	std::map<String, std::vector<uint8_t>> Color::_colors = {
 		{ L"black", { 0, 0, 0 } },
 		{ L"darkblue", { 0, 0, 128 } },
-		{ L"darkgreen", { 64, 128, 64 } },
+		{ L"darkgreen", { 0, 128, 0 } },
 		{ L"darkcyan", { 64, 128, 128 } },
 		{ L"darkred", { 128, 0, 0 } },
 		{ L"darkmagenta", { 128, 0, 128 } },
@@ -61,7 +61,7 @@ namespace SmallBasic {
 		{ L"gray", { 192, 192, 192 } },
 		{ L"darkgray", { 128, 128, 128 } },
 		{ L"blue", { 0, 0, 255 } },
-		{ L"green", { 128, 255, 128 } },
+		{ L"green", { 0, 255, 0 } },
 		{ L"cyan", { 128, 255, 255 } },
 		{ L"red", { 255, 0, 0 } },
 		{ L"magenta", { 255, 0, 255 } },
