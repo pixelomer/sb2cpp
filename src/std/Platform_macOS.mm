@@ -168,7 +168,6 @@ namespace SmallBasic {
 
 	void Platform::_Initialize() {
 		_colorSpace = CGColorSpaceCreateDeviceRGB();
-		
 	}
 
 	void Platform::SetTitle(String const& title) {
