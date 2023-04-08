@@ -43,6 +43,12 @@ namespace SmallBasic {
 				}
 			}
 		}
+		Color(uint8_t r, uint8_t g, uint8_t b): r(r), g(g), b(b) {
+			wchar_t str[8];
+			std::swprintf(str, 8, L"#%02hhX%02hhX%02hhX", r, g, b);
+			str[7] = L'\0';
+			name = str;
+		}
 	};
 	std::map<String, std::vector<uint8_t>> Color::_colors = {
 		{ L"black", { 0, 0, 0 } },
