@@ -6,6 +6,7 @@
 #include <cmath>
 #include <tuple>
 #include <map>
+#include <clocale>
 #include <set>
 
 #ifdef __INTELLISENSE__
@@ -527,7 +528,20 @@ std::vector<std::wstring> tokenize(std::wstring const& source) {
 				&& !iswspace(source[i]));
 			i--;
 		}
-		tokens.push_back(token);
+		// Check if the token is a keyword. If it is, use the correct casing.
+		auto result = std::find_if(keywords.cbegin(), keywords.cend(),
+			[token](std::wstring const& keyword) {
+				return std::equal(keyword.begin(), keyword.end(), token.begin(),
+				token.end(), [](wchar_t a, wchar_t b) { 
+					return std::towlower(a) == std::towlower(b); 
+				});
+			});
+		if (result != keywords.cend()) {
+			tokens.push_back(*result);
+		}
+		else {
+			tokens.push_back(token);
+		}
 		token.clear();
 	}
 	return tokens;
@@ -804,6 +818,7 @@ void sb2cpp(std::wstring const& source) {
 }
 
 int main(int argc, char **argv) {
+	std::setlocale(LC_ALL, "C");
 	if (argc < 2) {
 		std::cerr << "Usage: " << argv[0] << " file.sb" << std::endl;
 		return EXIT_FAILURE;
