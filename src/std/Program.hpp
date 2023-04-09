@@ -22,6 +22,7 @@ namespace SmallBasic {
 			throw std::runtime_error("Not implemented");
 		}
 		static void Delay(Number milliseconds) {
+			//FIXME: GUI needs to be interactive during Delay()
 			std::this_thread::sleep_for(std::chrono::milliseconds(
 				(long long)milliseconds));
 		}
