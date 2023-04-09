@@ -158,7 +158,7 @@ namespace SmallBasic {
 		}
 
 		Mixed operator+(Mixed const& b) {
-			if (IsNumber() || b.IsNumber()) {
+			if (IsNumber() && b.IsNumber()) {
 				return GetNumber() + b.GetNumber();
 			}
 			return GetString() + b.GetString();
