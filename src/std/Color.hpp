@@ -13,6 +13,12 @@ namespace SmallBasic {
 		Color(std::vector<uint8_t> &comps, String const& name): r(comps[0]), g(comps[1]),
 			b(comps[2]) {}
 	public:
+		static String _NameFor(uint8_t r, uint8_t g, uint8_t b) {
+			wchar_t str[8];
+			std::swprintf(str, 8, L"#%02hhX%02hhX%02hhX", r, g, b);
+			str[7] = L'\0';
+			return str;
+		}
 		uint8_t r, g, b;
 		String name;
 		Color &operator=(Color const& color) {
@@ -44,10 +50,7 @@ namespace SmallBasic {
 			}
 		}
 		Color(uint8_t r, uint8_t g, uint8_t b): r(r), g(g), b(b) {
-			wchar_t str[8];
-			std::swprintf(str, 8, L"#%02hhX%02hhX%02hhX", r, g, b);
-			str[7] = L'\0';
-			name = str;
+			name = _NameFor(r, g, b);
 		}
 	};
 	std::map<String, std::vector<uint8_t>> Color::_colors = {

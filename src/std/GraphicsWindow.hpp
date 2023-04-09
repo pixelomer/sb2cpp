@@ -219,6 +219,10 @@ namespace SmallBasic {
 		static void _SetMouseMove(void (*mouseMove)()) {
 			_handleMouseMove = mouseMove;
 		}
+
+		static Mixed GetColorFromRGB(Number r, Number g, Number b) {
+			return Color::_NameFor(r, g, b);
+		}
 	};
 
 	Platform *GraphicsWindow::_platform = NULL;
