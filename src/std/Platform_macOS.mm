@@ -130,8 +130,8 @@ namespace SmallBasic {
 		size_t width = (size_t)std::ceill(ldWidth);
 		size_t height = (size_t)std::ceill(ldHeight);
 		if (_context != NULL) {
-			size_t currentWidth = CGBitmapContextGetHeight(_context);
-			size_t currentHeight = CGBitmapContextGetWidth(_context);
+			size_t currentWidth = CGBitmapContextGetWidth(_context);
+			size_t currentHeight = CGBitmapContextGetHeight(_context);
 			if (width <= currentWidth && height <= currentHeight) {
 				return;
 			}
@@ -149,7 +149,7 @@ namespace SmallBasic {
 			CGContextRelease(_context);
 
 			// Set properties on new context
-			CGContextSetLineWidth(_context, _strokeWidth);
+			CGContextSetLineWidth(newContext, _strokeWidth);
 		}
 		_context = newContext;
 	}
@@ -308,6 +308,26 @@ namespace SmallBasic {
 			CGContextStrokePath(_context);
 		}
 		_GetWindow().contentView.needsDisplay = YES;
+	}
+
+	void Platform::SetHeight(Number height) {
+		NSRect frame = _GetWindow().frame;
+		frame.size.height = (CGFloat)height;
+		[_GetWindow() setFrame:frame display:YES animate:NO];
+	}
+
+	Number Platform::GetHeight() {
+		return _GetWindow().frame.size.height;
+	}
+
+	void Platform::SetWidth(Number width) {
+		NSRect frame = _GetWindow().frame;
+		frame.size.width = (CGFloat)width;
+		[_GetWindow() setFrame:frame display:YES animate:NO];
+	}
+
+	Number Platform::GetWidth() {
+		return _GetWindow().frame.size.width;
 	}
 }
 

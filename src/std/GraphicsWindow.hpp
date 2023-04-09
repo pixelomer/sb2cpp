@@ -113,6 +113,24 @@ namespace SmallBasic {
 		static Mixed _GetTitle() {
 			return _title;
 		}
+
+		// - GraphicsWindow.Height
+		// Gets or sets the Height of the graphics window.
+		static void _SetHeight(Number height) {
+			_GetPlatform()->SetHeight(height);
+		}
+		static Number _GetHeight() {
+			return _GetPlatform()->GetHeight();
+		}
+
+		// - GraphicsWindow.Width
+		// Gets or sets the Width of the graphics window.
+		static void _SetWidth(Number width) {
+			_GetPlatform()->SetWidth(width);
+		}
+		static Number _GetWidth() {
+			return _GetPlatform()->GetWidth();
+		}
 		
 		// - GraphicsWindow.PenWidth
 		// Gets or sets the width of the pen used to draw shapes on the
