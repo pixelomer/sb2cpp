@@ -11,8 +11,6 @@
 #include <vector>
 #include <string>
 
-//FIXME: The way arrays works is very inefficient and unnecessarily complex
-
 namespace SmallBasic {
 	[[ noreturn ]] void Die(std::string message) {
 		std::cerr << "*** SmallBasic runtime error: " << message << std::endl;
@@ -23,12 +21,61 @@ namespace SmallBasic {
 	public:
 		typedef long double Number;
 		typedef std::wstring String;
-		typedef std::map<std::vector<Mixed>, Mixed> Array;
+		typedef std::map<Mixed, Mixed> Array;
 	private:
-		typedef std::variant<std::nullptr_t, Number, String, Array> _Mixed;
-		std::shared_ptr<_Mixed> _variant;
-		std::vector<Mixed> _index;
-		static Array _nullArray;
+		enum MixedType {
+			MIXED_UNDEFINED,
+			MIXED_NUMBER,
+			MIXED_STRING,
+			MIXED_ARRAY
+		};
+		Number _number = 0.L;
+		String _string = L"";
+		Array _array;
+		enum MixedType _type = MIXED_UNDEFINED;
+		static Array ParseArray(String const& str) {
+			Array array;
+			size_t i = 0;
+			while (i < str.length()) {
+				size_t start = i;
+				i = str.find(L'=', start);
+				if (i == String::npos) break;
+				Mixed index = str.substr(start, i-start);
+				i++;
+				if (i >= str.length()) break;
+				start = i;
+				i = str.find(L';', start);
+				if (i == String::npos) break;
+				Mixed value = str.substr(start, i-start);
+				array[index] = value;
+				i++;
+			}
+			return array;
+		}
+
+		static Array CopyArray(Array const& old) {
+			Array copy;
+			for (auto pair : old) {
+				if (pair.second.IsArray()) {
+					copy[pair.first] = CopyArray(pair.second._array);
+				}
+				else {
+					copy[pair.first] = pair.second;
+				}
+			}
+			return copy;
+		}
+
+		Array GetArray() const {
+			if (IsArray()) {
+				return _array;
+			}
+			else if (IsString()) {
+				return ParseArray(_string);
+			}
+			return {};
+		}
+
 		template<typename C>
 		bool Compare(const Mixed &b, C cmp) const {
 			if (IsNumber() || b.IsNumber())
@@ -36,85 +83,22 @@ namespace SmallBasic {
 			else
 				return cmp(GetString(), b.GetString());
 		}
-		bool _IsArray() const { return _variant->index() == 3; }
-		Array &_GetArray() {
-			if (!_IsArray()) {
-				*_variant = Array();
-			}
-			return std::get<Array>(*_variant);
-		}
-		Array &_GetArray() const {
-			if (!_IsArray()) {
-				_nullArray.clear();
-				return _nullArray;
-			}
-			return std::get<Array>(*_variant);
-		}
-		_Mixed &operator*() {
-			if (_index.size() != 0) {
-				return *((_GetArray())[_index]._variant);
-			}
-			else {
-				return *_variant;
-			}
-		}
-		const _Mixed &operator*() const {
-			if (_index.size() != 0) {
-				return *((_GetArray())[_index]._variant);
-			}
-			else {
-				return *_variant;
-			}
-		}
 	public:
-		Mixed() { _variant = std::make_shared<_Mixed>(nullptr); }
-		Mixed(Number val) { _variant = std::make_shared<_Mixed>(val); }
-		Mixed(String const& val) { _variant = std::make_shared<_Mixed>(val); }
-		Mixed(std::string const& val) {
+		Mixed() {}
+		Mixed(String const& value) { *this = value; }
+		Mixed(Number value) { *this = value; }
+		Mixed(Array const& value) { *this = value; }
+		Mixed(Mixed const& value) { *this = value; }
+		Mixed(std::string value) {
 			std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-			String str = converter.from_bytes(val);
-			_variant = std::make_shared<_Mixed>(str);
+			String str = converter.from_bytes(value);
+			*this = str;
 		}
-		Mixed(Mixed const& val, bool copy = true) {
-			if (copy) {
-				_variant = std::make_shared<_Mixed>(nullptr);
-				*this = val;
-			}
-			else {
-				_variant = val._variant;
-				_index = val._index;
-			}
+
+		static Mixed Boolean(bool condition) {
+			return Mixed(condition ? L"True" : L"False");
 		}
-		Mixed operator[](Mixed const& key) {
-			Mixed sub(*this, false);
-			sub._index.push_back(key);
-			return sub;
-		}
-		Mixed &operator=(Mixed const& val) {
-			**this = *val;
-			return *this;
-		}
-		Mixed operator+(const Mixed &b) const {
-			if (IsString() || b.IsString())
-				return Mixed(GetString() + b.GetString());
-			else
-				return Mixed(GetNumber() + b.GetNumber());
-		}
-		Mixed operator-(const Mixed &b) const {
-			return Mixed(GetNumber() - b.GetNumber());
-		}
-		Mixed operator-() const {
-			return Mixed(-GetNumber());
-		}
-		Mixed operator+() const {
-			return Mixed(GetNumber());
-		}
-		Mixed operator/(const Mixed &b) const {
-			return Mixed(GetNumber() / b.GetNumber());
-		}
-		Mixed operator*(const Mixed &b) const {
-			return Mixed(GetNumber() * b.GetNumber());
-		}
+
 		bool operator<(const Mixed &b) const {
 			return Compare(b, std::less{});
 		}
@@ -122,71 +106,154 @@ namespace SmallBasic {
 			return Compare(b, std::greater{});
 		}
 		bool operator==(const Mixed &b) const {
-			return !(*this > b) && !(*this < b);
+			return Compare(b, std::equal_to{});
 		}
-		operator bool() const {
-			if (IsString()) {
-				if (GetString().length() == 5) {
-					String str = GetString();
-					std::transform(str.begin(), str.end(), str.begin(), std::towlower);
-					return str != L"false";
-				}
-				return true;
+		bool operator>=(const Mixed &b) const {
+			return Compare(b, std::greater_equal{});
+		}
+		bool operator<=(const Mixed &b) const {
+			return Compare(b, std::less_equal{});
+		}
+
+		bool HasValue() const { return _type != MIXED_UNDEFINED; }
+		bool IsArray() const { return _type == MIXED_ARRAY; }
+		bool IsNumber() const { return !HasValue() || (_type == MIXED_NUMBER); }
+		bool IsString() const { return !HasValue() || (_type == MIXED_STRING); }
+
+		Mixed &operator=(String const& str) {
+			_string = str;
+			_type = MIXED_STRING;
+			return *this;
+		}
+
+		Mixed &operator=(Array const& array) {
+			_array = CopyArray(array);
+			_type = MIXED_ARRAY;
+			return *this;
+		}
+
+		Mixed &operator=(Number num) {
+			_number = num;
+			_type = MIXED_NUMBER;
+			return *this;
+		}
+
+		Mixed &operator=(Mixed const& mixed) {
+			_type = mixed._type;
+			switch (mixed._type) {
+				case MIXED_ARRAY: *this = mixed._array; break;
+				case MIXED_NUMBER: *this = mixed._number; break;
+				case MIXED_STRING: *this = mixed._string; break;
+				case MIXED_UNDEFINED: break;
 			}
-			else {
-				return GetNumber() != 0;
+			return *this;
+		}
+
+		operator Number() {
+			return GetNumber();
+		}
+
+		operator String() {
+			return GetString();
+		}
+
+		Mixed operator+(Mixed const& b) {
+			if (IsNumber() || b.IsNumber()) {
+				return GetNumber() + b.GetNumber();
 			}
+			return GetString() + b.GetString();
 		}
-		operator Number() const { return GetNumber(); }
-		operator String() const { return GetString(); }
-		bool operator>=(const Mixed &b) const { return !(*this < b); }
-		bool operator<=(const Mixed &b) const { return !(*this > b); }
-		bool operator!=(const Mixed &b) const { return !(*this == b); }
-		bool IsUndefined() const { return (**this).index() == 0; }
-		bool IsNumber() const { return (**this).index() == 1; }
-		bool IsString() const { return (**this).index() == 2; }
-		bool IsArray() const { return (**this).index() == 3; }
-		bool IsArray() { return (**this).index() == 3; }
-		Number GetNumber() const {
-			if (IsNumber())
-				return std::get<Number>(**this);
-			else if (IsString())
-				return std::stold(GetString());
-			return 0.L;
+
+		Mixed operator-(Mixed const& b) {
+			return GetNumber() - b.GetNumber();
 		}
+
+		Mixed operator*(Mixed const& b) {
+			return GetNumber() * b.GetNumber();
+		}
+
+		Mixed operator/(Mixed const& b) {
+			return GetNumber() / b.GetNumber();
+		}
+
+		Mixed operator+() {
+			return GetNumber();
+		}
+
+		Mixed operator-() {
+			return -GetNumber();
+		}
+
+		Mixed &operator[](Mixed const& index) {
+			if (IsNumber()) {
+				_array.clear();
+			}
+			else if (IsString()) {
+				_array = ParseArray(GetString());
+			}
+			_type = MIXED_ARRAY;
+			return _array[index];
+		}
+
 		String GetString() const {
 			if (IsString()) {
-				return std::get<String>(**this);
+				return _string;
 			}
 			std::wstringstream stream;
-			if (IsArray()) {
-				stream << "<array>";
+			if (IsNumber()) {
+				stream << _number;
 			}
-			else if (IsNumber())
-				stream << GetNumber();
+			else if (IsArray()) {
+				for (auto pair : _array) {
+					stream << pair.first.GetString() << L"=";
+					stream << pair.second.GetString() << L";";
+				}
+			}
 			return stream.str();
 		}
-		Array &GetArray() {
-			if (!IsArray()) {
-				**this = Array();
+
+		Number GetNumber() const {
+			if (IsNumber()) {
+				return _number;
 			}
-			return std::get<Array>(**this);
-		}
-		bool ElementExists() {
-			if (!_IsArray()) {
-				Die("Called ElementExists() on variable");
+			else if (IsString()) {
+				try { return std::stold(_string); }
+				catch (...) { return 0.L; }
 			}
-			return _GetArray().count(_index) > 0;
+			return 0.L;
 		}
-		void RemoveElement() {
-			_GetArray().erase(_index);
+
+		Array GetArrayIndices() const {
+			Array indices;
+			Number index = 1;
+			for (auto pair : GetArray()) {
+				indices[index++] = pair.first;
+			}
+			return indices;
+		}
+
+		bool HasElement(Mixed const& index) const {
+			return IsArray() && (_array.count(index) > 0);
+		}
+
+		Number ArrayLength() const {
+			if (IsArray()) {
+				return _array.size();
+			}
+			else {
+				return 0.L;
+			}
+		}
+
+		void RemoveElement(Mixed const& index) {
+			if (IsArray()) {
+				_array.erase(index);
+			}
 		}
 	};
 
 	typedef Mixed::Number Number;
 	typedef Mixed::String String;
-
-	Mixed::Array Mixed::_nullArray = Array();
 }
 
 #endif

@@ -8,24 +8,16 @@ namespace SmallBasic {
 	class Array {
 	public:
 		static Mixed ContainsIndex(Mixed &array, Mixed const& index) {
-			return array[index].ElementExists();
+			return Mixed::Boolean(array.HasElement(index));
 		}
 		static Mixed GetAllIndices(Mixed &array) {
-			Mixed result;
-			Number index = 1;
-			for (auto pair : array.GetArray()) {
-				if (pair.first.size() == 1) {
-					result[index++] = pair.second;
-				}
-			}
-			return result;
+			return array.GetArrayIndices();
 		}
 		static Mixed GetItemCount(Mixed &array) {
-			Mixed indices = GetAllIndices(array);
-			return indices.GetArray().size();
+			return array.ArrayLength();
 		}
 		static Mixed IsArray(Mixed &mixed) {
-			return mixed.IsArray();
+			return Mixed::Boolean(mixed.IsArray());
 		}
 		static void SetValue(Mixed &array, Mixed const& index, Mixed const& value) {
 			array[index] = value;
@@ -34,7 +26,7 @@ namespace SmallBasic {
 			return array[value];
 		}
 		static void RemoveValue(Mixed &array, Mixed const& index) {
-			array[index].RemoveElement();
+			array.RemoveElement(index);
 		}
 	};
 }

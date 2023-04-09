@@ -101,7 +101,7 @@ namespace SmallBasic {
 			_GetPlatform()->SetCanResize(canResize);
 		}
 		static Mixed _GetCanResize() {
-			return _canResize;
+			return Mixed::Boolean(_canResize);
 		}
 
 		// - GraphicsWindow.Title
