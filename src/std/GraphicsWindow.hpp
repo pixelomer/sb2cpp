@@ -184,6 +184,18 @@ namespace SmallBasic {
 			_GetPlatform()->DrawRectangle(x, y, width, height, true);
 		}
 
+		// - GraphicsWindow.DrawEllipse(x, y, width, height)
+		// Draws an ellipse on the screen using the selected Pen.
+		static void DrawEllipse(Number x, Number y, Number width, Number height) {
+			_GetPlatform()->DrawEllipse(x, y, width, height, false);
+		}
+
+		// - GraphicsWindow.FillEllipse(x, y, width, height)
+		// Fills an ellipse on the screen using the selected Brush.
+		static void FillEllipse(Number x, Number y, Number width, Number height) {
+			_GetPlatform()->DrawEllipse(x, y, width, height, true);
+		}
+
 		// - GraphicsWindow.DrawTriangle(x1, y1, x2, y2, x3, y3)
 		// Draws a triangle on the screen using the selected pen.
 		static void DrawTriangle(Number x1, Number y1, Number x2, Number y2, 
