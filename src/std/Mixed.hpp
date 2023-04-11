@@ -29,6 +29,7 @@ namespace SmallBasic {
 			MIXED_STRING,
 			MIXED_ARRAY
 		};
+		Mixed *_lastIndex = NULL;
 		Number _number = 0.L;
 		String _string = L"";
 		Array _array;
@@ -83,8 +84,29 @@ namespace SmallBasic {
 			else
 				return cmp(GetString(), b.GetString());
 		}
+
+		bool _HasElement(Mixed const& index) {
+			return IsArray() && (_array.count(index) > 0);
+		}
+
+		void RemoveEmptyValues() {
+			if (IsArray() && _lastIndex != NULL && _lastIndex->HasValue()) {
+				if (_HasElement(*_lastIndex)) {
+					Mixed &value = _array[*_lastIndex];
+					if (!value.HasValue()) {
+						_array.erase(*_lastIndex);
+						_lastIndex->_type = MIXED_UNDEFINED;
+					}
+				}
+			}
+		}
 	public:
 		Mixed() {}
+		~Mixed() {
+			if (_lastIndex != NULL) {
+				delete _lastIndex;
+			}
+		}
 		Mixed(String const& value) { *this = value; }
 		Mixed(Number value) { *this = value; }
 		Mixed(Array const& value) { *this = value; }
@@ -192,6 +214,11 @@ namespace SmallBasic {
 				_array = ParseArray(GetString());
 			}
 			_type = MIXED_ARRAY;
+			RemoveEmptyValues();
+			if (_lastIndex == NULL) {
+				_lastIndex = new Mixed();
+			}
+			*_lastIndex = index;
 			return _array[index];
 		}
 
@@ -223,21 +250,24 @@ namespace SmallBasic {
 			return 0.L;
 		}
 
-		Array GetArrayIndices() const {
+		Array GetArrayIndices() {
 			Array indices;
 			Number index = 1;
+			RemoveEmptyValues();
 			for (auto pair : GetArray()) {
 				indices[index++] = pair.first;
 			}
 			return indices;
 		}
 
-		bool HasElement(Mixed const& index) const {
-			return IsArray() && (_array.count(index) > 0);
+		bool HasElement(Mixed const& index) {
+			RemoveEmptyValues();
+			return _HasElement(index);
 		}
 
-		Number ArrayLength() const {
+		Number ArrayLength() {
 			if (IsArray()) {
+				RemoveEmptyValues();
 				return _array.size();
 			}
 			else {
