@@ -265,9 +265,9 @@ namespace SmallBasic {
 		if ((size_t)x >= width || (size_t)y >= height) {
 			return Color(L"white");
 		}
-    size_t bytesPerRow = CGBitmapContextGetBytesPerRow(_context);
+		size_t bytesPerRow = CGBitmapContextGetBytesPerRow(_context);
 		uint8_t *imageData = (uint8_t *)CGBitmapContextGetData(_context);
-		imageData += bytesPerRow * height * (size_t)x + (size_t)y;
+		imageData += bytesPerRow * (width * (size_t)y + (size_t)x);
 		return Color(imageData[0], imageData[1], imageData[2]);
 	}
 
