@@ -21,8 +21,6 @@ namespace SmallBasic {
 		static Number _lastMouseY;
 		static String _lastKey;
 
-		static void (*_handleMouseDown)();
-		static void (*_handleMouseUp)();
 		static void (*_handleKeyDown)();
 		static void (*_handleKeyUp)();
 		static void (*_handleMouseMove)();
@@ -46,23 +44,11 @@ namespace SmallBasic {
 				_handleMouseMove();
 			}
 		}
-		static void _OnMouseDown() {
-			if (_handleMouseDown != NULL) {
-				_handleMouseDown();
-			}
-		}
-		static void _OnMouseUp() {
-			if (_handleMouseUp != NULL) {
-				_handleMouseUp();
-			}
-		}
 		static Platform *_GetPlatform() {
 			if (_platform == nullptr) {
 				_platform = Platform::Default();
 				_platform->onKeyDown = _OnKeyDown;
 				_platform->onKeyUp = _OnKeyUp;
-				_platform->onMouseDown = _OnMouseDown;
-				_platform->onMouseUp = _OnMouseUp;
 				_platform->onMouseMove = _OnMouseMove;
 			}
 			return _platform;
@@ -231,13 +217,13 @@ namespace SmallBasic {
 		// - GraphicsWindow.MouseDown
 		// Raises an event when the mouse button is clicked down.
 		static void _SetMouseDown(void (*mouseDown)()) {
-			_handleMouseDown = mouseDown;
+			_GetPlatform()->onMouseDown = mouseDown;
 		}
 
 		// - GraphicsWindow.MouseUp
 		// Raises an event when the mouse button is released.
 		static void _SetMouseUp(void (*mouseUp)()) {
-			_handleMouseDown = mouseUp;
+			_GetPlatform()->onMouseUp = mouseUp;
 		}
 
 		// - GraphicsWindow.MouseMove
@@ -261,8 +247,6 @@ namespace SmallBasic {
 	Number GraphicsWindow::_lastMouseX = 0.L;
 	Number GraphicsWindow::_lastMouseY = 0.L;
 	String GraphicsWindow::_lastKey = L"";
-	void (*GraphicsWindow::_handleMouseDown)() = NULL;
-	void (*GraphicsWindow::_handleMouseUp)() = NULL;
 	void (*GraphicsWindow::_handleKeyDown)() = NULL;
 	void (*GraphicsWindow::_handleKeyUp)() = NULL;
 	void (*GraphicsWindow::_handleMouseMove)() = NULL;
