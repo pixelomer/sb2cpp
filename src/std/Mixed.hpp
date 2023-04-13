@@ -111,11 +111,7 @@ namespace SmallBasic {
 		Mixed(Number value) { *this = value; }
 		Mixed(Array const& value) { *this = value; }
 		Mixed(Mixed const& value) { *this = value; }
-		Mixed(std::string value) {
-			std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-			String str = converter.from_bytes(value);
-			*this = str;
-		}
+		Mixed(std::string const& value) { *this = value; }
 
 		static Mixed Boolean(bool condition) {
 			return Mixed(condition ? L"True" : L"False");
@@ -143,6 +139,14 @@ namespace SmallBasic {
 		bool IsString() const { return !HasValue() || (_type == MIXED_STRING); }
 
 		Mixed &operator=(String const& str) {
+			_string = str;
+			_type = MIXED_STRING;
+			return *this;
+		}
+
+		Mixed &operator=(std::string const& utf8) {
+			std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+			String str = converter.from_bytes(utf8);
 			_string = str;
 			_type = MIXED_STRING;
 			return *this;
