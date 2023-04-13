@@ -3,7 +3,6 @@
 
 #include "Mixed.hpp"
 #include "Platform.hpp"
-#include "RunLoop.hpp"
 #include "Color.hpp"
 
 namespace SmallBasic {
@@ -68,7 +67,6 @@ namespace SmallBasic {
 				_platform->onMouseDown = _OnMouseDown;
 				_platform->onMouseUp = _OnMouseUp;
 				_platform->onMouseMove = _OnMouseMove;
-				RunLoop::_PrepareRunLoop(_RunLoop);
 			}
 			return _platform;
 		}

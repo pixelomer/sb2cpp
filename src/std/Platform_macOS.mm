@@ -222,6 +222,25 @@ namespace SmallBasic {
 		}
 	}
 
+	void Platform::RunFor(Number milliseconds) {
+		@autoreleasepool {
+			NSApplication *__block app = [NSApplication sharedApplication];
+			NSTimer *__unused timer = [NSTimer
+				scheduledTimerWithTimeInterval:(milliseconds / 1000.)
+				repeats:NO block:^(NSTimer *timer){
+					[app stop:nil];
+					// -[NSApplication stop:] only takes effect after an event is
+					// processed
+					NSEvent *event = [NSEvent
+						otherEventWithType:NSEventTypeApplicationDefined
+						location:{} modifierFlags:0 timestamp:0 windowNumber:0
+						context:NULL subtype:0 data1:0 data2:0];
+					[app postEvent:event atStart:YES];
+				}];
+			[app run];
+		}
+	}
+
 	void Platform::_SetColor(Color const& color, CGColorRef *storedColor) {
 		_EnsureContext();
 		CGColorRef cgColor = CGColorCreateGenericRGB((CGFloat)color.r / 255.f,

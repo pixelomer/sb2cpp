@@ -45,7 +45,10 @@ namespace SmallBasic {
 
 		Platform();
 		~Platform();
+
+		/* Run loop */
 		void Run();
+		void RunFor(Number milliseconds);
 
 		/* Window control */
 		void SetWindowVisible(bool visible);

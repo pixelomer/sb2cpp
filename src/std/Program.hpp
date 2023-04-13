@@ -2,8 +2,10 @@
 #define _SMALLBASIC_PROGRAM_H
 
 #include "Mixed.hpp"
+#include "Platform.hpp"
 #include <thread>
 #include <chrono>
+#include <random>
 
 #if __cplusplus >= 201703
 #include <filesystem>
@@ -18,11 +20,6 @@ namespace SmallBasic {
 	public:
 		static Mixed _GetArgumentCount() {
 			return _arguments.ArrayLength();
-		}
-		static void _Initialize(int argc, char **argv) {
-			for (int i=0; i<argc; i++) {
-				_arguments[i] = argv[i];
-			}
 		}
 		static Mixed _GetDirectory() {
 #if __cplusplus >= 201703
@@ -44,9 +41,15 @@ namespace SmallBasic {
 			return _arguments[index];
 		}
 		static void Delay(Number milliseconds) {
-			//FIXME: GUI needs to be interactive during Delay()
-			std::this_thread::sleep_for(std::chrono::milliseconds(
-				(long long)milliseconds));
+			Platform::Default()->RunFor(milliseconds);
+		}
+		static void _Run(int argc, char **argv, void(*mainFunction)()) {
+			srandom(time(NULL));
+			for (int i=0; i<argc; i++) {
+				_arguments[i] = argv[i];
+			}
+			mainFunction();
+			Platform::Default()->Run();
 		}
 	};
 
