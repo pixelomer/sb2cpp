@@ -209,7 +209,7 @@ std::unique_ptr<Node> parse_call(std::vector<std::wstring> &tokens, size_t *inde
 	}
 	else if (token2 == L"(") {
 		node.type = FUNCTION_CALL;
-		node.function_call = L"_" + token1;
+		node.function_call = L"$" + token1;
 		token2 = get_token(tokens, (*index)++);
 		if (token2 != L")") {
 			throw std::runtime_error("expected ')'");
@@ -312,7 +312,7 @@ std::unique_ptr<Node> parse_variable(std::vector<std::wstring> &tokens, size_t *
 	std::wstring &token = get_token(tokens, ++(*index));
 	if (token == L"[") {
 		node.type = ARRAY_VALUE;
-		node.array_name = L"_" + name;
+		node.array_name = L"$" + name;
 		while (token == L"[") {
 			(*index)++;
 			std::unique_ptr<Node> key = parse_value(tokens, index);
@@ -326,7 +326,7 @@ std::unique_ptr<Node> parse_variable(std::vector<std::wstring> &tokens, size_t *
 	}
 	else {
 		node.type = VARIABLE;
-		node.variable_name = L"_" + name;
+		node.variable_name = L"$" + name;
 	}
 	return std::make_unique<Node>(std::move(node));
 }
@@ -392,7 +392,7 @@ std::vector<std::unique_ptr<Node>> parse(std::vector<std::wstring> &tokens,
 				throw std::runtime_error("expected 'EndSub'");
 			}
 			node = std::make_unique<Node>(Node());
-			node->sub_name = L"_" + sub_name;
+			node->sub_name = L"$" + sub_name;
 			node->type = SUB;
 			node->sub_statements = std::move(statements);
 		}
