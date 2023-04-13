@@ -180,6 +180,10 @@ namespace SmallBasic {
 			return GetString();
 		}
 
+		operator bool() {
+			return GetString() == L"True";
+		}
+
 		Mixed operator+(Mixed const& b) {
 			if (IsNumber() && b.IsNumber()) {
 				return GetNumber() + b.GetNumber();
