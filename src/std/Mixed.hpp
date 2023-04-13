@@ -115,19 +115,19 @@ namespace SmallBasic {
 		}
 
 		bool operator<(const Mixed &b) const {
-			return Compare(b, std::less<Mixed>{});
+			return Compare(b, std::less<String const&>{});
 		}
 		bool operator>(const Mixed &b) const {
-			return Compare(b, std::greater<Mixed>{});
+			return Compare(b, std::greater<String const&>{});
 		}
 		bool operator==(const Mixed &b) const {
-			return Compare(b, std::equal_to<Mixed>{});
+			return Compare(b, std::equal_to<String const&>{});
 		}
 		bool operator>=(const Mixed &b) const {
-			return Compare(b, std::greater_equal<Mixed>{});
+			return Compare(b, std::greater_equal<String const&>{});
 		}
 		bool operator<=(const Mixed &b) const {
-			return Compare(b, std::less_equal<Mixed>{});
+			return Compare(b, std::less_equal<String const&>{});
 		}
 
 		bool HasValue() const { return _type != MIXED_UNDEFINED; }
