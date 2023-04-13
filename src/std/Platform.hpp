@@ -12,6 +12,7 @@
 namespace SmallBasic {
 	class Platform {
 	private:
+		static Platform *_default;
 #if defined(__APPLE__) && defined(__OBJC__)
 		NSWindow *__strong _window;
 		NSWindow *_GetWindow();
@@ -28,6 +29,13 @@ namespace SmallBasic {
 #endif
 		void _Initialize();
 	public:
+		static Platform *Default() {
+			if (_default == nullptr) {
+				_default = new Platform();
+			}
+			return _default;
+		}
+
 		bool ignoresKeyEvents = true;
 		void (*onKeyDown)(String const& key);
 		void (*onKeyUp)(String const& key);
@@ -62,6 +70,8 @@ namespace SmallBasic {
 		void ClearWindow();
 		Color GetPixel(Number x, Number y);
 	};
+
+	Platform *Platform::_default = nullptr;
 }
 
 #if defined(__APPLE__) && defined(__OBJC__)

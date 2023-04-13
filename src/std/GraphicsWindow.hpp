@@ -10,6 +10,7 @@ namespace SmallBasic {
 	class GraphicsWindow {
 	private:
 		static Platform *_platform;
+
 		static Color _backgroundColor;
 		static Color _brushColor;
 		static Color _penColor;
@@ -61,7 +62,7 @@ namespace SmallBasic {
 		}
 		static Platform *_GetPlatform() {
 			if (_platform == nullptr) {
-				_platform = new Platform();
+				_platform = Platform::Default();
 				_platform->onKeyDown = _OnKeyDown;
 				_platform->onKeyUp = _OnKeyUp;
 				_platform->onMouseDown = _OnMouseDown;
