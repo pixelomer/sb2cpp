@@ -13,5 +13,5 @@ fi
 set -ex
 
 ./sb2cpp "${input}" > "${input}.cpp"
-c++ --std=c++17 -lm -ObjC++ -framework AppKit -flto -mmacosx-version-min=10.15 \
+c++ --std=c++11 -lm -ObjC++ -framework AppKit -flto -mmacosx-version-min=10.9 \
 	-fobjc-arc "${input}.cpp" -Wall -O3 -o "${output}"

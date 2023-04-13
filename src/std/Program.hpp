@@ -4,7 +4,12 @@
 #include "Mixed.hpp"
 #include <thread>
 #include <chrono>
+
+#if __cplusplus >= 201703
 #include <filesystem>
+#else
+#include <unistd.h>
+#endif
 
 namespace SmallBasic {
 	class Program {
@@ -13,7 +18,14 @@ namespace SmallBasic {
 			throw std::runtime_error("Not implemented");
 		}
 		static Mixed _GetDirectory() {
+#if __cplusplus >= 201703
 			return Mixed(std::filesystem::current_path());
+#else
+			char *cwd = getwd(NULL);
+			Mixed mixed(cwd);
+			free(cwd);
+			return mixed;
+#endif
 		}
 		static void End() {
 			exit(0);
