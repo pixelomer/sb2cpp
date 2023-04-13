@@ -9,5 +9,6 @@
 #include "Program.hpp"
 #include "Array.hpp"
 #include "GraphicsWindow.hpp"
+#include "Timer.hpp"
 
 #endif

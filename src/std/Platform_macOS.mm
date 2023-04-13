@@ -373,6 +373,28 @@ namespace SmallBasic {
 	Number Platform::GetWidth() {
 		return _GetWindow().frame.size.width;
 	}
+
+	void Platform::PauseTimer() {
+		[_timer invalidate];
+		_timer = nil;
+	}
+
+	bool Platform::IsTimerActive() {
+		return _timer != nil;
+	}
+
+	void Platform::ResumeTimer() {
+		_timer = [NSTimer scheduledTimerWithTimeInterval:(_timerInterval / 1000.)
+			repeats:YES
+			block:^(NSTimer *timer){ PostTimerEvent(); } ];
+	}
+
+	void Platform::_UpdateTimerInterval() {
+		if (_timer != NULL) {
+			PauseTimer();
+			ResumeTimer();
+		}
+	}
 }
 
 #undef INITIAL_WIDTH

@@ -21,7 +21,8 @@ namespace SmallBasic {
 				MOUSE_UP,
 				KEY_DOWN,
 				KEY_UP,
-				MOUSE_MOVE
+				MOUSE_MOVE,
+				TIMER_TICK
 			};
 			EventType type;
 			String key;
@@ -34,8 +35,10 @@ namespace SmallBasic {
 		static Platform *_default;
 		std::queue<Event> _eventQueue;
 		bool _waitingForEvents = false;
+		Number _timerInterval = 10.L;
 		void _Run();
 		void _Stop();
+		void _UpdateTimerInterval();
 		void _PostEvent(Event const& event) {
 			_eventQueue.push(event);
 			if (_waitingForEvents) {
@@ -45,6 +48,7 @@ namespace SmallBasic {
 		}
 #if defined(__APPLE__) && defined(__OBJC__)
 		SmallBasicWindow *__strong _window;
+		NSTimer *__strong _timer;
 		SmallBasicWindow *_GetWindow();
 		CGContextRef _context = NULL;
 		CGFloat _strokeWidth;
@@ -67,9 +71,13 @@ namespace SmallBasic {
 		void PostKeyEvent(bool down, String const& key) {
 			_PostEvent(Event(down ? Event::KEY_DOWN : Event::KEY_UP, key));
 		}
+		void PostTimerEvent() {
+			_PostEvent(Event(Event::TIMER_TICK));
+		}
 		static Platform *Default() {
 			if (_default == nullptr) {
 				_default = new Platform();
+				_default->SetTimerInterval(_default->_timerInterval);
 			}
 			return _default;
 		}
@@ -80,6 +88,7 @@ namespace SmallBasic {
 		void (*onMouseDown)();
 		void (*onMouseUp)();
 		void (*onMouseMove)(Number x, Number y);
+		void (*onTimerTick)();
 
 		Platform();
 		~Platform();
@@ -88,7 +97,7 @@ namespace SmallBasic {
 		void Run(void (*mainFunction)()) {
 			mainFunction();
 
-			while (IsWindowVisible() || _eventQueue.size() > 0) {
+			while (IsTimerActive() || IsWindowVisible() || _eventQueue.size() > 0) {
 				// Process events
 				while (_eventQueue.size() > 0) {
 					Event &event = _eventQueue.front();
@@ -113,11 +122,15 @@ namespace SmallBasic {
 							if (onMouseMove != NULL)
 								onMouseMove(event.x, event.y);
 							break;
+						case Event::TIMER_TICK:
+							if (onTimerTick != NULL)
+								onTimerTick();
+							break;
 					}
 					_eventQueue.pop();
 				}
 
-				// Wait for user input
+				// Wait for events
 				_waitingForEvents = true;
 				_Run();
 			}
@@ -145,6 +158,18 @@ namespace SmallBasic {
 			Number y3, bool fill);
 		void ClearWindow();
 		Color GetPixel(Number x, Number y);
+
+		/* Timer */
+		void SetTimerInterval(Number milliseconds) {
+			_timerInterval = milliseconds;
+			_UpdateTimerInterval();
+		}
+		Number GetTimerInterval() {
+			return _timerInterval;
+		}
+		bool IsTimerActive();
+		void PauseTimer();
+		void ResumeTimer();
 	};
 
 	Platform *Platform::_default = nullptr;
