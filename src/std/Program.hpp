@@ -13,9 +13,16 @@
 
 namespace SmallBasic {
 	class Program {
+	private:
+		static Mixed _arguments;
 	public:
 		static Mixed _GetArgumentCount() {
-			throw std::runtime_error("Not implemented");
+			return _arguments.ArrayLength();
+		}
+		static void _Initialize(int argc, char **argv) {
+			for (int i=0; i<argc; i++) {
+				_arguments[i] = argv[i];
+			}
 		}
 		static Mixed _GetDirectory() {
 #if __cplusplus >= 201703
@@ -31,7 +38,10 @@ namespace SmallBasic {
 			exit(0);
 		}
 		static Mixed GetArgument(Number index) {
-			throw std::runtime_error("Not implemented");
+			if (!_arguments.HasElement(index)) {
+				throw std::runtime_error("No such argument");
+			}
+			return _arguments[index];
 		}
 		static void Delay(Number milliseconds) {
 			//FIXME: GUI needs to be interactive during Delay()
@@ -39,6 +49,8 @@ namespace SmallBasic {
 				(long long)milliseconds));
 		}
 	};
+
+	Mixed Program::_arguments = {};
 }
 
 #endif
