@@ -37,13 +37,17 @@ std::wstring NSStringToWString(NSString *str) {
 - (BOOL)isFlipped { return YES; }
 
 - (void)drawRect:(NSRect)dirtyRect {
-	if (*_context != NULL) {
+	if (_context != NULL && *_context != NULL) {
 		CGImageRef image = CGBitmapContextCreateImage(*_context);
 		CGContextRef context = [[NSGraphicsContext currentContext] CGContext];
 		CGContextDrawImage(context, CGRectMake(0, 0, CGImageGetWidth(image),
 			CGImageGetHeight(image)), image);
 		CGImageRelease(image);
 	}
+}
+
+- (void)disconnect {
+	_context = NULL;
 }
 
 @end
@@ -123,9 +127,29 @@ std::wstring NSStringToWString(NSString *str) {
 	return [super performKeyEquivalent:event] || !_platform->ignoresKeyEvents;
 }
 
+- (void)disconnect {
+	_platform = nullptr;
+	[(SmallBasicView *)self.contentView disconnect];
+}
+
 @end
 
 namespace SmallBasic {
+	Platform::Platform() {
+		_colorSpace = CGColorSpaceCreateDeviceRGB();
+	}
+
+	Platform::~Platform() {
+		if (_window != nil) {
+			[_window disconnect];
+			_window = nil;
+		}
+		if (_context != NULL) {
+			CGContextRelease(_context);
+			_context = NULL;
+		}
+	}
+
 	void Platform::_ReallocateContext(Number ldWidth, Number ldHeight) {
 		size_t width = (size_t)std::ceill(ldWidth);
 		size_t height = (size_t)std::ceill(ldHeight);
@@ -166,10 +190,6 @@ namespace SmallBasic {
 		_ReallocateContext(INITIAL_WIDTH, INITIAL_HEIGHT);
 	}
 
-	void Platform::_Initialize() {
-		_colorSpace = CGColorSpaceCreateDeviceRGB();
-	}
-
 	void Platform::SetTitle(String const& title) {
 		std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
 		std::string str = converter.to_bytes(title);
@@ -177,7 +197,7 @@ namespace SmallBasic {
 		_GetWindow().title = nsstr;
 	}
 
-	NSWindow *Platform::_GetWindow() {
+	SmallBasicWindow *Platform::_GetWindow() {
 		if (_window == nil) {
 			NSApplication *app = [NSApplication sharedApplication];
 			[app setActivationPolicy:NSApplicationActivationPolicyRegular];

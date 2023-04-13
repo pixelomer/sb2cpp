@@ -7,6 +7,7 @@
 
 #if defined(__APPLE__) && defined(__OBJC__)
 #include <AppKit/AppKit.h>
+@class SmallBasicWindow;
 #endif
 
 namespace SmallBasic {
@@ -14,8 +15,8 @@ namespace SmallBasic {
 	private:
 		static Platform *_default;
 #if defined(__APPLE__) && defined(__OBJC__)
-		NSWindow *__strong _window;
-		NSWindow *_GetWindow();
+		SmallBasicWindow *__strong _window;
+		SmallBasicWindow *_GetWindow();
 		CGContextRef _context = NULL;
 		CGFloat _strokeWidth;
 		CGColorRef _fillColor;
@@ -27,7 +28,6 @@ namespace SmallBasic {
 		void _PrepareFill();
 		void _PrepareStroke();
 #endif
-		void _Initialize();
 	public:
 		static Platform *Default() {
 			if (_default == nullptr) {
@@ -43,9 +43,8 @@ namespace SmallBasic {
 		void (*onMouseUp)();
 		void (*onMouseMove)(Number x, Number y);
 
-		Platform() {
-			_Initialize();
-		}
+		Platform();
+		~Platform();
 		void Run();
 
 		/* Window control */
