@@ -27,9 +27,6 @@ namespace SmallBasic {
 		static void (*_handleKeyUp)();
 		static void (*_handleMouseMove)();
 		
-		static void _RunLoop() {
-			_platform->Run();
-		}
 		static void _OnKeyDown(String const& key) {
 			_lastKey = key;
 			if (_handleKeyDown != NULL) {

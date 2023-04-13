@@ -48,8 +48,7 @@ namespace SmallBasic {
 			for (int i=0; i<argc; i++) {
 				_arguments[i] = argv[i];
 			}
-			mainFunction();
-			Platform::Default()->Run();
+			Platform::Default()->Run(mainFunction);
 		}
 	};
 

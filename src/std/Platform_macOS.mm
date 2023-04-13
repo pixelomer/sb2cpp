@@ -82,43 +82,39 @@ std::wstring NSStringToWString(NSString *str) {
 }
 
 - (void)mouseMoved:(NSEvent *)event {
-	if (_platform != nullptr && _platform->onMouseMove != NULL) {
+	if (_platform != nullptr) {
 		NSPoint point = [NSEvent mouseLocation];
-		_platform->onMouseMove(point.x, point.y);
+		_platform->PostMouseEvent(point.x, point.y);
 	}
 	[super mouseMoved:event];
 }
 
 - (void)mouseDown:(NSEvent *)event {
-	if (_platform != nullptr && _platform->onMouseDown != NULL) {
-		_platform->onMouseDown();
+	if (_platform != nullptr) {
+		_platform->PostMouseEvent(true);
 	}
 	[super mouseDown:event];
 }
 
 - (void)mouseUp:(NSEvent *)event {
 	if (_platform != nullptr && _platform->onMouseUp != NULL) {
-		_platform->onMouseUp();
+		_platform->PostMouseEvent(false);
 	}
 	[super mouseUp:event];
 }
 
 - (void)keyDown:(NSEvent *)event {
-	if (_platform != nullptr && !_platform->ignoresKeyEvents &&
-		_platform->onKeyDown != NULL)
-	{
+	if (_platform != nullptr && !_platform->ignoresKeyEvents) {
 		NSString *key = event.characters;
-		_platform->onKeyDown(NSStringToWString(key));
+		_platform->PostKeyEvent(true, NSStringToWString(key));
 	}
 	[super keyDown:event];
 }
 
 - (void)keyUp:(NSEvent *)event {
-	if (_platform != nullptr && !_platform->ignoresKeyEvents &&
-		_platform->onMouseUp != NULL)
-	{
+	if (_platform != nullptr && !_platform->ignoresKeyEvents) {
 		NSString *key = event.characters;
-		_platform->onKeyUp(NSStringToWString(key));
+		_platform->PostKeyEvent(false, NSStringToWString(key));
 	}
 	[super keyUp:event];
 }
@@ -215,27 +211,32 @@ namespace SmallBasic {
 		return _window;
 	}
 
-	void Platform::Run() {
+	void Platform::_Run() {
 		@autoreleasepool {
 			NSApplication *app = [NSApplication sharedApplication];
 			[app run];
 		}
 	}
 
+	void Platform::_Stop() {
+		NSApplication *app = [NSApplication sharedApplication];
+		[app stop:nil];
+		// -[NSApplication stop:] only takes effect after an event is
+		// processed
+		NSEvent *event = [NSEvent
+			otherEventWithType:NSEventTypeApplicationDefined
+			location:{} modifierFlags:0 timestamp:0 windowNumber:0
+			context:NULL subtype:0 data1:0 data2:0];
+		[app postEvent:event atStart:YES];
+	}
+
 	void Platform::RunFor(Number milliseconds) {
 		@autoreleasepool {
-			NSApplication *__block app = [NSApplication sharedApplication];
+			NSApplication *app = [NSApplication sharedApplication];
 			NSTimer *__unused timer = [NSTimer
 				scheduledTimerWithTimeInterval:(milliseconds / 1000.)
 				repeats:NO block:^(NSTimer *timer){
-					[app stop:nil];
-					// -[NSApplication stop:] only takes effect after an event is
-					// processed
-					NSEvent *event = [NSEvent
-						otherEventWithType:NSEventTypeApplicationDefined
-						location:{} modifierFlags:0 timestamp:0 windowNumber:0
-						context:NULL subtype:0 data1:0 data2:0];
-					[app postEvent:event atStart:YES];
+					_Stop();
 				}];
 			[app run];
 		}
@@ -277,6 +278,10 @@ namespace SmallBasic {
 		else {
 			_GetWindow().styleMask &= ~NSWindowStyleMaskResizable;
 		}
+	}
+
+	bool Platform::IsWindowVisible() {
+		return true;
 	}
 
 	void Platform::SetBackgroundColor(Color const& color) {
