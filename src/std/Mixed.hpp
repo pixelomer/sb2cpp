@@ -79,10 +79,7 @@ namespace SmallBasic {
 
 		template<typename C>
 		bool Compare(const Mixed &b, C cmp) const {
-			if (IsNumber() || b.IsNumber())
-				return cmp(GetNumber(), b.GetNumber());
-			else
-				return cmp(GetString(), b.GetString());
+			return cmp(GetString(), b.GetString());
 		}
 
 		bool _HasElement(Mixed const& index) {
