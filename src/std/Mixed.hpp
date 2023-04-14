@@ -77,11 +77,6 @@ namespace SmallBasic {
 			return {};
 		}
 
-		template<typename C>
-		bool Compare(const Mixed &b, C cmp) const {
-			return cmp(GetString(), b.GetString());
-		}
-
 		bool _HasElement(Mixed const& index) {
 			return IsArray() && (_array.count(index) > 0);
 		}
@@ -115,22 +110,28 @@ namespace SmallBasic {
 		}
 
 		bool operator<(Mixed const& b) const {
-			return Compare(b, std::less<String const&>{});
+			try { return TryGetNumber() < b.TryGetNumber(); }
+			catch (...) { return GetString() < b.GetString(); }
 		}
 		bool operator>(Mixed const& b) const {
-			return Compare(b, std::greater<String const&>{});
+			try { return TryGetNumber() > b.TryGetNumber(); }
+			catch (...) { return GetString() > b.GetString(); }
 		}
 		bool operator==(Mixed const& b) const {
-			return Compare(b, std::equal_to<String const&>{});
+			try { return TryGetNumber() == b.TryGetNumber(); }
+			catch (...) { return GetString() == b.GetString(); }
 		}
 		bool operator!=(Mixed const& b) const {
-			return Compare(b, std::not_equal_to<String const&>{});
+			try { return TryGetNumber() != b.TryGetNumber(); }
+			catch (...) { return GetString() != b.GetString(); }
 		}
 		bool operator>=(Mixed const& b) const {
-			return Compare(b, std::greater_equal<String const&>{});
+			try { return TryGetNumber() >= b.TryGetNumber(); }
+			catch (...) { return GetString() >= b.GetString(); }
 		}
 		bool operator<=(const Mixed &b) const {
-			return Compare(b, std::less_equal<String const&>{});
+			try { return TryGetNumber() <= b.TryGetNumber(); }
+			catch (...) { return GetString() <= b.GetString(); }
 		}
 
 		bool HasValue() const { return _type != MIXED_UNDEFINED; }
@@ -247,15 +248,18 @@ namespace SmallBasic {
 			return stream.str();
 		}
 
-		Number GetNumber() const {
+		Number TryGetNumber() const {
 			if (IsNumber()) {
 				return _number;
 			}
-			else if (IsString()) {
-				try { return std::stold(_string); }
-				catch (...) { return 0.L; }
+			else {
+				return std::stold(GetString());
 			}
-			return 0.L;
+		}
+
+		Number GetNumber() const {
+			try { return TryGetNumber(); }
+			catch (...) { return 0.L; }
 		}
 
 		Array GetArrayIndices() {
