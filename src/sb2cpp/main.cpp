@@ -645,13 +645,14 @@ void sb2cpp_single(std::unique_ptr<Node> const& node, int indent = 0, bool root
 			if (root) std::wcout << ";";
 			break;
 		case FOR_LOOP:
-			std::wcout << "for (Mixed ";
 			sb2cpp_single(node->for_start, indent);
-			std::wcout << ", end = ";
+			std::wcout << ";\n" << sb2cpp_indent(indent);
+			std::wcout << "end.push(";
 			sb2cpp_single(node->for_end, indent);
-			std::wcout << "; ";
+			std::wcout << ");\n" << sb2cpp_indent(indent);
+			std::wcout << "for (; ";
 			sb2cpp_single(node->for_start->assignment_to, indent);
-			std::wcout << " <= end; ";
+			std::wcout << " <= end.top(); ";
 			sb2cpp_single(node->for_start->assignment_to, indent);
 			std::wcout << " = ";
 			sb2cpp_single(node->for_start->assignment_to, indent);
@@ -664,7 +665,8 @@ void sb2cpp_single(std::unique_ptr<Node> const& node, int indent = 0, bool root
 			}
 			std::wcout << ") {\n";
 			sb2cpp_multi(node->for_statements, L"\n", indent+1, true);
-			std::wcout << "\n" << sb2cpp_indent(indent) << "}";
+			std::wcout << "\n" << sb2cpp_indent(indent) << "}\n";
+			std::wcout << sb2cpp_indent(indent) << "end.pop();";
 			break;
 		case GOTO_LABEL:
 			std::wcout << node->label_name << ":;";
@@ -795,6 +797,7 @@ void sb2cpp(std::wstring const& source) {
 	std::wcout << L"using namespace SmallBasic;" << std::endl;
 	std::wcout << L"" << std::endl;
 
+	std::wcout << L"std::stack<Mixed> end;" << std::endl;
 	sb2cpp_vars(parsed);
 
 	std::wcout << L"" << std::endl;
