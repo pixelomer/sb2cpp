@@ -691,14 +691,44 @@ void sb2cpp_multi(std::vector<std::unique_ptr<Node>> const& parsed, std::wstring
 	}
 }
 
+void sb2cpp_decl_commit_single(std::wstring const& type,
+	std::wstring const& suffix, std::wstring const& name, int *col)
+{
+	if (*col == 0) {
+		std::wcout << type << " ";
+		*col += type.length() + 1;
+	}
+	else {
+		std::wcout << ", ";
+		*col += 2;
+	}
+	if (*col + name.length() + suffix.length() >= 80) {
+		std::wcout << "\n  ";
+		*col = 2;
+	}
+	std::wcout << name << suffix;
+	*col += name.length() + suffix.length();
+}
+
 void sb2cpp_decl_commit(std::map<std::wstring, bool> &defined) {
+	//FIXME: could be much cleaner
+	int col = 0;
 	for (auto pair : defined) {
 		if (pair.second) {
-			std::wcout << "void " << pair.first << "();" << std::endl;
+			sb2cpp_decl_commit_single(L"void", L"()", pair.first, &col);
 		}
-		else {
-			std::wcout << "Mixed " << pair.first << ";" << std::endl;
+	}
+	if (col != 0) {
+		std::wcout << ";\n";
+	}
+	col = 0;
+	for (auto pair : defined) {
+		if (!pair.second) {
+			sb2cpp_decl_commit_single(L"Mixed", L"", pair.first, &col);
 		}
+	}
+	if (col != 0) {
+		std::wcout << ";\n";
 	}
 }
 
