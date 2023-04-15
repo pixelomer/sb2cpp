@@ -240,6 +240,12 @@ namespace SmallBasic {
 			_GetPlatform()->DrawTriangle(x1, y1, x2, y2, x3, y3, true);
 		}
 
+		// - GraphicsWindow.DrawLine(x1, y1, x2, y2)
+		// Draws a line from one point to another.
+		static void DrawLine(Number x1, Number y1, Number x2, Number y2) {
+			_GetPlatform()->DrawLine(x1, y1, x2, y2);
+		}
+
 		// - GraphicsWindow.DrawText(x, y, text)
 		// Draws a line of text on the screen at the specified location.
 		static void DrawText(Number x, Number y, String const& text) {

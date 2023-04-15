@@ -169,6 +169,7 @@ namespace SmallBasic {
 		void DrawEllipse(Number x, Number y, Number width, Number height, bool fill);
 		void DrawTriangle(Number x1, Number y1, Number x2, Number y2, Number x3,
 			Number y3, bool fill);
+		void DrawLine(Number x1, Number y1, Number x2, Number y2);
 		void DrawText(Number x, Number y, String const& text);
 		void ClearWindow();
 		Color GetPixel(Number x, Number y);
