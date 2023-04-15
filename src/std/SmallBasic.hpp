@@ -10,5 +10,6 @@
 #include "Array.hpp"
 #include "GraphicsWindow.hpp"
 #include "Timer.hpp"
+#include "File.hpp"
 
 #endif

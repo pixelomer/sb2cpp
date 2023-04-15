@@ -180,6 +180,23 @@ namespace SmallBasic {
 			return GetNumber();
 		}
 
+		operator std::string() {
+			String str = GetString();
+			char buf[MB_CUR_MAX + 1];
+			std::string result;
+			std::wctomb(NULL, 0);
+			for (wchar_t c : str) {
+				int len = std::wctomb(buf, c);
+				if (len < 0) {
+					buf[0] = '?';
+					len = 1;
+				}
+				buf[len] = '\0';
+				result += buf;
+			}
+			return result;
+		}
+
 		operator String() {
 			return GetString();
 		}

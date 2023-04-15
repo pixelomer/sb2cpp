@@ -16,6 +16,7 @@ std::wstring NSStringToWString(NSString *str) {
 }
 
 NSString *WStringToNSString(SmallBasic::String const& str) {
+	//FIXME: duplicated code
 	char buf[MB_CUR_MAX + 1];
 	std::string result;
 	std::wctomb(NULL, 0);
