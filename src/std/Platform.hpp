@@ -93,11 +93,15 @@ namespace SmallBasic {
 		Platform();
 		~Platform();
 
+		bool WillTerminate() {
+			return !IsTimerActive() && !IsWindowVisible() && _eventQueue.size() <= 0;
+		}
+
 		/* Run loop */
 		void Run(void (*mainFunction)()) {
 			mainFunction();
 
-			while (IsTimerActive() || IsWindowVisible() || _eventQueue.size() > 0) {
+			while (!WillTerminate()) {
 				// Process events
 				while (_eventQueue.size() > 0) {
 					Event &event = _eventQueue.front();
@@ -131,8 +135,10 @@ namespace SmallBasic {
 				}
 
 				// Wait for events
-				_waitingForEvents = true;
-				_Run();
+				if (!WillTerminate()) {
+					_waitingForEvents = true;
+					_Run();
+				}
 			}
 		}
 		void RunFor(Number milliseconds);

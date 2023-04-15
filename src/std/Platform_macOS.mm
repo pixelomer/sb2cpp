@@ -297,7 +297,7 @@ namespace SmallBasic {
 	}
 
 	bool Platform::IsWindowVisible() {
-		return true;
+		return _window != nil;
 	}
 
 	void Platform::SetBackgroundColor(Color const& color) {
