@@ -547,8 +547,8 @@ std::vector<std::wstring> tokenize(std::wstring const& source) {
 	return tokens;
 }
 
-void sb2cpp_multi(std::vector<std::unique_ptr<Node>> const& parsed, std::wstring
-	const& delim, int indent = 0, bool root = false);
+void sb2cpp_multi(enum node_type, std::vector<std::unique_ptr<Node>> const& parsed,
+	std::wstring const& delim, int indent = 0, bool root = false);
 
 std::wstring sb2cpp_indent(int indent) {
 	std::wstring str;
@@ -572,25 +572,27 @@ std::wstring sb2cpp_escape(std::wstring const& str) {
 	return result;
 }
 
-void sb2cpp_single(std::unique_ptr<Node> const& node, int indent = 0, bool root
-	= false)
+void sb2cpp_single(enum node_type parent_type, std::unique_ptr<Node> const& node,
+	int indent = 0, bool root = false)
 {
 	if (root) {
 		std::wcout << sb2cpp_indent(indent);
 	}
 	switch (node->type) {
-		case VALUE_LIST:
-			if (node->value_list.size() > 1) std::wcout << "(";
-			sb2cpp_multi(node->value_list, L" ", indent);
-			if (node->value_list.size() > 1) std::wcout << ")";
+		case VALUE_LIST: {
+			bool group = (parent_type == VALUE_LIST && node->value_list.size() > 1);
+			if (group) std::wcout << "(";
+			sb2cpp_multi(node->type, node->value_list, L" ", indent);
+			if (group) std::wcout << ")";
 			break;
+		}
 		case VARIABLE:
 			std::wcout << node->variable_name;
 			break;
 		case ASSIGNMENT:
-			sb2cpp_single(node->assignment_to, indent);
+			sb2cpp_single(node->type, node->assignment_to, indent);
 			std::wcout << " = ";
-			sb2cpp_single(node->assignment_value, indent);
+			sb2cpp_single(node->type, node->assignment_value, indent);
 			if (root) std::wcout << ";";
 			break;
 		case STRING_LITERAL:
@@ -612,32 +614,32 @@ void sb2cpp_single(std::unique_ptr<Node> const& node, int indent = 0, bool root
 		case IF_ELSE:
 			if (node->if_condition != nullptr) {
 				std::wcout << L"if (";
-				sb2cpp_single(node->if_condition, indent);
+				sb2cpp_single(node->type, node->if_condition, indent);
 				std::wcout << L") ";
 			}
 			std::wcout << L"{\n";
-			sb2cpp_multi(node->if_statements, L"\n", indent+1, true);
+			sb2cpp_multi(node->type, node->if_statements, L"\n", indent+1, true);
 			std::wcout << "\n" << sb2cpp_indent(indent) << "}";
 			break;
 		case IF_ELSE_LIST:
-			sb2cpp_multi(node->if_list, L"\n" + sb2cpp_indent(indent) + L"else ", indent);
+			sb2cpp_multi(node->type, node->if_list, L"\n" + sb2cpp_indent(indent) + L"else ", indent);
 			break;
 		case ARRAY_VALUE:
 			std::wcout << node->array_name << "[";
-			sb2cpp_multi(node->array_indexes, L"][", indent);
+			sb2cpp_multi(node->type, node->array_indexes, L"][", indent);
 			std::wcout << "]";
 			break;
 		case STDLIB_CALL:
 			std::wcout << node->stdlib_class << "::" << node->stdlib_function << "(";
-			sb2cpp_multi(node->stdlib_arguments, L", ", indent);
+			sb2cpp_multi(node->type, node->stdlib_arguments, L", ", indent);
 			std::wcout << ")";
 			if (root) std::wcout << ";";
 			break;
 		case WHILE_LOOP:
 			std::wcout << "while (";
-			sb2cpp_single(node->while_condition, indent);
+			sb2cpp_single(node->type, node->while_condition, indent);
 			std::wcout << ") {\n";
-			sb2cpp_multi(node->while_statements, L"\n", indent+1, true);
+			sb2cpp_multi(node->type, node->while_statements, L"\n", indent+1, true);
 			std::wcout << "\n" << sb2cpp_indent(indent) << "}";
 			break;
 		case FUNCTION_CALL:
@@ -645,26 +647,26 @@ void sb2cpp_single(std::unique_ptr<Node> const& node, int indent = 0, bool root
 			if (root) std::wcout << ";";
 			break;
 		case FOR_LOOP:
-			sb2cpp_single(node->for_start, indent);
+			sb2cpp_single(node->type, node->for_start, indent);
 			std::wcout << ";\n" << sb2cpp_indent(indent);
 			std::wcout << "end.push(";
-			sb2cpp_single(node->for_end, indent);
+			sb2cpp_single(node->type, node->for_end, indent);
 			std::wcout << ");\n" << sb2cpp_indent(indent);
 			std::wcout << "for (; ";
-			sb2cpp_single(node->for_start->assignment_to, indent);
+			sb2cpp_single(node->type, node->for_start->assignment_to, indent);
 			std::wcout << " <= end.top(); ";
-			sb2cpp_single(node->for_start->assignment_to, indent);
+			sb2cpp_single(node->type, node->for_start->assignment_to, indent);
 			std::wcout << " = ";
-			sb2cpp_single(node->for_start->assignment_to, indent);
+			sb2cpp_single(node->type, node->for_start->assignment_to, indent);
 			std::wcout << " + ";
 			if (node->for_step == nullptr) {
 				std::wcout << "Mixed(1.L)";
 			}
 			else {
-				sb2cpp_single(node->for_step, indent);
+				sb2cpp_single(node->type, node->for_step, indent);
 			}
 			std::wcout << ") {\n";
-			sb2cpp_multi(node->for_statements, L"\n", indent+1, true);
+			sb2cpp_multi(node->type, node->for_statements, L"\n", indent+1, true);
 			std::wcout << "\n" << sb2cpp_indent(indent) << "}\n";
 			std::wcout << sb2cpp_indent(indent) << "end.pop();";
 			break;
@@ -679,12 +681,12 @@ void sb2cpp_single(std::unique_ptr<Node> const& node, int indent = 0, bool root
 	}
 }
 
-void sb2cpp_multi(std::vector<std::unique_ptr<Node>> const& parsed, std::wstring
-	const& delim, int indent, bool root)
+void sb2cpp_multi(enum node_type parent_type, std::vector<std::unique_ptr<Node>>
+	const& parsed, std::wstring const& delim, int indent, bool root)
 {
 	for (int i=0; i<parsed.size(); i++) {
 		auto const& node = parsed[i];
-		sb2cpp_single(node, indent, root);
+		sb2cpp_single(parent_type, node, indent, root);
 		if ((i + 1) != parsed.size()) {
 			std::wcout << delim;
 		}
@@ -742,7 +744,7 @@ void sb2cpp_impl(std::wstring const &name,
 	std::vector<std::unique_ptr<Node>> const &statements)
 {
 	std::wcout << L"void " << name << "() {" << std::endl;
-	sb2cpp_multi(statements, L"\n", 1, true);
+	sb2cpp_multi(SUB, statements, L"\n", 1, true);
 	std::wcout << L"\n}" << std::endl;
 }
 
