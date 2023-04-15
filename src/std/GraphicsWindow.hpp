@@ -184,7 +184,7 @@ namespace SmallBasic {
 
 		// - GraphicsWindow.LastKey
 		// Gets the last key that was pressed or released.
-		static String _GetLastKey() {
+		static Mixed _GetLastKey() {
 			return _lastKey;
 		}
 
