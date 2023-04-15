@@ -50,6 +50,8 @@ namespace SmallBasic {
 				_platform->onKeyDown = _OnKeyDown;
 				_platform->onKeyUp = _OnKeyUp;
 				_platform->onMouseMove = _OnMouseMove;
+				_platform->SetFillColor(_brushColor);
+				_platform->SetStrokeColor(_penColor);
 			}
 			return _platform;
 		}
@@ -136,6 +138,50 @@ namespace SmallBasic {
 			return _penColor.name;
 		}
 
+		// - GraphicsWindow.FontName
+		// Gets or sets the Font Name to be used when drawing text on the
+		// Graphics Window.
+		static void _SetFontName(String const& fontName) {
+			_GetPlatform()->fontName = fontName;
+			_GetPlatform()->fontChanged = true;
+		}
+		static Mixed _GetFontName() {
+			return _GetPlatform()->fontName;
+		}
+
+		// - GraphicsWindow.FontSize
+		// Gets or sets the Font Size to be used when drawing text on the
+		// Graphics Window.
+		static void _SetFontSize(Number fontSize) {
+			_GetPlatform()->fontSize = fontSize;
+			_GetPlatform()->fontChanged = true;
+		}
+		static Mixed _GetFontSize() {
+			return _GetPlatform()->fontSize;
+		}
+
+		// - GraphicsWindow.FontBold
+		// Gets or sets whether or not the font to be used when drawing text
+		// on the Graphics Window, is bold.
+		static void _SetFontBold(bool boldText) {
+			_GetPlatform()->boldText = boldText;
+			_GetPlatform()->fontChanged = true;
+		}
+		static Mixed _GetFontBold() {
+			return Mixed::Boolean(_GetPlatform()->boldText);
+		}
+
+		// - GraphicsWindow.FontItalic
+		// Gets or sets whether or not the font to be used when drawing text
+		// on the Graphics Window, is italic.
+		static void _SetFontItalic(bool italicText) {
+			_GetPlatform()->italicText = italicText;
+			_GetPlatform()->fontChanged = true;
+		}
+		static Mixed _GetFontItalic() {
+			return Mixed::Boolean(_GetPlatform()->italicText);
+		}
+
 		// - GraphicsWindow.LastKey
 		// Gets the last key that was pressed or released.
 		static String _GetLastKey() {
@@ -192,6 +238,12 @@ namespace SmallBasic {
 			Number x3, Number y3)
 		{
 			_GetPlatform()->DrawTriangle(x1, y1, x2, y2, x3, y3, true);
+		}
+
+		// - GraphicsWindow.DrawText(x, y, text)
+		// Draws a line of text on the screen at the specified location.
+		static void DrawText(Number x, Number y, String const& text) {
+			_GetPlatform()->DrawText(x, y, text);
 		}
 
 		// - GraphicsWindow.Clear()

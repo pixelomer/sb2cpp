@@ -47,6 +47,7 @@ namespace SmallBasic {
 			}
 		}
 #if defined(__APPLE__) && defined(__OBJC__)
+		NSFont *__strong _font;
 		SmallBasicWindow *__strong _window;
 		NSTimer *__strong _timer;
 		SmallBasicWindow *_GetWindow();
@@ -62,6 +63,19 @@ namespace SmallBasic {
 		void _PrepareStroke();
 #endif
 	public:
+		bool ignoresKeyEvents = true;
+		void (*onKeyDown)(String const& key);
+		void (*onKeyUp)(String const& key);
+		void (*onMouseDown)();
+		void (*onMouseUp)();
+		void (*onMouseMove)(Number x, Number y);
+		void (*onTimerTick)();
+		String fontName;
+		Number fontSize = 20.L;
+		bool boldText = false;
+		bool italicText = false;
+		bool fontChanged = true;
+
 		void PostMouseEvent(Number x, Number y) {
 			_PostEvent(Event(Event::MOUSE_MOVE, x, y));
 		}
@@ -81,14 +95,6 @@ namespace SmallBasic {
 			}
 			return _default;
 		}
-
-		bool ignoresKeyEvents = true;
-		void (*onKeyDown)(String const& key);
-		void (*onKeyUp)(String const& key);
-		void (*onMouseDown)();
-		void (*onMouseUp)();
-		void (*onMouseMove)(Number x, Number y);
-		void (*onTimerTick)();
 
 		Platform();
 		~Platform();
@@ -163,6 +169,7 @@ namespace SmallBasic {
 		void DrawEllipse(Number x, Number y, Number width, Number height, bool fill);
 		void DrawTriangle(Number x1, Number y1, Number x2, Number y2, Number x3,
 			Number y3, bool fill);
+		void DrawText(Number x, Number y, String const& text);
 		void ClearWindow();
 		Color GetPixel(Number x, Number y);
 

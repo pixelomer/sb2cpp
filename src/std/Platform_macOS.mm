@@ -150,6 +150,7 @@ NSString *WStringToNSString(SmallBasic::String const& str) {
 namespace SmallBasic {
 	Platform::Platform() {
 		_colorSpace = CGColorSpaceCreateDeviceRGB();
+		fontName = L"Verdana";
 	}
 
 	Platform::~Platform() {
@@ -175,6 +176,8 @@ namespace SmallBasic {
 		}
 		CGContextRef newContext = CGBitmapContextCreate(NULL, width, height, 8, 0,
 			_colorSpace, kCGImageAlphaPremultipliedLast);
+		CGContextSetTextMatrix(newContext, CGAffineTransformMake(1.0, 0.0, 0.0,
+			-1.0, 0.0, 0.0));
 		if (_context != NULL) {
 			// Copy old contents to the new context
 			CGImageRef oldData = CGBitmapContextCreateImage(_context);
@@ -419,6 +422,59 @@ namespace SmallBasic {
 		[alert setInformativeText:WStringToNSString(title)];
 		[alert addButtonWithTitle:@"Ok"];
 		[alert runModal];
+	}
+
+	void Platform::DrawText(Number x, Number y, String const& wText) {
+		_EnsureContext();
+		NSString *text = WStringToNSString(wText);
+		if (fontChanged) {
+			NSFontManager *fontManager = [NSFontManager sharedFontManager];
+			NSFontTraitMask traits = 0;
+			if (boldText) {
+				traits |= NSBoldFontMask;
+			}
+			if (italicText) {
+				traits |= NSItalicFontMask;
+			}
+			_font = [fontManager fontWithFamily:WStringToNSString(fontName)
+				traits:traits weight:0 size:(CGFloat)fontSize];
+		}
+
+		// Create attributed string
+		NSAttributedString *attributedStr = [[NSAttributedString alloc]
+			initWithString:text attributes:@{ NSFontAttributeName: _font,
+			NSForegroundColorAttributeName: [NSColor colorWithCGColor:_strokeColor] }];
+		CFAttributedStringRef cfAttributedStr = (__bridge CFAttributedStringRef)
+			attributedStr;
+
+		// Create framesetter
+		CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString(
+			cfAttributedStr);
+
+		// Calculate frame
+		CGRect rect;
+		rect.size = CTFramesetterSuggestFrameSizeWithConstraints(framesetter,
+			CFRangeMake(0, 0), NULL, CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX), NULL);
+		rect.origin.x = x;
+		rect.origin.y = y;
+
+		// Draw
+		CTFrameRef frame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, 0),
+			CGPathCreateWithRect(rect, NULL), NULL);
+		CTFrameDraw(frame, _context);
+
+		// Cleanup
+		CFRelease(frame);
+		CFRelease(framesetter);
+		CGContextRestoreGState(_context);
+	}
+
+	void Platform::DrawLine(Number x1, Number y1, Number x2, Number y2) {
+		_EnsureContext();
+		CGContextMoveToPoint(_context, x1, y1);
+		CGContextAddLineToPoint(_context, x2, y2);
+		CGContextClosePath(_context);
+		CGContextDrawPath(_context, kCGPathStroke);
 	}
 }
 
