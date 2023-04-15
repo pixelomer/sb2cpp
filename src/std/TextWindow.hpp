@@ -36,11 +36,12 @@ namespace SmallBasic {
 			return std::stold(line);
 		}
 		static void WriteLine(Mixed const& mixed) {
-			Write(mixed);
-			std::wcout << std::endl;
+			std::wcout << mixed.GetString() << std::endl;
+			std::wcout.flush();
 		}
 		static void Write(Mixed const& mixed) {
 			std::wcout << mixed.GetString();
+			std::wcout.flush();
 		}
 		static void VerifyAccess() {}
 	};
