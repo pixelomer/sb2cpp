@@ -15,6 +15,22 @@ std::wstring NSStringToWString(NSString *str) {
 	return converter.from_bytes(utf8);
 }
 
+NSString *WStringToNSString(SmallBasic::String const& str) {
+	char buf[MB_CUR_MAX + 1];
+	std::string result;
+	std::wctomb(NULL, 0);
+	for (wchar_t c : str) {
+		int len = std::wctomb(buf, c);
+		if (len < 0) {
+			buf[0] = '?';
+			len = 1;
+		}
+		buf[len] = '\0';
+		result += buf;
+	}
+	return @(result.c_str());
+}
+
 @interface SmallBasicView : NSView
 @end
 
@@ -394,6 +410,14 @@ namespace SmallBasic {
 			PauseTimer();
 			ResumeTimer();
 		}
+	}
+	
+	void Platform::ShowMessage(String const& text, String const& title) {
+		NSAlert *alert = [[NSAlert alloc] init];
+		[alert setMessageText:WStringToNSString(text)];
+		[alert setInformativeText:WStringToNSString(title)];
+		[alert addButtonWithTitle:@"Ok"];
+		[alert runModal];
 	}
 }
 

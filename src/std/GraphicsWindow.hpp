@@ -232,8 +232,16 @@ namespace SmallBasic {
 			_handleMouseMove = mouseMove;
 		}
 
+		// - GraphicsWindow.GetColorFromRGB(red, green, blue)
+		// Constructs a color given the Red, Green and Blue values.
 		static Mixed GetColorFromRGB(Number r, Number g, Number b) {
 			return Color::_NameFor(r, g, b);
+		}
+
+		// - GraphicsWindow.ShowMessage(text, title)
+		// Displays a message box to the user.
+		static void ShowMessage(String const& text, String const& title) {
+			_GetPlatform()->ShowMessage(text, title);
 		}
 	};
 

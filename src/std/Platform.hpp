@@ -146,6 +146,7 @@ namespace SmallBasic {
 		Number GetHeight();
 		void SetWidth(Number width);
 		Number GetWidth();
+		void ShowMessage(String const& text, String const& title);
 
 		/* Drawing */
 		void SetBackgroundColor(Color const& color);
