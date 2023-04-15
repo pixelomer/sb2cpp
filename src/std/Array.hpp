@@ -6,9 +6,11 @@
 
 namespace SmallBasic {
 	class Array {
+	private:
+		static std::map<String, Mixed> _arrays;
 	public:
-		static Mixed ContainsIndex(Mixed &array, Mixed const& index) {
-			return Mixed::Boolean(array.HasElement(index));
+		static Mixed ContainsIndex(String const& name, Mixed const& index) {
+			return Mixed::Boolean(_arrays[name].HasElement(index));
 		}
 		static Mixed GetAllIndices(Mixed &array) {
 			return array.GetArrayIndices();
@@ -19,16 +21,18 @@ namespace SmallBasic {
 		static Mixed IsArray(Mixed &mixed) {
 			return Mixed::Boolean(mixed.IsArray());
 		}
-		static void SetValue(Mixed &array, Mixed const& index, Mixed const& value) {
-			array[index] = value;
+		static void SetValue(String const& name, Mixed const& index, Mixed const& value) {
+			_arrays[name][index] = value;
 		}
-		static Mixed GetValue(Mixed &array, Mixed const& value) {
-			return array[value];
+		static Mixed GetValue(String const& name, Mixed const& value) {
+			return _arrays[name][value];
 		}
-		static void RemoveValue(Mixed &array, Mixed const& index) {
-			array.RemoveElement(index);
+		static void RemoveValue(String const& name, Mixed const& index) {
+			_arrays[name].RemoveElement(index);
 		}
 	};
+
+	std::map<String, Mixed> Array::_arrays = {};
 }
 
 #endif
