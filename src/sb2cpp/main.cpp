@@ -107,6 +107,7 @@ public:
 		};
 		struct {
 			// OPERATOR
+			bool operator_unary;
 			std::wstring operator_str;
 		};
 		struct {
@@ -275,17 +276,21 @@ std::unique_ptr<Node> parse_value(std::vector<std::wstring> &tokens, size_t *ind
 			subnode = parse_call(tokens, index, true);
 		}
 		else if (ops.count(token1) != 0) {
+			subnode = std::make_unique<Node>(Node());
+			subnode->type = OPERATOR;
 			// ... +
 			if (was_operator) {
 				// Unary + and -
 				if (token1 != L"-" && token1 != L"+") {
 					throw std::runtime_error("expected '+' or '-'");
 				}
+				subnode->operator_unary = true;
 			}
-			was_operator = true;
-			subnode = std::make_unique<Node>(Node());
-			subnode->type = OPERATOR;
+			else {
+				subnode->operator_unary = false;
+			}
 			subnode->operator_str = ops[token1];
+			was_operator = true;
 			(*index)++;
 		}
 		else {
@@ -582,7 +587,7 @@ void sb2cpp_single(enum node_type parent_type, std::unique_ptr<Node> const& node
 		case VALUE_LIST: {
 			bool group = (parent_type == VALUE_LIST && node->value_list.size() > 1);
 			if (group) std::wcout << "(";
-			sb2cpp_multi(node->type, node->value_list, L" ", indent);
+			sb2cpp_multi(node->type, node->value_list, L"", indent);
 			if (group) std::wcout << ")";
 			break;
 		}
@@ -609,7 +614,9 @@ void sb2cpp_single(enum node_type parent_type, std::unique_ptr<Node> const& node
 			break;
 		}
 		case OPERATOR:
+			if (!node->operator_unary) std::wcout << " ";
 			std::wcout << node->operator_str;
+			if (!node->operator_unary) std::wcout << " ";
 			break;
 		case IF_ELSE:
 			if (node->if_condition != nullptr) {
