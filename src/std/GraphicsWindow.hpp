@@ -264,6 +264,12 @@ namespace SmallBasic {
 			_GetPlatform()->DrawText(x, y, text);
 		}
 
+		// - GraphicsWindow.DrawBoundText(x, y, width, text)
+		// Draws a line of text on the screen at the specified location.
+		static void DrawBoundText(Number x, Number y, Number width, String const& text) {
+			_GetPlatform()->DrawBoundText(x, y, width, text);
+		}
+
 		// - GraphicsWindow.Clear()
 		// Clears the window.
 		static void Clear() {

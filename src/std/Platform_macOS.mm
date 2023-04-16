@@ -446,7 +446,7 @@ namespace SmallBasic {
 		[alert runModal];
 	}
 
-	void Platform::DrawText(Number x, Number y, String const& wText) {
+	void Platform::_DrawText(CGFloat x, CGFloat y, CGFloat width, String const& wText) {
 		_EnsureContext();
 		NSString *text = WStringToNSString(wText);
 		if (fontChanged) {
@@ -476,7 +476,7 @@ namespace SmallBasic {
 		// Calculate frame
 		CGRect rect;
 		rect.size = CTFramesetterSuggestFrameSizeWithConstraints(framesetter,
-			CFRangeMake(0, 0), NULL, CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX), NULL);
+			CFRangeMake(0, 0), NULL, CGSizeMake(width, CGFLOAT_MAX), NULL);
 		rect.origin.x = x;
 		rect.origin.y = y;
 
@@ -489,6 +489,14 @@ namespace SmallBasic {
 		CFRelease(frame);
 		CFRelease(framesetter);
 		CGContextRestoreGState(_context);
+	}
+
+	void Platform::DrawText(Number x, Number y, String const& text) {
+		_DrawText(x, y, CGFLOAT_MAX, text);
+	}
+
+	void Platform::DrawBoundText(Number x, Number y, Number width, String const& text) {
+		_DrawText(x, y, width, text);
 	}
 
 	void Platform::DrawLine(Number x1, Number y1, Number x2, Number y2) {
