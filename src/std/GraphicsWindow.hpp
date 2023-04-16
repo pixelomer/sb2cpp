@@ -302,6 +302,20 @@ namespace SmallBasic {
 			_handleMouseMove = mouseMove;
 		}
 
+		// - GraphicsWindow.GetPixel(x, y)
+		// Gets the color of the pixel at the specified x and y co-ordinates.
+		static Mixed GetPixel(Number x, Number y) {
+			return _GetPlatform()->GetPixel(x, y).name;
+		}
+
+		// - GraphicsWindow.SetPixel(x, y, color)
+		// Draws the pixel specified by the x and y co-ordinates using
+		// the specified color.
+		static void SetPixel(Number x, Number y, String const& colorName) {
+			Color color = Color(colorName);
+			_GetPlatform()->SetPixel(x, y, color);
+		}
+
 		// - GraphicsWindow.GetRandomColor()
 		// Gets a valid random color.
 		static Mixed GetRandomColor() {

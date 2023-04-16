@@ -61,6 +61,7 @@ namespace SmallBasic {
 		void _SetColor(Color const& color, CGColorRef *storedColor);
 		void _PrepareFill();
 		void _PrepareStroke();
+		uint8_t *_GetPixelAddress(Number x, Number y);
 #endif
 	public:
 		bool ignoresKeyEvents = true;
@@ -173,6 +174,7 @@ namespace SmallBasic {
 		void DrawText(Number x, Number y, String const& text);
 		void ClearWindow();
 		Color GetPixel(Number x, Number y);
+		void SetPixel(Number x, Number y, Color const& color);
 
 		/* Timer */
 		void SetTimerInterval(Number milliseconds) {

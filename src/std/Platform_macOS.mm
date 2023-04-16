@@ -323,16 +323,38 @@ namespace SmallBasic {
 		_GetWindow().contentView.needsDisplay = YES;
 	}
 
-	Color Platform::GetPixel(Number x, Number y) {
+	uint8_t *Platform::_GetPixelAddress(Number x, Number y) {
+		_EnsureContext();
 		size_t height = CGBitmapContextGetHeight(_context);
 		size_t width = CGBitmapContextGetWidth(_context);
 		if ((size_t)x >= width || (size_t)y >= height) {
-			return Color(L"white");
+			return NULL;
 		}
+		y = height - y;
 		size_t bytesPerRow = CGBitmapContextGetBytesPerRow(_context);
 		uint8_t *imageData = (uint8_t *)CGBitmapContextGetData(_context);
-		imageData += bytesPerRow * (width * (size_t)y + (size_t)x);
-		return Color(imageData[0], imageData[1], imageData[2]);
+		imageData += (bytesPerRow * (size_t)y) + (4 * (size_t)x);
+		return imageData;
+	}
+
+	Color Platform::GetPixel(Number x, Number y) {
+		uint8_t *pixel = _GetPixelAddress(x, y);
+		if (pixel == NULL) {
+			return Color(L"white");
+		}
+		return Color(pixel[0], pixel[1], pixel[2]);
+	}
+
+	void Platform::SetPixel(Number x, Number y, Color const& color) {
+		uint8_t *pixel = _GetPixelAddress(x, y);
+		if (pixel == NULL) {
+			return;
+		}
+		pixel[0] = color.r;
+		pixel[1] = color.g;
+		pixel[2] = color.b;
+		pixel[3] = 0xFF;
+		_GetWindow().contentView.needsDisplay = YES;
 	}
 
 	void Platform::ClearWindow() {
