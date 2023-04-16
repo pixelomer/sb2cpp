@@ -595,7 +595,10 @@ void sb2cpp_single(enum node_type parent_type, std::unique_ptr<Node> const& node
 	}
 	switch (node->type) {
 		case VALUE_LIST: {
+			bool group = (parent_type == VALUE_LIST && node->value_list.size() > 1);
+			if (group) std::wcout << "(";
 			sb2cpp_multi(node->type, node->value_list, L"", indent);
+			if (group) std::wcout << ")";
 			break;
 		}
 		case VARIABLE:
