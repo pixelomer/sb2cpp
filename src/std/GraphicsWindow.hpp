@@ -302,6 +302,12 @@ namespace SmallBasic {
 			_handleMouseMove = mouseMove;
 		}
 
+		// - GraphicsWindow.GetRandomColor()
+		// Gets a valid random color.
+		static Mixed GetRandomColor() {
+			return GetColorFromRGB(random() % 256, random() % 256, random() % 256);
+		}
+
 		// - GraphicsWindow.GetColorFromRGB(red, green, blue)
 		// Constructs a color given the Red, Green and Blue values.
 		static Mixed GetColorFromRGB(Number r, Number g, Number b) {
