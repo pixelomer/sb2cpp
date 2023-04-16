@@ -255,6 +255,9 @@ std::unique_ptr<Node> parse_value(std::vector<std::wstring> &tokens, size_t *ind
 		}
 		else if (was_operator && token1[0] == L'"') {
 			(*index)++;
+			if (token1.find(L'\n') != std::wstring::npos) {
+				throw std::runtime_error("expected '\"', got newline");
+			}
 			was_operator = false;
 			subnode = std::make_unique<Node>(Node());
 			subnode->type = STRING_LITERAL;
