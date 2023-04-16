@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <cmath>
+#include <ctime>
 #include <tuple>
 #include <map>
 #include <clocale>
@@ -841,16 +842,33 @@ void sb2cpp(std::wstring const& source) {
 	auto tokens = tokenize(source);
 	auto parsed = parse(tokens);
 
+	time_t epoch = time(NULL);
+	struct tm *time = gmtime(&epoch);
+
+	// Version header
+	std::wcout << "// sb2cpp by pixelomer";
+#ifdef GIT_COMMIT
+	std::wcout << " (commit " GIT_COMMIT ")";
+#endif
+	std::wcout << std::endl;
+
+	// Date
+	std::wcout << "// Generated at " << std::put_time(time, L"%B %e %Y %H:%M:%S UTC")
+		<< std::endl;
+	std::wcout << std::endl;
+
+	// Includes
 	std::wcout << L"#include \"src/std/SmallBasic.hpp\"" << std::endl;
 	std::wcout << L"#include <random>" << std::endl;
 	std::wcout << L"using namespace SmallBasic;" << std::endl;
-	std::wcout << L"" << std::endl;
+	std::wcout << std::endl;
 
+	// Variables and functions
 	std::wcout << L"std::stack<Mixed> end;" << std::endl;
 	sb2cpp_vars(parsed);
+	std::wcout << std::endl;
 
-	std::wcout << L"" << std::endl;
-
+	// User defined functions
 	for (auto iter = parsed.end() - 1; iter >= parsed.begin(); iter--) {
 		auto const& node = *iter;
 		if (node->type == SUB) {
@@ -859,9 +877,11 @@ void sb2cpp(std::wstring const& source) {
 		}
 	}
 
+	// SmallBasic main
 	sb2cpp_impl(L"SmallBasic_Main", parsed);
+	std::wcout << std::endl;
 
-	std::wcout << L"" << std::endl;
+	// Program main
 	std::wcout << L"int main(int argc, char **argv) {" << std::endl;
 	std::wcout << sb2cpp_indent(1) << L"Program::_Run(argc, argv, SmallBasic_Main);"
 		<< std::endl;
