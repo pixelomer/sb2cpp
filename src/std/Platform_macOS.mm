@@ -100,7 +100,8 @@ NSString *WStringToNSString(SmallBasic::String const& str) {
 
 - (void)mouseMoved:(NSEvent *)event {
 	if (_platform != nullptr) {
-		NSPoint point = [NSEvent mouseLocation];
+		NSPoint point = [event locationInWindow];
+		point = [self.contentView convertPoint:point fromView:nil];
 		_platform->PostMouseEvent(point.x, point.y);
 	}
 	[super mouseMoved:event];

@@ -188,6 +188,18 @@ namespace SmallBasic {
 			return _lastKey;
 		}
 
+		// - GraphicsWindow.MouseX
+		// Gets the x-position of the mouse relative to the Graphics Window.
+		static Mixed _GetMouseX() {
+			return _lastMouseX;
+		}
+
+		// - GraphicsWindow.MouseY
+		// Gets the y-position of the mouse relative to the Graphics Window.
+		static Mixed _GetMouseY() {
+			return _lastMouseY;
+		}
+
 		// - GraphicsWindow.Show()
 		// Shows the Graphics window to enable interactions with it.
 		static void Show() {
