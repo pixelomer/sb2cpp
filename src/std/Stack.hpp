@@ -18,7 +18,7 @@ namespace SmallBasic {
 			stacks[stackName].push(value);
 		}
 		static Mixed GetCount(Mixed const& stackName) {
-			if (!StackExists(stackName)) return 0;
+			if (!StackExists(stackName)) return 0.L;
 			return stacks[stackName].size();
 		}
 		static Mixed PopValue(Mixed const& stackName) {

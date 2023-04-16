@@ -31,7 +31,7 @@ namespace SmallBasic {
 		}
 		static Mixed GetIndexOf(String const& haystack, String const& needle) {
 			size_t pos = haystack.find(needle);
-			if (pos == String::npos) return 0;
+			if (pos == String::npos) return 0.L;
 			return pos + 1;
 		}
 		static Mixed ConvertToLowerCase(String str) {

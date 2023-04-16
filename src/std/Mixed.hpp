@@ -100,6 +100,7 @@ namespace SmallBasic {
 			}
 		}
 		Mixed(String const& value) { *this = value; }
+		Mixed(const wchar_t *value) { *this = String(value); }
 		Mixed(Number value) { *this = value; }
 		Mixed(Array const& value) { *this = value; }
 		Mixed(Mixed const& value) { *this = value; }

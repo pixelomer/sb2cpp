@@ -297,7 +297,13 @@ std::unique_ptr<Node> parse_value(std::vector<std::wstring> &tokens, size_t *ind
 			// Variable?
 			if (!was_operator) {
 				// Reached the end
-				return std::make_unique<Node>(std::move(node));
+				if (node.value_list.size() == 1) {
+					std::unique_ptr<Node> only_value = std::move(node.value_list[0]);
+					return only_value;
+				}
+				else {
+					return std::make_unique<Node>(std::move(node));
+				}
 			}
 			else {
 				subnode = parse_variable(tokens, index);
@@ -585,10 +591,7 @@ void sb2cpp_single(enum node_type parent_type, std::unique_ptr<Node> const& node
 	}
 	switch (node->type) {
 		case VALUE_LIST: {
-			bool group = (parent_type == VALUE_LIST && node->value_list.size() > 1);
-			if (group) std::wcout << "(";
 			sb2cpp_multi(node->type, node->value_list, L"", indent);
-			if (group) std::wcout << ")";
 			break;
 		}
 		case VARIABLE:
@@ -601,16 +604,20 @@ void sb2cpp_single(enum node_type parent_type, std::unique_ptr<Node> const& node
 			if (root) std::wcout << ";";
 			break;
 		case STRING_LITERAL:
-			std::wcout << "Mixed(L" << sb2cpp_escape(node->string_literal) << ")";
+			if (parent_type != STDLIB_CALL) std::wcout << "Mixed(";
+			std::wcout << "L" << sb2cpp_escape(node->string_literal);
+			if (parent_type != STDLIB_CALL) std::wcout << ")";
 			break;
 		case NUMBER_LITERAL: {
 			long double int_part;
 			long double fraction_part = std::modfl(node->number_literal, &int_part);
-			std::wcout << "Mixed(" << node->number_literal;
+			if (parent_type != STDLIB_CALL) std::wcout << "Mixed(";
+			std::wcout << node->number_literal;
 			if (fraction_part == 0.L) {
 				std::wcout << ".";
 			}
-			std::wcout << "L)";
+			std::wcout << "L";
+			if (parent_type != STDLIB_CALL) std::wcout << ")";
 			break;
 		}
 		case OPERATOR:
