@@ -1,8 +1,10 @@
 #ifndef _SMALLBASIC_PLATFORM_H
 #define _SMALLBASIC_PLATFORM_H
 
-#include "Color.hpp"
-#include "Mixed.hpp"
+#include "common/Color.hpp"
+#include "common/Mixed.hpp"
+#include "common/Drawable.hpp"
+#include "Shapes.hpp"
 #include <cmath>
 #include <queue>
 
@@ -14,29 +16,12 @@
 namespace SmallBasic {
 	class Platform {
 	private:
-		class Event {
-		public:
-			enum EventType {
-				MOUSE_DOWN,
-				MOUSE_UP,
-				KEY_DOWN,
-				KEY_UP,
-				MOUSE_MOVE,
-				TIMER_TICK
-			};
-			EventType type;
-			String key;
-			Number x;
-			Number y;
-			Event(EventType type, Number x, Number y): type(type), x(x), y(y) {}
-			Event(EventType type, String key): type(type), key(key) {}
-			Event(EventType type): type(type) {}
-		};
 		static Platform *_default;
 		std::queue<Event> _eventQueue;
 		bool _waitingForEvents = false;
 		Number _timerInterval = 10.L;
 		void _Run();
+		void _RunFor(Number milliseconds);
 		void _Stop();
 		void _UpdateTimerInterval();
 		void _PostEvent(Event const& event) {
@@ -51,13 +36,14 @@ namespace SmallBasic {
 		SmallBasicWindow *__strong _window;
 		NSTimer *__strong _timer;
 		SmallBasicWindow *_GetWindow();
-		CGContextRef _context = NULL;
+		CGContextRef _backgroundContext = NULL;
+		CGContextRef _shapeContext = NULL;
 		CGFloat _strokeWidth;
 		CGColorRef _fillColor;
 		CGColorRef _strokeColor;
 		CGColorSpaceRef _colorSpace;
-		void _ReallocateContext(Number ldWidth, Number ldHeight);
-		void _EnsureContext();
+		void _ReallocateContext(CGContextRef &context, Number ldWidth, Number ldHeight);
+		CGContextRef _EnsureContext(bool shapeLayer = false);
 		void _SetColor(Color const& color, CGColorRef *storedColor);
 		void _PrepareFill();
 		void _PrepareStroke();
@@ -78,18 +64,6 @@ namespace SmallBasic {
 		bool italicText = false;
 		bool fontChanged = true;
 
-		void PostMouseEvent(Number x, Number y) {
-			_PostEvent(Event(Event::MOUSE_MOVE, x, y));
-		}
-		void PostMouseEvent(bool down) {
-			_PostEvent(Event(down ? Event::MOUSE_DOWN : Event::MOUSE_UP));
-		}
-		void PostKeyEvent(bool down, String const& key) {
-			_PostEvent(Event(down ? Event::KEY_DOWN : Event::KEY_UP, key));
-		}
-		void PostTimerEvent() {
-			_PostEvent(Event(Event::TIMER_TICK));
-		}
 		static Platform *Default() {
 			if (_default == nullptr) {
 				_default = new Platform();
@@ -101,65 +75,11 @@ namespace SmallBasic {
 		Platform();
 		~Platform();
 
-		bool WillTerminate() {
-			return !IsTimerActive() && !IsWindowVisible() && _eventQueue.size() <= 0;
-		}
-
-		/* Run loop */
-		void Run(void (*mainFunction)()) {
-			mainFunction();
-
-			while (!WillTerminate()) {
-				// Process events
-				while (_eventQueue.size() > 0) {
-					Event &event = _eventQueue.front();
-					switch (event.type) {
-						case Event::KEY_DOWN:
-							if (onKeyDown != NULL)
-								onKeyDown(event.key);
-							break;
-						case Event::KEY_UP:
-							if (onKeyUp != NULL)
-								onKeyUp(event.key);
-							break;
-						case Event::MOUSE_DOWN:
-							if (onMouseDown != NULL)
-								onMouseDown();
-							break;
-						case Event::MOUSE_UP:
-							if (onMouseUp != NULL)
-								onMouseUp();
-							break;
-						case Event::MOUSE_MOVE:
-							if (onMouseMove != NULL)
-								onMouseMove(event.x, event.y);
-							break;
-						case Event::TIMER_TICK:
-							if (onTimerTick != NULL)
-								onTimerTick();
-							break;
-					}
-					_eventQueue.pop();
-				}
-
-				// Wait for events
-				if (!WillTerminate()) {
-					_waitingForEvents = true;
-					_Run();
-				}
-			}
-		}
-		void RunFor(Number milliseconds);
-
 		/* Window control */
 		void SetWindowVisible(bool visible);
 		void SetCanResize(bool canResize);
 		void SetTitle(String const& title);
-		bool IsWindowVisible();
-		void SetHeight(Number height);
-		Number GetHeight();
-		void SetWidth(Number width);
-		Number GetWidth();
+		void SetDimensions(Number width, Number height);
 		void ShowMessage(String const& text, String const& title);
 
 		/* Drawing */
@@ -167,28 +87,14 @@ namespace SmallBasic {
 		void SetFillColor(Color const& color);
 		void SetStrokeColor(Color const& color);
 		void SetStrokeWidth(Number strokeWidth);
-		void DrawRectangle(Number x, Number y, Number width, Number height, bool fill);
-		void DrawEllipse(Number x, Number y, Number width, Number height, bool fill);
-		void DrawTriangle(Number x1, Number y1, Number x2, Number y2, Number x3,
-			Number y3, bool fill);
-		void DrawLine(Number x1, Number y1, Number x2, Number y2);
-		void DrawText(Number x, Number y, String const& text);
-		void DrawBoundText(Number x, Number y, Number width, String const& text);
-		void ClearWindow();
+		void Draw(Drawable const& drawable, bool shapeLayer = false);
+		void Clear(bool shapeLayer = false);
 		Color GetPixel(Number x, Number y);
 		void SetPixel(Number x, Number y, Color const& color);
 
 		/* Timer */
-		void SetTimerInterval(Number milliseconds) {
-			_timerInterval = milliseconds;
-			_UpdateTimerInterval();
-		}
-		Number GetTimerInterval() {
-			return _timerInterval;
-		}
-		bool IsTimerActive();
-		void PauseTimer();
-		void ResumeTimer();
+		void SetTimerInterval(Number milliseconds);
+		void SetTimerActive(bool active);
 	};
 
 	Platform *Platform::_default = nullptr;

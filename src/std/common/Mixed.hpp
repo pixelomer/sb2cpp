@@ -1,5 +1,5 @@
-#ifndef _SMALLBASIC_MIXED_H
-#define _SMALLBASIC_MIXED_H
+#ifndef SMALLBASIC_COMMON_MIXED_H
+#define SMALLBASIC_COMMON_MIXED_H
 
 #include <string>
 #include <map>
@@ -23,6 +23,7 @@ namespace SmallBasic {
 		typedef std::wstring String;
 		typedef std::map<Mixed, Mixed> Array;
 	private:
+		static Number _unique;
 		enum MixedType {
 			MIXED_UNDEFINED,
 			MIXED_NUMBER,
@@ -105,6 +106,12 @@ namespace SmallBasic {
 		Mixed(Array const& value) { *this = value; }
 		Mixed(Mixed const& value) { *this = value; }
 		Mixed(std::string const& value) { *this = value; }
+
+		static Mixed MakeUnique() {
+			Mixed mixed = Mixed(_unique);
+			_unique += 1.L;
+			return mixed;
+		}
 
 		static Mixed Boolean(bool condition) {
 			return Mixed(condition ? L"True" : L"False");
@@ -314,6 +321,7 @@ namespace SmallBasic {
 
 	typedef Mixed::Number Number;
 	typedef Mixed::String String;
+	Number Mixed::_unique = 1;
 }
 
 #endif

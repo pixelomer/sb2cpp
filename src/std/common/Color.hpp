@@ -1,5 +1,5 @@
-#ifndef _SMALLBASIC_COLOR_H
-#define _SMALLBASIC_COLOR_H
+#ifndef SMALLBASIC_COMMON_COLOR_H
+#define SMALLBASIC_COMMON_COLOR_H
 
 #include "Mixed.hpp"
 #include <stdint.h>
@@ -28,7 +28,7 @@ namespace SmallBasic {
 			name = color.name;
 			return *this;
 		}
-		Color(String name) {
+		Color(String name = L"black") {
 			this->name = name;
 			std::transform(name.begin(), name.end(), name.begin(), std::towlower);
 			if (_colors.count(name) != 0) {

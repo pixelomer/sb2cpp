@@ -393,6 +393,11 @@ std::vector<std::unique_ptr<Node>> parse(std::vector<std::wstring> &tokens,
 				auto step_value = parse_value(tokens, &index);
 				node->for_step = std::move(step_value);
 			}
+			else {
+				node->for_step = std::make_unique<Node>();
+				node->for_step->type = NUMBER_LITERAL;
+				node->for_step->number_literal = 1.0L;
+			}
 			auto statements = parse(tokens, &index, { L"EndFor" });
 			if (get_token(tokens, index++) != L"EndFor") {
 				throw std::runtime_error("expected 'EndFor'");
@@ -668,28 +673,15 @@ void sb2cpp_single(enum node_type parent_type, std::unique_ptr<Node> const& node
 			if (root) std::wcout << ";";
 			break;
 		case FOR_LOOP:
-			sb2cpp_single(node->type, node->for_start, indent);
-			std::wcout << ";\n" << sb2cpp_indent(indent);
-			std::wcout << "end.push(";
-			sb2cpp_single(node->type, node->for_end, indent);
-			std::wcout << ");\n" << sb2cpp_indent(indent);
-			std::wcout << "for (; ";
-			sb2cpp_single(node->type, node->for_start->assignment_to, indent);
-			std::wcout << " <= end.top(); ";
-			sb2cpp_single(node->type, node->for_start->assignment_to, indent);
-			std::wcout << " = ";
-			sb2cpp_single(node->type, node->for_start->assignment_to, indent);
-			std::wcout << " + ";
-			if (node->for_step == nullptr) {
-				std::wcout << "Mixed(1.L)";
-			}
-			else {
-				sb2cpp_single(node->type, node->for_step, indent);
-			}
-			std::wcout << ") {\n";
+			std::wcout << "for (auto _ : ForLoop(&(";
+			sb2cpp_single(node->type, node->for_start);
+			std::wcout << "), ";
+			sb2cpp_single(node->type, node->for_step);
+			std::wcout << ", ";
+			sb2cpp_single(node->type, node->for_end);
+			std::wcout << ")) {\n";
 			sb2cpp_multi(node->type, node->for_statements, L"\n", indent+1, true);
 			std::wcout << "\n" << sb2cpp_indent(indent) << "}\n";
-			std::wcout << sb2cpp_indent(indent) << "end.pop();";
 			break;
 		case GOTO_LABEL:
 			std::wcout << node->label_name << ":;";
@@ -862,7 +854,8 @@ void sb2cpp(std::wstring const& source) {
 
 	// Includes
 	std::wcout << L"#include \"src/std/SmallBasic.hpp\"" << std::endl;
-	std::wcout << L"using namespace SmallBasic;" << std::endl;
+	std::wcout << L"using namespace SmallBasic::Std;" << std::endl;
+	std::wcout << L"using SmallBasic::Mixed;" << std::endl;
 	std::wcout << std::endl;
 
 	// Variables and functions

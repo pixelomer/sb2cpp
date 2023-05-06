@@ -4,9 +4,10 @@
 !src/sb2cpp/*.cpp
 !src/sb2cpp/*.hpp
 !src/std/
-!src/std/*.cpp
-!src/std/*.hpp
-!src/std/*.mm
+!src/std/**/
+!src/std/**/*.hpp
+!src/std/**/*.mm
+!src/std/**/*.cpp
 !.gitignore
 !.gitattributes
 !README.md
