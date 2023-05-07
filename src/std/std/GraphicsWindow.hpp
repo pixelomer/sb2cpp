@@ -272,7 +272,7 @@ namespace SmallBasic {
 		Updatable<bool> GraphicsWindow::_fontBold = false;
 		Updatable<bool> GraphicsWindow::_fontItalic = false;
 		Updatable<String> GraphicsWindow::_title = String(L"SmallBasic");
-		Updatable<Number> GraphicsWindow::_penWidth = 10.L;
+		Updatable<Number> GraphicsWindow::_penWidth = 2.L;
 		Updatable<Color> GraphicsWindow::_penColor = Color(L"black");
 		Updatable<Color> GraphicsWindow::_backgroundColor = Color(L"white");
 		Updatable<Color> GraphicsWindow::_brushColor = Color(L"black");
