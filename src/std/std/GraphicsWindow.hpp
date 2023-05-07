@@ -34,6 +34,7 @@ namespace SmallBasic {
 			static Updatable<Rect> _rect;
 
 			static void (*_keyDown)();
+			static void (*_keyUp)();
 			static void (*_mouseDown)();
 			static String _lastKey;
 			static Pos _mouse;
@@ -60,6 +61,11 @@ namespace SmallBasic {
 			// KeyDown
 			static void _SetKeyDown(void(*keyDown)()) {
 				_keyDown = keyDown;
+			}
+
+			// KeyDown
+			static void _SetKeyUp(void(*keyUp)()) {
+				_keyUp = keyUp;
 			}
 
 			// MouseDown
@@ -284,6 +290,7 @@ namespace SmallBasic {
 		String GraphicsWindow::_lastKey = L"";
 		Pos GraphicsWindow::_mouse = { 0, 0 };
 		void (*GraphicsWindow::_keyDown)() = NULL;
+		void (*GraphicsWindow::_keyUp)() = NULL;
 		void (*GraphicsWindow::_mouseDown)() = NULL;
 	}
 }

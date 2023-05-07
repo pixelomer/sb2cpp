@@ -68,6 +68,10 @@ namespace SmallBasic {
 							}
 							break;
 						case Event::KEY_UP:
+							Std::GraphicsWindow::_lastKey = event.key;
+							if (Std::GraphicsWindow::_keyUp != NULL) {
+								Std::GraphicsWindow::_keyUp();
+							}
 							break;
 						case Event::MOUSE_DOWN:
 							if (Std::GraphicsWindow::_mouseDown != NULL) {
