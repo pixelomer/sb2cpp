@@ -55,6 +55,9 @@ namespace SmallBasic {
 			}
 			void Draw(enum Layer layer, Drawable const& drawable) {
 				changed = true;
+				if (!drawable.visible) {
+					return;
+				}
 				_Draw(layer, drawable);
 			}
 			void Clear(enum Layer layer) {

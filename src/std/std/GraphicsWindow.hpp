@@ -264,9 +264,7 @@ namespace SmallBasic {
 				std::wcerr << "[" << title << "] " << message << std::endl;
 			}
 
-			static void Clear() {
-				Platform::Renderer::Default()->ClearAll();
-			}
+			static void Clear();
 		};
 
 		Updatable<bool> GraphicsWindow::_visible = false;
@@ -286,6 +284,17 @@ namespace SmallBasic {
 		Pos GraphicsWindow::_mouse = { 0, 0 };
 		void (*GraphicsWindow::_keyDown)() = NULL;
 		void (*GraphicsWindow::_mouseDown)() = NULL;
+	}
+}
+
+#include "Shapes.hpp"
+
+namespace SmallBasic {
+	namespace Std {
+		void GraphicsWindow::Clear() {
+			Platform::Renderer::Default()->ClearAll();
+			Shapes::_HideAll();
+		}
 	}
 }
 

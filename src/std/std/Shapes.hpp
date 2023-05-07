@@ -15,11 +15,7 @@ namespace SmallBasic {
 		private:
 			friend class Platform::RunLoop;
 			static Updatable<std::map<Mixed, Drawable>> _shapes;
-			static Mixed _AddShape(Drawable const& drawable) {
-				Mixed id = Mixed::MakeUnique();
-				_shapes.mut()[id] = GraphicsWindow::_MakeDrawable(drawable);
-				return id;
-			}
+			static Mixed _AddShape(Drawable const& drawable);
 		public:
 			static Mixed AddRectangle(Number width, Number height) {
 				return _AddShape(Drawable(0, 0, {{0,0}, {width,0}, {width,height},
@@ -66,9 +62,27 @@ namespace SmallBasic {
 				_shapes.mut()[shapeName].x = x;
 				_shapes.mut()[shapeName].y = y;
 			}
+
+			static void _HideAll() {
+				for (auto &pair : _shapes.mut()) {
+					pair.second.visible = false;
+				}
+			}
 		};
 
 		Updatable<std::map<Mixed, Drawable>> Shapes::_shapes = {};
+	}
+}
+
+#include "GraphicsWindow.hpp"
+
+namespace SmallBasic {
+	namespace Std {
+		Mixed Shapes::_AddShape(Drawable const& drawable) {
+			Mixed id = Mixed::MakeUnique();
+			_shapes.mut()[id] = GraphicsWindow::_MakeDrawable(drawable);
+			return id;
+		}
 	}
 }
 
