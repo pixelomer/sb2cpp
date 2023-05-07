@@ -12,6 +12,7 @@ namespace SmallBasic {
 		bool fontBold, fontItalic;
 		Color penColor, brushColor;
 		Number width, height;
+		Number penWidth;
 	};
 }
 

@@ -69,6 +69,8 @@ namespace SmallBasic {
 			CGColorRelease(cgColor);
 			cgColor = NULL;
 
+			CGContextSetLineWidth(context, (CGFloat)drawable.graphics.penWidth);
+
 			switch (drawable.type) {
 				case Drawable::PATH: {
 					auto points = drawable.GetAbsolute();

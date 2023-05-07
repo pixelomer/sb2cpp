@@ -52,7 +52,8 @@ namespace SmallBasic {
 					.fontSize = _fontSize.get(),
 					.width = _rect.get().width,
 					.height = _rect.get().height,
-					.penColor = _penColor.get()
+					.penColor = _penColor.get(),
+					.penWidth = _penWidth.get()
 				};
 			}
 
