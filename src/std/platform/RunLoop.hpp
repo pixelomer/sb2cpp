@@ -11,6 +11,7 @@
 #include "Timer.hpp"
 #include "Event.hpp"
 #include <queue>
+#include <chrono>
 
 namespace SmallBasic {
 	namespace Platform {
@@ -23,6 +24,15 @@ namespace SmallBasic {
 			void _Run();
 			void _Stop();
 			void _Initialize();
+
+			void _PrepareRun() {
+				EventQueue::Default()->onEvent = std::bind(&RunLoop::Stop, this);
+				if (_firstRun) _Initialize();
+				_firstRun = false;
+			}
+			void _EndRun() {
+				EventQueue::Default()->onEvent = nullptr;
+			}
 		public:
 			void Stop() { _Stop(); }
 
@@ -40,20 +50,30 @@ namespace SmallBasic {
 
 					// Wait for events
 					if (!WillTerminate()) {
-						EventQueue::Default()->onEvent = std::bind(&RunLoop::Stop, this);
-						if (_firstRun) _Initialize();
-						_firstRun = false;
+						_PrepareRun();
 						_Run();
-						EventQueue::Default()->onEvent = nullptr;
+						_EndRun();
 					}
 				}
 			}
 
-			void RunFor(Number milliseconds) {
+			Number RunForAtLeast(Number milliseconds) {
+				auto start = std::chrono::high_resolution_clock::now();
+				
 				Update();
-				if (_firstRun) _Initialize();
-				_firstRun = false;
+				_PrepareRun();
 				_RunFor(milliseconds);
+				_EndRun();
+
+				auto end = std::chrono::high_resolution_clock::now();
+				auto elapsed = std::chrono::duration<Number, std::milli>(end - start).count();
+				return elapsed;
+			}
+
+			void RunFor(Number milliseconds) {
+				while (milliseconds >= 0) {
+					milliseconds -= RunForAtLeast(milliseconds);
+				}
 			}
 
 			void Update() {
