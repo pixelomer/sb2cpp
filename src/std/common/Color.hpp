@@ -49,7 +49,7 @@ namespace SmallBasic {
 				}
 			}
 			else {
-				std::wcout << L"Unrecognized color: " << name << std::endl;
+				std::wcerr << L"Color: unknown color: " << name << std::endl;
 			}
 		}
 		Color(uint8_t r, uint8_t g, uint8_t b): r(r), g(g), b(b) {
