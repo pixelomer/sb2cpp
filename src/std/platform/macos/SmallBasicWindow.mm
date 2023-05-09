@@ -9,6 +9,7 @@
 @implementation SmallBasicWindow {
 	SmallBasic::Platform::Window *_windowContext;
 	id _keyMonitor;
+	NSMutableSet<NSString *> *_keysDown;
 }
 
 - (instancetype)initWithFrame:(NSRect)frame
@@ -18,6 +19,7 @@
 		NSWindowStyleMaskClosable) backing:NSBackingStoreBuffered defer:YES];
 	if (self != nil) {
 		_windowContext = windowContext;
+		_keysDown = [NSMutableSet new];
 		self.contentView = [[SmallBasicView alloc] initWithFrame:frame
 			renderer:&windowContext->renderer];
 		self.contentView.wantsLayer = YES;
@@ -32,7 +34,7 @@
 		[self.contentView addTrackingArea:trackingArea];
 
 		_keyMonitor = [NSEvent addLocalMonitorForEventsMatchingMask:NSKeyDownMask |
-			NSKeyDownMask handler:^(NSEvent *event) {
+			NSKeyUpMask handler:^(NSEvent *event) {
 				NSString *key = [event.characters substringWithRange:NSMakeRange(0, 1)];
 				switch (event.keyCode) {
 					case 123: key = @"Left"; break;
@@ -40,8 +42,15 @@
 					case 125: key = @"Down"; break;
 					case 126: key = @"Up"; break;
 				}
-				_windowContext->eventQueue->PostKeyEvent(event.type == NSEventTypeKeyDown,
-					NSStringToWString(key));
+				BOOL keyDownEvent = (event.type == NSEventTypeKeyDown);
+				if (keyDownEvent && ![_keysDown containsObject:key]) {
+					_windowContext->eventQueue->PostKeyEvent(true, NSStringToWString(key));
+					[_keysDown addObject:key];
+				}
+				else if (!keyDownEvent && [_keysDown containsObject:key]) {
+					_windowContext->eventQueue->PostKeyEvent(false, NSStringToWString(key));
+					[_keysDown removeObject:key];
+				}
 				return event;
 			}
 		];
