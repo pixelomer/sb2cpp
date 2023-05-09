@@ -1,5 +1,5 @@
-#ifndef SMALLBASIC_PLATFORM_WINDOW_MM
-#define SMALLBASIC_PLATFORM_WINDOW_MM
+#ifndef SMALLBASIC_PLATFORM_MACOS_WINDOW_MM
+#define SMALLBASIC_PLATFORM_MACOS_WINDOW_MM
 
 #include "../Window.hpp"
 #include "Utils.mm"
@@ -54,9 +54,7 @@ namespace SmallBasic {
 			}
 		}
 		
-		Window::Window(Renderer *renderer, EventQueue *eventQueue) {
-			this->eventQueue = eventQueue;
-			this->renderer = renderer;
+		void Window::_Initialize() {
 			NSRect frame = NSMakeRect(0, 0, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
 			_window = [[SmallBasicWindow alloc] initWithFrame:frame windowContext:this];
 			[[NSNotificationCenter defaultCenter] addObserver:NSApp

@@ -1,6 +1,7 @@
 #ifndef SMALLBASIC_PLATFORM_EVENT_HPP
 #define SMALLBASIC_PLATFORM_EVENT_HPP
 
+#include "config.hpp"
 #include "../common/Mixed.hpp"
 
 namespace SmallBasic {

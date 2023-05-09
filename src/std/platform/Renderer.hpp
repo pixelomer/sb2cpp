@@ -1,12 +1,13 @@
 #ifndef SMALLBASIC_PLATFORM_RENDERER_H
 #define SMALLBASIC_PLATFORM_RENDERER_H
 
+#include "config.hpp"
 #include "../common/Color.hpp"
 #include "../common/Mixed.hpp"
 #include "../common/Drawable.hpp"
 #include <cmath>
 #include <queue>
-#if defined(__APPLE__) && defined(__OBJC__)
+#ifdef SMALLBASIC_APPLE
 #include <CoreGraphics/CoreGraphics.h>
 @class NSView;
 #endif
@@ -21,7 +22,7 @@ namespace SmallBasic {
 				CONTROL_LAYER = 2
 			};
 
-#if defined(__APPLE__) && defined(__OBJC__)
+#ifdef SMALLBASIC_APPLE
 		private:
 			std::map<enum Layer, CGContextRef> _layers; //FIXME: sorted maps?
 			CGColorSpaceRef _colorSpace;
@@ -82,8 +83,10 @@ namespace SmallBasic {
 	}
 }
 
-#if defined(__APPLE__) && defined(__OBJC__)
+#if defined(SMALLBASIC_APPLE)
 #include "macos/Renderer.mm"
+#elif defined(SMALLBASIC_SDL)
+#include "sdl/Renderer.hpp"
 #endif
 
 #endif

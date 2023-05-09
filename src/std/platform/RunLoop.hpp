@@ -1,6 +1,7 @@
 #ifndef SMALLBASIC_PLATFORM_RUNLOOP_HPP
 #define SMALLBASIC_PLATFORM_RUNLOOP_HPP
 
+#include "config.hpp"
 #include "../common/Mixed.hpp"
 #include "../std/GraphicsWindow.hpp"
 #include "../std/Shapes.hpp"
@@ -12,13 +13,21 @@
 #include <queue>
 #include <chrono>
 
+#if defined(SMALLBASIC_SDL)
+#include <SDL2/SDL.h>
+#endif
+
 namespace SmallBasic {
 	namespace Platform {
 		class RunLoop {
 		private:
 			static RunLoop *_default;
-			bool _firstRun = true;
 			bool _shouldActivate = false;
+
+#if defined(SMALLBASIC_SDL)
+			SDL_TimerID _timer = 0;
+			static Uint32 SDLTimerCallback(Uint32 interval, void *param);
+#endif
 
 			void _Activate();
 			void _RunFor(Number milliseconds);
@@ -28,8 +37,6 @@ namespace SmallBasic {
 
 			void _PrepareRun() {
 				EventQueue::Default()->onEvent = std::bind(&RunLoop::Stop, this);
-				if (_firstRun) _Initialize();
-				_firstRun = false;
 			}
 			void _EndRun() {
 				EventQueue::Default()->onEvent = nullptr;
@@ -53,6 +60,7 @@ namespace SmallBasic {
 					if (!WillTerminate()) {
 						if (Std::Timer::_active) {
 							//FIXME: not a reliable solution for timers
+							//FIXME: timers are ignored in Program.Delay()
 							Std::Timer::_interval.changed = false;
 							Number duration = Std::Timer::_interval.get();
 							while (!Std::Timer::_interval.changed && duration > 0.L) {
@@ -138,6 +146,10 @@ namespace SmallBasic {
 					}
 				}
 
+				if (Std::GraphicsWindow::_title.changed) {
+					Window::Default()->SetTitle(Std::GraphicsWindow::_title.use());
+				}
+
 				if (Std::GraphicsWindow::_visible.changed) {
 					bool visible = Std::GraphicsWindow::_visible.use();
 					Window::Default()->SetVisible(visible);
@@ -168,14 +180,20 @@ namespace SmallBasic {
 				}
 				return _default;
 			}
+
+			RunLoop() {
+				_Initialize();
+			}
 		};
 
 		RunLoop *RunLoop::_default = nullptr;
 	}
 }
 
-#if defined(__APPLE__) && defined(__OBJC__)
+#if defined(SMALLBASIC_APPLE)
 #include "macos/RunLoop.mm"
+#elif defined(SMALLBASIC_SDL)
+#include "sdl/RunLoop.hpp"
 #endif
 
 #endif
