@@ -16,7 +16,6 @@ namespace SmallBasic {
 
 		void RunLoop::_Initialize() {
 			if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_TIMER) != 0) {
-				std::wcout << "sdl init" << std::endl;
 				std::wcerr << "SDL_Init() failed: " << SDL_GetError() << std::endl;
 				exit(1);
 			}
