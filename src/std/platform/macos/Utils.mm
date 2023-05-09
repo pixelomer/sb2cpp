@@ -25,9 +25,11 @@ NSString *WStringToNSString(SmallBasic::String const& str) {
 	return @(result.c_str());
 }
 
-CGColorRef CGColorFromSBColor(SmallBasic::Color const& color) {
+CGColorRef CGColorFromSBColor(SmallBasic::Color const& color, SmallBasic::Number
+	opacity = 100.L)
+{
 	CGColorRef cgColor = CGColorCreateGenericRGB((CGFloat)color.r / 255.f,
-		(CGFloat)color.g / 255.f, (CGFloat)color.b / 255.f, 1.0);
+		(CGFloat)color.g / 255.f, (CGFloat)color.b / 255.f, opacity / 100.L);
 	return cgColor;
 }
 

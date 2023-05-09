@@ -28,6 +28,9 @@ namespace SmallBasic {
 		// Text contents.
 		String text;
 
+		// Opacity (between 0-100).
+		Number opacity;
+
 		// Drawable position.
 		Number x, y;
 

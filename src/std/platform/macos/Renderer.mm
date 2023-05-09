@@ -60,10 +60,11 @@ namespace SmallBasic {
 			CGContextRef context = _GetLayer(layer, drawable.graphics.width,
 				drawable.graphics.height);
 
-			CGColorRef cgColor = CGColorFromSBColor(drawable.graphics.brushColor);
+			CGColorRef cgColor = CGColorFromSBColor(drawable.graphics.brushColor,
+				drawable.opacity);
 			CGContextSetFillColorWithColor(context, cgColor);
 			CGColorRelease(cgColor);
-			cgColor = CGColorFromSBColor(drawable.graphics.penColor);
+			cgColor = CGColorFromSBColor(drawable.graphics.penColor, drawable.opacity);
 			CGContextSetStrokeColorWithColor(context, cgColor);
 			CGColorRelease(cgColor);
 			cgColor = NULL;

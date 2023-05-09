@@ -68,6 +68,10 @@ namespace SmallBasic {
 					pair.second.visible = false;
 				}
 			}
+
+			static void SetOpacity(Mixed const& shapeName, Number opacity) {
+				_shapes.mut().at(shapeName).opacity = opacity;
+			}
 		};
 
 		Updatable<std::map<Mixed, Drawable>> Shapes::_shapes = {};
