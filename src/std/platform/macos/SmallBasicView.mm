@@ -15,6 +15,7 @@
 {
 	if ((self = [super initWithFrame:frame])) {
 		_renderer = renderer;
+		self.wantsLayer = YES;
 	}
 	return self;
 }
@@ -27,7 +28,7 @@
 
 - (void)drawRect:(NSRect)dirtyRect {
 	if (_renderer != nullptr && *_renderer != nullptr) {
-		(*_renderer)->Render();
+		(*_renderer)->Render(self);
 	}
 }
 

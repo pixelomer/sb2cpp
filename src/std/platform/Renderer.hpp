@@ -8,6 +8,7 @@
 #include <queue>
 #if defined(__APPLE__) && defined(__OBJC__)
 #include <CoreGraphics/CoreGraphics.h>
+@class NSView;
 #endif
 
 namespace SmallBasic {
@@ -28,11 +29,12 @@ namespace SmallBasic {
 			CGContextRef _GetLayer(enum Layer layer, Number minWidth, Number minHeight);
 			uint8_t *_GetPixelAddress(Number x, Number y);
 		public:
-			void Render();
+			void Render(NSView *view);
 #endif
 
 		private:
 			static Renderer *_default;
+			Color _backgroundColor;
 			void _SetBackgroundColor(Color const& backgroundColor);
 			void _Draw(enum Layer layer, Drawable const& drawable);
 			void _Clear(enum Layer layer);
@@ -51,6 +53,7 @@ namespace SmallBasic {
 			~Renderer();
 			void SetBackgroundColor(Color const& backgroundColor) {
 				changed = true;
+				_backgroundColor = backgroundColor;
 				_SetBackgroundColor(backgroundColor);
 			}
 			void Draw(enum Layer layer, Drawable const& drawable) {

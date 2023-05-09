@@ -54,7 +54,6 @@ namespace SmallBasic {
 		}
 
 		void Renderer::_SetBackgroundColor(Color const& backgroundColor) {
-
 		}
 
 		void Renderer::_Draw(enum Layer layer, Drawable const& drawable) {
@@ -204,8 +203,9 @@ namespace SmallBasic {
 			pixel[3] = 0xFF;
 		}
 
-		void Renderer::Render() {
+		void Renderer::Render(NSView *view) {
 			CGContextRef current = [[NSGraphicsContext currentContext] CGContext];
+			view.layer.backgroundColor = CGColorFromSBColor(_backgroundColor);
 			for (auto pair : _layers) {
 				CGContextRef context = pair.second;
 				CGImageRef image = CGBitmapContextCreateImage(context);
