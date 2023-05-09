@@ -3,6 +3,8 @@
 
 #include "../common/Mixed.hpp"
 #include "../common/Updatable.hpp"
+#include <chrono>
+#include <cmath>
 
 namespace SmallBasic {
 	namespace Platform {
@@ -12,8 +14,10 @@ namespace SmallBasic {
 		class Timer {
 		private:
 			friend class Platform::RunLoop;
-			static Updatable<bool> _active;
+			static bool _active;
 			static Updatable<Number> _interval;
+			static std::chrono::time_point<std::chrono::steady_clock,
+				std::chrono::steady_clock::duration> _timerStart;
 			static void (*_onTick)();
 		public:
 			static void _SetTick(void(*onTick)()) {
@@ -23,18 +27,22 @@ namespace SmallBasic {
 				return _interval.get();
 			}
 			static void _SetInterval(Number milliseconds) {
+				_timerStart = std::chrono::high_resolution_clock::now();
 				_interval = milliseconds;
 			}
 			static void Pause() {
 				_active = false;
 			}
 			static void Resume() {
+				_timerStart = std::chrono::high_resolution_clock::now();
 				_active = true;
 			}
 		};
 
-		Updatable<bool> Timer::_active = false;
+		bool Timer::_active = true;
 		Updatable<Number> Timer::_interval = 1000;
+		std::chrono::time_point<std::chrono::steady_clock,
+			std::chrono::steady_clock::duration> Timer::_timerStart = {};
 		void (*Timer::_onTick)() = NULL;
 	}
 }

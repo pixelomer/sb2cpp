@@ -8,7 +8,6 @@
 #include "Window.hpp"
 #include "Renderer.hpp"
 #include "EventQueue.hpp"
-#include "Timer.hpp"
 #include "Event.hpp"
 #include <queue>
 #include <chrono>
@@ -39,7 +38,7 @@ namespace SmallBasic {
 			void Stop() { _Stop(); }
 
 			bool WillTerminate() {
-				return !Std::Timer::_active.get() &&
+				return !Std::Timer::_active &&
 					!Std::GraphicsWindow::_visible.get() &&
 					EventQueue::Default()->QueueSize() <= 0;
 			}
@@ -48,17 +47,24 @@ namespace SmallBasic {
 				mainFunction();
 
 				while (!WillTerminate()) {
-					if (_shouldActivate) {
-						_Activate();
-						_shouldActivate = false;
-					}
-
 					Update();
 
 					// Wait for events
 					if (!WillTerminate()) {
-						_PrepareRun();
-						_Run();
+						if (Std::Timer::_active) {
+							//FIXME: not a reliable solution for timers
+							Std::Timer::_interval.changed = false;
+							Number duration = Std::Timer::_interval.get();
+							while (!Std::Timer::_interval.changed && duration > 0.L) {
+								duration -= RunForAtLeast(duration);
+							}
+							if (!Std::Timer::_interval.changed) {
+								EventQueue::Default()->PostTimerEvent();
+							}
+						}
+						else {
+							_Run();
+						}
 						_EndRun();
 					}
 				}
@@ -117,6 +123,9 @@ namespace SmallBasic {
 							Std::GraphicsWindow::_mouse.y = event.y;
 							break;
 						case Event::TIMER_TICK:
+							if (Std::Timer::_onTick != NULL) {
+								Std::Timer::_onTick();
+							}
 							break;
 					}
 				}
