@@ -25,7 +25,9 @@ namespace SmallBasic {
 				return str.substr(0, prefix.length()) == prefix;
 			}
 			static Mixed GetSubText(String const& str, Number start, Number length) {
-				return str.substr(start - 1, length);
+				start -= 1;
+				if (start <= 0) return L"";
+				return str.substr(start, std::max((int)std::min(str.size() - start, length), 0));
 			}
 			static Mixed GetSubTextToEnd(String const& str, Number start) {
 				return str.substr(start - 1);
