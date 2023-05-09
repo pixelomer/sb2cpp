@@ -19,7 +19,9 @@ namespace SmallBasic {
 		private:
 			static RunLoop *_default;
 			bool _firstRun = true;
+			bool _shouldActivate = false;
 
+			void _Activate();
 			void _RunFor(Number milliseconds);
 			void _Run();
 			void _Stop();
@@ -46,6 +48,11 @@ namespace SmallBasic {
 				mainFunction();
 
 				while (!WillTerminate()) {
+					if (_shouldActivate) {
+						_Activate();
+						_shouldActivate = false;
+					}
+
 					Update();
 
 					// Wait for events
@@ -58,6 +65,11 @@ namespace SmallBasic {
 			}
 
 			Number RunForAtLeast(Number milliseconds) {
+				if (_shouldActivate) {
+					_Activate();
+					_shouldActivate = false;
+				}
+
 				auto start = std::chrono::high_resolution_clock::now();
 				
 				Update();
@@ -118,7 +130,11 @@ namespace SmallBasic {
 				}
 
 				if (Std::GraphicsWindow::_visible.changed) {
-					Window::Default()->SetVisible(Std::GraphicsWindow::_visible.use());
+					bool visible = Std::GraphicsWindow::_visible.use();
+					Window::Default()->SetVisible(visible);
+					if (visible) {
+						_shouldActivate = true;
+					}
 				}
 
 				if (Std::GraphicsWindow::_backgroundColor.changed) {

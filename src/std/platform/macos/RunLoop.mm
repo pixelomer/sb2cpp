@@ -6,6 +6,9 @@
 namespace SmallBasic {
 	namespace Platform {
 		void RunLoop::_Initialize() {
+		}
+
+		void RunLoop::_Activate() {
 			NSApplication *app = [NSApplication sharedApplication];
 			[app setActivationPolicy:NSApplicationActivationPolicyRegular];
 			[app activateIgnoringOtherApps:YES];
