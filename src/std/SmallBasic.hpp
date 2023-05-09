@@ -58,6 +58,11 @@ public:
 	}
 };
 
+#if __cplusplus >= 201703
+[[maybe_unused]]
+#else
+__attribute__((unused))
+#endif
 static ForIterator ForLoop(SmallBasic::Mixed *index, SmallBasic::Mixed step,
 	SmallBasic::Mixed end)
 {
