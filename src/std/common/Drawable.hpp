@@ -29,7 +29,7 @@ namespace SmallBasic {
 		String text;
 
 		// Opacity (between 0-100).
-		Number opacity;
+		Number opacity = 100.L;
 
 		// Drawable position.
 		Number x, y;
