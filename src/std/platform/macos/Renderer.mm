@@ -92,8 +92,8 @@ namespace SmallBasic {
 					break;
 				}
 				case Drawable::OVAL: {
-					CGRect rect = CGRectMake(drawable.x, drawable.y, drawable.width,
-						drawable.height);
+					CGRect rect = CGRectMake(drawable.x, drawable.y - _yOffset,
+						drawable.width, drawable.height);
 					if (drawable.filled) {
 						CGContextFillEllipseInRect(context, rect);
 					}
