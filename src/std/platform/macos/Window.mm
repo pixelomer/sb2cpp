@@ -60,7 +60,9 @@ namespace SmallBasic {
 			[[NSNotificationCenter defaultCenter] addObserver:NSApp
 				selector:@selector(terminate:) name:NSWindowWillCloseNotification
 				object:_window];
-			renderer = new Renderer;
+			CGFloat titleBarHeight = _window.frame.size.height -
+				[_window contentRectForFrameRect:_window.frame].size.height;
+			renderer = new Renderer((Number)titleBarHeight);
 		}
 
 		Window::~Window() {

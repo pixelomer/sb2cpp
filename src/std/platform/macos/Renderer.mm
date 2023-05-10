@@ -6,8 +6,9 @@
 
 namespace SmallBasic {
 	namespace Platform {
-		Renderer::Renderer() {
+		Renderer::Renderer(Number yOffset) {
 			_colorSpace = CGColorSpaceCreateDeviceRGB();
+			_yOffset = yOffset;
 		}
 
 		Renderer::~Renderer() {
@@ -78,7 +79,7 @@ namespace SmallBasic {
 					CGPoint cgPoints[pointCount];
 					for (size_t i=0; i<pointCount; i++) {
 						cgPoints[i] = CGPointMake(std::get<0>(points[i]),
-							std::get<1>(points[i]));
+							std::get<1>(points[i]) - _yOffset);
 					}
 					CGContextAddLines(context, cgPoints, pointCount);
 					CGContextClosePath(context);

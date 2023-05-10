@@ -29,11 +29,12 @@ namespace SmallBasic {
 		private:
 			std::map<enum Layer, CGContextRef> _layers; //FIXME: sorted maps?
 			CGColorSpaceRef _colorSpace;
+			Number _yOffset;
 			CGContextRef _GetLayer(enum Layer layer);
 			CGContextRef _GetLayer(enum Layer layer, Number minWidth, Number minHeight);
 			uint8_t *_GetPixelAddress(Number x, Number y);
 		public:
-			Renderer();
+			Renderer(Number yOffset);
 			~Renderer();
 			void Render(NSView *view);
 #elif defined(SMALLBASIC_SDL)
