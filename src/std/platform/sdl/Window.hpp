@@ -1,5 +1,5 @@
-#ifndef SMALLBASIC_PLATFORM_SDL_WINDOW_MM
-#define SMALLBASIC_PLATFORM_SDL_WINDOW_MM
+#ifndef SMALLBASIC_PLATFORM_SDL_WINDOW_HPP
+#define SMALLBASIC_PLATFORM_SDL_WINDOW_HPP
 
 #include "../Window.hpp"
 #include "../../common/StringUtils.hpp"
@@ -43,7 +43,7 @@ namespace SmallBasic {
 
 		void Window::RedrawIfNeeded() {
 			if (renderer->changed) {
-				renderer->Render(_windowRenderer);
+				renderer->Render();
 				renderer->changed = false;
 			}
 		}
@@ -51,10 +51,13 @@ namespace SmallBasic {
 		void Window::_Initialize() {
 			_window = SDL_CreateWindow("Small Basic", SDL_WINDOWPOS_CENTERED,
 				SDL_WINDOWPOS_CENTERED, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, 0);
-			_windowRenderer = SDL_CreateRenderer(_window, -1, 0);
+			SDL_Renderer *sdlRenderer = SDL_CreateRenderer(_window, -1,
+				SDL_RENDERER_ACCELERATED);
+			renderer = new Renderer(sdlRenderer);
 		}
 
 		Window::~Window() {
+			delete renderer;
 			SDL_DestroyWindow(_window);
 			_window = NULL;
 		}

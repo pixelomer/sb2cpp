@@ -103,6 +103,9 @@ namespace SmallBasic {
 			}
 
 			void Update() {
+				Window *window = Window::Default();
+				Renderer *renderer = window->renderer;
+
 				// Process events
 				while (EventQueue::Default()->QueueSize() > 0) {
 					Event event = EventQueue::Default()->Next();
@@ -139,10 +142,10 @@ namespace SmallBasic {
 				}
 
 				if (Std::Shapes::_shapes.changed) {
-					Renderer::Default()->Clear(Renderer::SHAPE_LAYER);
+					renderer->Clear(Renderer::SHAPE_LAYER);
 					for (auto &pair : Std::Shapes::_shapes.use()) {
 						auto &drawable = pair.second;
-						Renderer::Default()->Draw(Renderer::SHAPE_LAYER, drawable);
+						renderer->Draw(Renderer::SHAPE_LAYER, drawable);
 					}
 				}
 
@@ -159,7 +162,7 @@ namespace SmallBasic {
 				}
 
 				if (Std::GraphicsWindow::_backgroundColor.changed) {
-					Renderer::Default()->SetBackgroundColor(Std::GraphicsWindow::
+					renderer->SetBackgroundColor(Std::GraphicsWindow::
 						_backgroundColor.use());
 				}
 

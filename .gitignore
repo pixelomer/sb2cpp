@@ -8,6 +8,9 @@
 !src/std/**/*.hpp
 !src/std/**/*.mm
 !src/std/**/*.cpp
+!src/std/platform/sdl/SDL2_gfx/
+!src/std/platform/sdl/SDL2_gfx/*.c
+!src/std/platform/sdl/SDL2_gfx/*.h
 !.gitignore
 !.gitattributes
 !README.md

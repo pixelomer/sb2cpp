@@ -33,27 +33,21 @@ namespace SmallBasic {
 			CGContextRef _GetLayer(enum Layer layer, Number minWidth, Number minHeight);
 			uint8_t *_GetPixelAddress(Number x, Number y);
 		public:
+			Renderer();
+			~Renderer();
 			void Render(NSView *view);
 #elif defined(SMALLBASIC_SDL)
 		private:
-			struct SDLLayer {
-				SDL_Surface *surface = NULL;
-				SDL_Renderer *renderer = NULL;
-				SDL_Texture *texture = NULL;
+			SDL_Renderer *_renderer;
 
-				void Reset(int width, int height);
-				void Destroy();
-				SDL_Texture *GetTexture();
-
-				~SDLLayer() { Destroy(); }
-			};
-
-			SDLLayer &_GetLayer(enum Layer layer);
-			SDLLayer &_GetLayer(enum Layer layer, Number minWidth, Number minHeight);
+			SDL_Texture *_GetLayer(enum Layer layer);
+			SDL_Texture *_GetLayer(enum Layer layer, Number minWidth, Number minHeight);
 			Uint32 *_GetPixelAddress(Number x, Number y);
-			std::map<enum Layer, SDLLayer> _layers;
+			std::map<enum Layer, SDL_Texture *> _layers;
 		public:
-			void Render(SDL_Renderer *renderer);
+			void Render();
+			Renderer(SDL_Renderer *renderer): _renderer(renderer) {}
+			~Renderer();
 #endif
 
 		private:
@@ -67,14 +61,6 @@ namespace SmallBasic {
 		public:
 			bool changed;
 
-			static Renderer *Default() {
-				if (_default == nullptr) {
-					_default = new Renderer;
-				}
-				return _default;
-			}
-			Renderer();
-			~Renderer();
 			void SetBackgroundColor(Color const& backgroundColor) {
 				changed = true;
 				_backgroundColor = backgroundColor;
@@ -95,14 +81,8 @@ namespace SmallBasic {
 				changed = true;
 				_ClearAll();
 			}
-			void SetPixel(Number x, Number y, Color const& color) {
-				changed = true;
-				_SetPixel(x, y, color);
-			}
 			Color GetPixel(Number x, Number y);
 		};
-
-		Renderer *Renderer::_default = nullptr;
 	}
 }
 

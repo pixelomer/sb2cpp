@@ -7,7 +7,7 @@
 #include "../common/Color.hpp"
 #include "../common/Rect.hpp"
 #include "../common/Pos.hpp"
-#include "../platform/Renderer.hpp"
+#include "../platform/Window.hpp"
 #include "../common/GraphicsState.hpp"
 
 //FIXME: Rewrite this entire thing
@@ -209,54 +209,56 @@ namespace SmallBasic {
 			}
 
 			static void DrawRectangle(Number x, Number y, Number width, Number height) {
-				Platform::Renderer::Default()->Draw(Platform::Renderer::BACKGROUND_LAYER,
-					_MakeDrawable(Drawable(x, y, { {0,0}, {width,0}, {width,height},
-					{0,height} }, false)));
+				Platform::Window::Default()->renderer->Draw(Platform::Renderer::
+					BACKGROUND_LAYER, _MakeDrawable(Drawable(x, y, { {0,0}, {width,0},
+					{width,height}, {0,height} }, false)));
 			}
 
 			static void FillRectangle(Number x, Number y, Number width, Number height) {
-				Platform::Renderer::Default()->Draw(Platform::Renderer::BACKGROUND_LAYER,
-					_MakeDrawable(Drawable(x, y, {{0,0}, {width,0}, {width,height},
-					{0,height}}, true)));
+				Platform::Window::Default()->renderer->Draw(Platform::Renderer::
+					BACKGROUND_LAYER, _MakeDrawable(Drawable(x, y, {{0,0}, {width,0},
+					{width,height}, {0,height}}, true)));
 			}
 
 			static void DrawTriangle(Number x1, Number y1, Number x2, Number y2,
 				Number x3, Number y3)
 			{
-				Platform::Renderer::Default()->Draw(Platform::Renderer::BACKGROUND_LAYER,
-					_MakeDrawable(Drawable({{x1,y1}, {x2,y2}, {x3,y3}}, false)));
+				Platform::Window::Default()->renderer->Draw(Platform::Renderer::
+					BACKGROUND_LAYER, _MakeDrawable(Drawable({{x1,y1}, {x2,y2}, {x3,y3}},
+					false)));
 			}
 
 			static void FillTriangle(Number x1, Number y1, Number x2, Number y2,
 				Number x3, Number y3)
 			{
-				Platform::Renderer::Default()->Draw(Platform::Renderer::BACKGROUND_LAYER,
-					_MakeDrawable(Drawable({{x1,y1}, {x2,y2}, {x3,y3}}, true)));
+				Platform::Window::Default()->renderer->Draw(Platform::Renderer::
+					BACKGROUND_LAYER, _MakeDrawable(Drawable({{x1,y1}, {x2,y2}, {x3,y3}},
+					true)));
 			}
 
 			static void DrawEllipse(Number x, Number y, Number width, Number height) {
-				Platform::Renderer::Default()->Draw(Platform::Renderer::BACKGROUND_LAYER,
-					_MakeDrawable(Drawable(x, y, width, height, false)));
+				Platform::Window::Default()->renderer->Draw(Platform::Renderer::
+					BACKGROUND_LAYER, _MakeDrawable(Drawable(x, y, width, height, false)));
 			}
 
 			static void FillEllipse(Number x, Number y, Number width, Number height) {
-				Platform::Renderer::Default()->Draw(Platform::Renderer::BACKGROUND_LAYER,
-					_MakeDrawable(Drawable(x, y, width, height, true)));
+				Platform::Window::Default()->renderer->Draw(Platform::Renderer::
+					BACKGROUND_LAYER, _MakeDrawable(Drawable(x, y, width, height, true)));
 			}
 
 			static void DrawLine(Number x1, Number y1, Number x2, Number y2) {
-				Platform::Renderer::Default()->Draw(Platform::Renderer::BACKGROUND_LAYER,
-					_MakeDrawable(Drawable({{x1,y1}, {x2,y2}}, false)));
+				Platform::Window::Default()->renderer->Draw(Platform::Renderer::
+					BACKGROUND_LAYER, _MakeDrawable(Drawable({{x1,y1}, {x2,y2}}, false)));
 			}
 
 			static void DrawText(Number x, Number y, String const& text) {
-				Platform::Renderer::Default()->Draw(Platform::Renderer::BACKGROUND_LAYER,
-					_MakeDrawable(Drawable(x, y, text)));
+				Platform::Window::Default()->renderer->Draw(Platform::Renderer::
+					BACKGROUND_LAYER, _MakeDrawable(Drawable(x, y, text)));
 			}
 
 			static void DrawBoundText(Number x, Number y, Number width, String const& text) {
-				Platform::Renderer::Default()->Draw(Platform::Renderer::BACKGROUND_LAYER,
-					_MakeDrawable(Drawable(x, y, text, width)));
+				Platform::Window::Default()->renderer->Draw(Platform::Renderer::
+					BACKGROUND_LAYER, _MakeDrawable(Drawable(x, y, text, width)));
 			}
 
 			static Mixed GetRandomColor() {
@@ -268,11 +270,15 @@ namespace SmallBasic {
 			}
 
 			static void SetPixel(Number x, Number y, String const& name) {
-				Platform::Renderer::Default()->SetPixel(x, y, Color(name));
+				Drawable drawable = _MakeDrawable(Drawable({ { x, y }, { x+1, y }, 
+					{ x+1, y+1 }, { x, y+1 } }, true));
+				drawable.graphics.penWidth = 0.L;
+				Platform::Window::Default()->renderer->Draw(Platform::Renderer::
+					BACKGROUND_LAYER, drawable);
 			}
 
 			static Color GetPixel(Number x, Number y) {
-				return Platform::Renderer::Default()->GetPixel(x, y);
+				return Platform::Window::Default()->renderer->GetPixel(x, y);
 			}
 
 			static void ShowMessage(String const& message, String const& title) {
@@ -308,7 +314,7 @@ namespace SmallBasic {
 namespace SmallBasic {
 	namespace Std {
 		void GraphicsWindow::Clear() {
-			Platform::Renderer::Default()->ClearAll();
+			Platform::Window::Default()->renderer->ClearAll();
 			Shapes::_HideAll();
 		}
 	}

@@ -1,16 +1,10 @@
-#ifndef SMALLBASIC_PLATFORM_RENDERER_MM
-#define SMALLBASIC_PLATFORM_RENDERER_MM
+#ifndef SMALLBASIC_PLATFORM_STUB_RENDERER_HPP
+#define SMALLBASIC_PLATFORM_STUB_RENDERER_HPP
 
 #include "../Renderer.hpp"
 
 namespace SmallBasic {
 	namespace Platform {
-		Renderer::Renderer() {
-		}
-
-		Renderer::~Renderer() {
-		}
-
 		void Renderer::_SetBackgroundColor(Color const& backgroundColor) {
 		}
 

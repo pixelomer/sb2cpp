@@ -29,7 +29,6 @@ namespace SmallBasic {
 			SmallBasicWindow *__strong _window;
 #elif defined(SMALLBASIC_SDL)
 			SDL_Window *_window;
-			SDL_Renderer *_windowRenderer;
 #endif
 			static Window *_default;
 		public:
@@ -43,16 +42,14 @@ namespace SmallBasic {
 			Rect GetRect();
 			void ShowMessage(String const& text, String const& title);
 
-			Window(Renderer *renderer, EventQueue *eventQueue): renderer(renderer),
-				eventQueue(eventQueue)
-			{
+			Window(EventQueue *eventQueue): eventQueue(eventQueue) {
 				_Initialize();
 			}
 			~Window();
 
 			static Window *Default() {
 				if (_default == nullptr) {
-					_default = new Window(Renderer::Default(), EventQueue::Default());
+					_default = new Window(EventQueue::Default());
 				}
 				return _default;
 			}

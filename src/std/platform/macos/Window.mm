@@ -60,6 +60,7 @@ namespace SmallBasic {
 			[[NSNotificationCenter defaultCenter] addObserver:NSApp
 				selector:@selector(terminate:) name:NSWindowWillCloseNotification
 				object:_window];
+			renderer = new Renderer;
 		}
 
 		Window::~Window() {

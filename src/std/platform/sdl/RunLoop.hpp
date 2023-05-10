@@ -1,9 +1,10 @@
-#ifndef SMALLBASIC_PLATFORM_SDL_RUNLOOP_MM
-#define SMALLBASIC_PLATFORM_SDL_RUNLOOP_MM
+#ifndef SMALLBASIC_PLATFORM_SDL_RUNLOOP_HPP
+#define SMALLBASIC_PLATFORM_SDL_RUNLOOP_HPP
 
 #include <SDL2/SDL.h>
 #include "../RunLoop.hpp"
 #include "../Window.hpp"
+#include "../../common/StringUtils.hpp"
 
 namespace SmallBasic {
 	namespace Platform {
@@ -36,6 +37,23 @@ namespace SmallBasic {
 						case SDL_QUIT:
 							SDL_Quit();
 							exit(0);
+							break;
+						case SDL_KEYDOWN:
+						case SDL_KEYUP: {
+							String keyName = StringToWString(SDL_GetKeyName(event.key.keysym.sym));
+							EventQueue::Default()->PostKeyEvent(event.type == SDL_KEYDOWN,
+								keyName);
+							break;
+						}
+						case SDL_MOUSEBUTTONDOWN:
+						case SDL_MOUSEBUTTONUP:
+							if (event.button.button != SDL_BUTTON_LEFT) break;
+							EventQueue::Default()->PostMouseEvent(event.type ==
+								SDL_MOUSEBUTTONDOWN);
+							break;
+						case SDL_MOUSEMOTION:
+							EventQueue::Default()->PostMouseEvent(event.motion.x,
+								event.motion.y);
 							break;
 						case SDL_USEREVENT:
 							stop = true;
