@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include "../RunLoop.hpp"
+#include "../Window.hpp"
 
 namespace SmallBasic {
 	namespace Platform {
@@ -28,6 +29,8 @@ namespace SmallBasic {
 			bool stop = false;
 			SDL_Event event;
 			while (!stop) {
+				Window::Default()->RedrawIfNeeded();
+				
 				while (SDL_PollEvent(&event) != 0) {
 					switch (event.type) {
 						case SDL_QUIT:

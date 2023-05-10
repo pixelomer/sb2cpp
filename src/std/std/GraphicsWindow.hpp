@@ -267,6 +267,14 @@ namespace SmallBasic {
 				return Color::_NameFor(r, g, b);
 			}
 
+			static void SetPixel(Number x, Number y, String const& name) {
+				Platform::Renderer::Default()->SetPixel(x, y, Color(name));
+			}
+
+			static Color GetPixel(Number x, Number y) {
+				return Platform::Renderer::Default()->GetPixel(x, y);
+			}
+
 			static void ShowMessage(String const& message, String const& title) {
 				std::wcerr << "[" << title << "] " << message << std::endl;
 			}

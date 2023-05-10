@@ -7,9 +7,12 @@
 #include "../common/Drawable.hpp"
 #include <cmath>
 #include <queue>
-#ifdef SMALLBASIC_APPLE
+
+#if defined(SMALLBASIC_APPLE)
 #include <CoreGraphics/CoreGraphics.h>
 @class NSView;
+#elif defined(SMALLBASIC_SDL)
+#include <SDL2/SDL.h>
 #endif
 
 namespace SmallBasic {
@@ -22,7 +25,7 @@ namespace SmallBasic {
 				CONTROL_LAYER = 2
 			};
 
-#ifdef SMALLBASIC_APPLE
+#if defined(SMALLBASIC_APPLE)
 		private:
 			std::map<enum Layer, CGContextRef> _layers; //FIXME: sorted maps?
 			CGColorSpaceRef _colorSpace;
@@ -31,6 +34,26 @@ namespace SmallBasic {
 			uint8_t *_GetPixelAddress(Number x, Number y);
 		public:
 			void Render(NSView *view);
+#elif defined(SMALLBASIC_SDL)
+		private:
+			struct SDLLayer {
+				SDL_Surface *surface = NULL;
+				SDL_Renderer *renderer = NULL;
+				SDL_Texture *texture = NULL;
+
+				void Reset(int width, int height);
+				void Destroy();
+				SDL_Texture *GetTexture();
+
+				~SDLLayer() { Destroy(); }
+			};
+
+			SDLLayer &_GetLayer(enum Layer layer);
+			SDLLayer &_GetLayer(enum Layer layer, Number minWidth, Number minHeight);
+			Uint32 *_GetPixelAddress(Number x, Number y);
+			std::map<enum Layer, SDLLayer> _layers;
+		public:
+			void Render(SDL_Renderer *renderer);
 #endif
 
 		private:

@@ -42,11 +42,16 @@ namespace SmallBasic {
 		}
 
 		void Window::RedrawIfNeeded() {
+			if (renderer->changed) {
+				renderer->Render(_windowRenderer);
+				renderer->changed = false;
+			}
 		}
 		
 		void Window::_Initialize() {
 			_window = SDL_CreateWindow("Small Basic", SDL_WINDOWPOS_CENTERED,
 				SDL_WINDOWPOS_CENTERED, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, 0);
+			_windowRenderer = SDL_CreateRenderer(_window, -1, 0);
 		}
 
 		Window::~Window() {

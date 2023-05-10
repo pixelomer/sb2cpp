@@ -29,6 +29,7 @@ namespace SmallBasic {
 			SmallBasicWindow *__strong _window;
 #elif defined(SMALLBASIC_SDL)
 			SDL_Window *_window;
+			SDL_Renderer *_windowRenderer;
 #endif
 			static Window *_default;
 		public:
