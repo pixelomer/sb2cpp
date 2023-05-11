@@ -10,8 +10,7 @@ elif [ -z "${output}" ]; then
 	output="a.out"
 fi
 
-set -ex
-
 ./sb2cpp "${input}" > "${input}.cpp"
-c++ --std=c++14 -lm -ObjC++ -framework AppKit -mmacosx-version-min=10.9 \
-	-fobjc-arc "${input}.cpp" -Wall -O0 -g -Wno-reorder-ctor -o "${output}"
+
+c++ -I/opt/local/include `sdl2-config --cflags` `sdl2-config --static-libs` \
+	--std=c++14 "${input}.cpp" -Wall -flto -O3 -Wno-reorder-ctor -o "${output}"
