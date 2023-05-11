@@ -36,6 +36,7 @@ namespace SmallBasic {
 			static void (*_keyDown)();
 			static void (*_keyUp)();
 			static void (*_mouseDown)();
+			static void (*_mouseUp)();
 			static void (*_mouseMove)();
 			static String _lastKey;
 			static Pos _mouse;
@@ -77,6 +78,11 @@ namespace SmallBasic {
 			// MouseDown
 			static void _SetMouseDown(void(*mouseDown)()) {
 				_mouseDown = mouseDown;
+			}
+
+			// MouseDown
+			static void _SetMouseUp(void(*mouseUp)()) {
+				_mouseUp = mouseUp;
 			}
 
 			// BackgroundColor
@@ -312,6 +318,7 @@ namespace SmallBasic {
 		void (*GraphicsWindow::_keyDown)() = NULL;
 		void (*GraphicsWindow::_keyUp)() = NULL;
 		void (*GraphicsWindow::_mouseDown)() = NULL;
+		void (*GraphicsWindow::_mouseUp)() = NULL;
 		void (*GraphicsWindow::_mouseMove)() = NULL;
 	}
 }
