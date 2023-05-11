@@ -4,6 +4,8 @@
 #include "Utils.mm"
 #include <Cocoa/Cocoa.h>
 
+#warning CoreGraphics support is experimental and incomplete, use SDL2 instead
+
 namespace SmallBasic {
 	namespace Platform {
 		Renderer::Renderer(Number yOffset) {
