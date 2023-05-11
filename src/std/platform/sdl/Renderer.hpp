@@ -56,19 +56,27 @@ namespace SmallBasic {
 
 			switch (drawable.type) {
 				case Drawable::PATH: {
+					auto points = drawable.GetAbsolute();
 					Sint16 points_x[drawable.points.size()];
 					Sint16 points_y[drawable.points.size()];
-					auto points = drawable.GetAbsolute();
 					for (size_t i=0; i<points.size(); i++) {
 						points_x[i] = std::get<0>(points[i]);
 						points_y[i] = std::get<1>(points[i]);
 					}
-					if (drawable.filled) {
-						filledPolygonRGBA(_renderer, points_x, points_y, drawable.points.size(),
-							COLOR_ARGS(drawable.graphics.brushColor, drawable.opacity));
+					if (points.size() == 2) {
+						if (drawable.graphics.penWidth <= 0) break;
+						thickLineRGBA(_renderer, points_x[0], points_y[0], points_x[1],
+							points_y[1], (Uint8)drawable.graphics.penWidth,
+							COLOR_ARGS(drawable.graphics.penColor, drawable.opacity));
 					}
-					polygonRGBA(_renderer, points_x, points_y, drawable.points.size(),
-						COLOR_ARGS(drawable.graphics.penColor, drawable.opacity));
+					else {
+						if (drawable.filled) {
+							filledPolygonRGBA(_renderer, points_x, points_y, drawable.points.size(),
+								COLOR_ARGS(drawable.graphics.brushColor, drawable.opacity));
+						}
+						polygonRGBA(_renderer, points_x, points_y, drawable.points.size(),
+							COLOR_ARGS(drawable.graphics.penColor, drawable.opacity));
+					}
 					break;
 				}
 				case Drawable::OVAL: {
