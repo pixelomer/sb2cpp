@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include "../Renderer.hpp"
+#include "../../common/StringUtils.hpp"
 #include "SDL2_gfx/SDL2_gfx.h"
 
 #define COLOR_ARGS(color, opacity) color.r, color.g, color.b, \
@@ -93,7 +94,9 @@ namespace SmallBasic {
 					break;
 				}
 				case Drawable::TEXT: {
-					
+					stringRGBA(_renderer, (Sint16)drawable.x, (Sint16)drawable.y,
+						WStringToString(drawable.text).c_str(),
+						COLOR_ARGS(drawable.graphics.penColor, drawable.opacity));
 					break;
 				}
 				case Drawable::IMAGE: {
