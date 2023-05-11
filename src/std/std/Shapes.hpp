@@ -26,6 +26,10 @@ namespace SmallBasic {
 				return _AddShape(Drawable(0, 0, width, height, true));
 			}
 
+			static Mixed AddText(String const& text) {
+				return _AddShape(Drawable(0, 0, text));
+			}
+
 			static Mixed GetLeft(Mixed const& key) {
 				if (_shapes.get().count(key) == 0) {
 					std::wcerr << "Shapes::GetLeft(): invalid shape" << std::endl;
