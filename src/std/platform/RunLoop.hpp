@@ -132,6 +132,9 @@ namespace SmallBasic {
 						case Event::MOUSE_MOVE:
 							Std::GraphicsWindow::_mouse.x = event.x;
 							Std::GraphicsWindow::_mouse.y = event.y;
+							if (Std::GraphicsWindow::_mouseMove != NULL) {
+								Std::GraphicsWindow::_mouseMove();
+							}
 							break;
 						case Event::TIMER_TICK:
 							if (Std::Timer::_onTick != NULL) {
