@@ -2,6 +2,7 @@
 #define SMALLBASIC_PLATFORM_SDL_RENDERER_HPP
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include "../Renderer.hpp"
 #include "../../common/StringUtils.hpp"
 #include "SDL2_gfx/SDL2_gfx.h"
@@ -94,9 +95,70 @@ namespace SmallBasic {
 					break;
 				}
 				case Drawable::TEXT: {
-					stringRGBA(_renderer, (Sint16)drawable.x, (Sint16)drawable.y,
-						WStringToString(drawable.text).c_str(),
-						COLOR_ARGS(drawable.graphics.penColor, drawable.opacity));
+					//FIXME: this is ugly
+					if (_activeFont.font == NULL ||
+						_activeFont.name != drawable.graphics.fontName ||
+						_activeFont.bold != drawable.graphics.fontBold ||
+						_activeFont.italic != drawable.graphics.fontItalic ||
+						_activeFont.size != drawable.graphics.fontSize)
+					{
+						_activeFont.name = drawable.graphics.fontName;
+						_activeFont.bold = drawable.graphics.fontBold;
+						_activeFont.italic = drawable.graphics.fontItalic;
+						_activeFont.size = drawable.graphics.fontSize;
+						if (_activeFont.font != NULL) {
+							TTF_CloseFont(_activeFont.font);
+							_activeFont.font = NULL;
+						}
+						for (String name : std::vector<String> { _activeFont.name,
+							_defaultFontName })
+						{
+							if (name == L"") {
+								continue;
+							}
+							name = Resource::NormalizedFontName(name, drawable.graphics.fontBold,
+								drawable.graphics.fontItalic);
+							if (_resources.count(name) >= 1) {
+								_activeFont.font = TTF_OpenFontRW(_resources[name].src,
+									0, _activeFont.size);
+							}
+							if (_activeFont.font == NULL) {
+								_activeFont.font = TTF_OpenFont(WStringToString(name).c_str(),
+									_activeFont.size);
+							}
+							if (_activeFont.font != NULL) {
+								break;
+							}
+						}
+					}
+					if (_activeFont.font == NULL) {
+						// Fallback text rendering
+						stringRGBA(_renderer, (Sint16)drawable.x, (Sint16)drawable.y,
+							WStringToString(drawable.text).c_str(),
+							COLOR_ARGS(drawable.graphics.penColor, drawable.opacity));
+					}
+					else {
+						SDL_Surface *surface;
+						SDL_Color color = { .r = drawable.graphics.brushColor.r, 
+							.g = drawable.graphics.brushColor.g, .b = drawable.graphics.brushColor.b,
+							.a = (Uint8)((drawable.opacity / 100.0) * 255) };
+						if (drawable.boundText) {
+							surface = TTF_RenderText_Blended_Wrapped(_activeFont.font,
+								WStringToString(drawable.text).c_str(), color,
+								(Uint32)drawable.boundText);
+						}
+						else {
+							surface = TTF_RenderText_Blended(_activeFont.font,
+								WStringToString(drawable.text).c_str(), color);
+						}
+						SDL_Texture *texture = SDL_CreateTextureFromSurface(_renderer,
+							surface);
+						SDL_Rect destRect = { .x = (int)drawable.x, .y = (int)drawable.y,
+							.h = surface->h, .w = surface->w };
+						SDL_RenderCopy(_renderer, texture, NULL, &destRect);
+						SDL_DestroyTexture(texture);
+						SDL_FreeSurface(surface);
+					}
 					break;
 				}
 				case Drawable::IMAGE: {

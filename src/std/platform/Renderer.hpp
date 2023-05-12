@@ -13,11 +13,47 @@
 @class NSView;
 #elif defined(SMALLBASIC_SDL)
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #endif
 
 namespace SmallBasic {
 	namespace Platform {
 		class Renderer {
+		private:
+			struct Resource {
+				String name;
+				Resource(): src(NULL) {}
+
+#if defined(SMALLBASIC_SDL)
+				SDL_RWops *src;
+				
+				Resource(String const& name, void *src, int size): name(name) {
+					this->src = SDL_RWFromConstMem(src, size);
+				}
+				~Resource() {
+					if (src != NULL) {
+						SDL_FreeRW(src);
+					}
+				}
+#else
+				void *src;
+				int size;
+
+				Resource(String const& name, void *src, int size): name(name), src(src),
+					size(size) {}
+
+#endif
+				static String NormalizedFontName(String name, bool bold, bool italic) {
+					String fullName = name + L"_";
+					if (bold) fullName += L"Bold";
+					if (italic) fullName += L"Italic";
+					if (!bold && !italic) fullName += L"Regular";
+					return fullName + L".ttf";
+				}
+			};
+
+			static std::map<String, Resource> _resources;
+			static String _defaultFontName;
 		public:
 			enum Layer {
 				BACKGROUND_LAYER = 0,
@@ -40,6 +76,13 @@ namespace SmallBasic {
 #elif defined(SMALLBASIC_SDL)
 		private:
 			SDL_Renderer *_renderer;
+			struct {
+				String name;
+				int size;
+				bool bold;
+				bool italic;
+				TTF_Font *font = NULL;
+			} _activeFont;
 
 			SDL_Texture *_GetLayer(enum Layer layer);
 			SDL_Texture *_GetLayer(enum Layer layer, Number minWidth, Number minHeight);
@@ -52,7 +95,6 @@ namespace SmallBasic {
 #endif
 
 		private:
-			static Renderer *_default;
 			Color _backgroundColor;
 			void _SetBackgroundColor(Color const& backgroundColor);
 			void _Draw(enum Layer layer, Drawable const& drawable);
@@ -62,6 +104,12 @@ namespace SmallBasic {
 		public:
 			bool changed;
 
+			static void RegisterResource(String const& name, void *src, int size) {
+				_resources[name] = Resource(name, src, size);
+			}
+			static void SetDefaultFontName(String const& name) {
+				_defaultFontName = name;
+			}
 			void SetBackgroundColor(Color const& backgroundColor) {
 				changed = true;
 				_backgroundColor = backgroundColor;
@@ -84,6 +132,8 @@ namespace SmallBasic {
 			}
 			Color GetPixel(Number x, Number y);
 		};
+		std::map<String, Renderer::Resource> Renderer::_resources = {};
+		String Renderer::_defaultFontName = L"Ubuntu";
 	}
 }
 

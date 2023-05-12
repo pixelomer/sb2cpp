@@ -21,6 +21,10 @@ namespace SmallBasic {
 				std::wcerr << "SDL_Init() failed: " << SDL_GetError() << std::endl;
 				exit(1);
 			}
+			if (TTF_Init() != 0) {
+				std::wcerr << "TTF_Init() failed: " << TTF_GetError() << std::endl;
+				exit(1);
+			}
 		}
 
 		void RunLoop::_Activate() {
@@ -35,6 +39,7 @@ namespace SmallBasic {
 				while (SDL_PollEvent(&event) != 0) {
 					switch (event.type) {
 						case SDL_QUIT:
+							TTF_Quit();
 							SDL_Quit();
 							exit(0);
 							break;
