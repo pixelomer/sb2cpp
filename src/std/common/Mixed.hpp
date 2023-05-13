@@ -184,11 +184,11 @@ namespace SmallBasic {
 			return *this;
 		}
 
-		operator Number() {
+		operator Number() const {
 			return GetNumber();
 		}
 
-		operator std::string() {
+		operator std::string() const {
 			String str = GetString();
 			char buf[MB_CUR_MAX + 1];
 			std::string result;
@@ -205,12 +205,12 @@ namespace SmallBasic {
 			return result;
 		}
 
-		operator String() {
+		operator String() const {
 			return GetString();
 		}
 
-		operator bool() {
-			return GetString() == L"True";
+		operator bool() const {
+			return GetBoolean();
 		}
 
 		Mixed operator+(Mixed const& b) {
@@ -285,6 +285,10 @@ namespace SmallBasic {
 		Number GetNumber() const {
 			try { return TryGetNumber(); }
 			catch (...) { return 0.L; }
+		}
+
+		bool GetBoolean() const {
+			return GetString() == L"True";
 		}
 
 		Array GetArrayIndices() {

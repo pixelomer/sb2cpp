@@ -105,8 +105,8 @@ namespace SmallBasic {
 			static Mixed _GetCanResize() {
 				return Mixed::Boolean(_canResize.get());
 			}
-			static void _SetCanResize(bool canResize) {
-				_canResize = canResize;
+			static void _SetCanResize(Mixed const& canResize) {
+				_canResize = canResize.GetBoolean();
 			}
 
 			// PenWidth
@@ -145,16 +145,16 @@ namespace SmallBasic {
 			static Mixed _GetFontBold() {
 				return Mixed::Boolean(_fontBold.get());
 			}
-			static void _SetFontBold(bool bold) {
-				_fontBold = bold;
+			static void _SetFontBold(Mixed const& bold) {
+				_fontBold = bold.GetBoolean();
 			}
 
 			// FontItalic
 			static Mixed _GetFontItalic() {
 				return Mixed::Boolean(_fontItalic.get());
 			}
-			static void _SetFontItalic(bool italic) {
-				_fontItalic = italic;
+			static void _SetFontItalic(Mixed const& italic) {
+				_fontItalic = italic.GetBoolean();
 			}
 
 			// Left
