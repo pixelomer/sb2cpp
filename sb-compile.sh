@@ -12,6 +12,6 @@ fi
 
 ./sb2cpp "${input}" > "${input}.cpp"
 
-c++ -I/opt/local/include -L/opt/local/lib `sdl2-config --cflags --libs` \
-	-lSDL2_ttf -O0 -g \
-	--std=c++14 "${input}.cpp" -Wall -Wno-reorder-ctor -o "${output}"
+c++ -Isrc -I/opt/local/include -L/opt/local/lib `sdl2-config --cflags --libs` \
+	-lSDL2_ttf -O3 -flto --std=c++14 "${input}.cpp" -Wall -Wno-reorder-ctor -o \
+	"${output}"

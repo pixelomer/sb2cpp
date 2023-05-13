@@ -890,7 +890,7 @@ void sb2cpp(std::wstring const& source) {
 	std::wcout << std::endl;
 
 	// Includes
-	std::wcout << L"#include \"src/std/SmallBasic.hpp\"" << std::endl;
+	std::wcout << L"#include <std/SmallBasic.hpp>" << std::endl;
 	std::wcout << L"using namespace SmallBasic::Std;" << std::endl;
 	std::wcout << L"using SmallBasic::Mixed;" << std::endl;
 	std::wcout << std::endl;
