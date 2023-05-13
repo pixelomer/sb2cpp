@@ -306,9 +306,9 @@ namespace SmallBasic {
 		Updatable<bool> GraphicsWindow::_fontItalic = false;
 		Updatable<String> GraphicsWindow::_title = String(L"SmallBasic");
 		Updatable<Number> GraphicsWindow::_penWidth = 2.L;
-		Updatable<Color> GraphicsWindow::_penColor = Color(L"black");
+		Updatable<Color> GraphicsWindow::_penColor = Color(L"#000000");
 		Updatable<Color> GraphicsWindow::_backgroundColor = Color(L"white");
-		Updatable<Color> GraphicsWindow::_brushColor = Color(L"black");
+		Updatable<Color> GraphicsWindow::_brushColor = Color(L"#6A5ACD");
 		Updatable<String> GraphicsWindow::_fontName = String(L"");
 		Updatable<Number> GraphicsWindow::_fontSize = 10.L;
 		Updatable<Rect> GraphicsWindow::_rect = Rect(100, 100, 640, 480);
