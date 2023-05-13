@@ -145,7 +145,7 @@ namespace SmallBasic {
 						if (drawable.boundText) {
 							surface = TTF_RenderText_Blended_Wrapped(_activeFont.font,
 								WStringToString(drawable.text).c_str(), color,
-								(Uint32)drawable.boundText);
+								(Uint32)drawable.width);
 						}
 						else {
 							surface = TTF_RenderText_Blended(_activeFont.font,
