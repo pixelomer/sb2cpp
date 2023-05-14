@@ -29,7 +29,6 @@ namespace SmallBasic {
 			return *this;
 		}
 		Color(String name = L"black"): r(0), g(0), b(0) {
-			this->name = name;
 			std::transform(name.begin(), name.end(), name.begin(), std::towlower);
 			if (_colors.count(name) != 0) {
 				this->r = _colors[name][0];
@@ -51,6 +50,7 @@ namespace SmallBasic {
 			else {
 				std::wcerr << L"Color: unknown color: " << name << std::endl;
 			}
+			this->name = _NameFor(this->r, this->g, this->b);
 		}
 		Color(uint8_t r, uint8_t g, uint8_t b): r(r), g(g), b(b) {
 			name = _NameFor(r, g, b);
