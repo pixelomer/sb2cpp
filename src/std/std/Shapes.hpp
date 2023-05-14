@@ -76,6 +76,10 @@ namespace SmallBasic {
 			static void SetOpacity(Mixed const& shapeName, Number opacity) {
 				_shapes.mut().at(shapeName).opacity = opacity;
 			}
+
+			static void SetText(Mixed const& shapeName, String const& text) {
+				_shapes.mut().at(shapeName).text = text;
+			}
 		};
 
 		Updatable<std::map<Mixed, Drawable>> Shapes::_shapes = {};
