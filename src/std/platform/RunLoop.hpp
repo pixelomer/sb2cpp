@@ -45,7 +45,7 @@ namespace SmallBasic {
 			void Stop() { _Stop(); }
 
 			bool WillTerminate() {
-				return !Std::Timer::_active &&
+				return (!Std::Timer::_active || Std::Timer::_onTick == NULL) &&
 					!Std::GraphicsWindow::_visible.get() &&
 					EventQueue::Default()->QueueSize() <= 0;
 			}
@@ -55,25 +55,8 @@ namespace SmallBasic {
 
 				while (!WillTerminate()) {
 					Update();
-
-					// Wait for events
 					if (!WillTerminate()) {
-						if (Std::Timer::_active) {
-							//FIXME: not a reliable solution for timers
-							//FIXME: timers are ignored in Program.Delay()
-							Std::Timer::_interval.changed = false;
-							Number duration = Std::Timer::_interval.get();
-							while (!Std::Timer::_interval.changed && duration > 0.L) {
-								duration -= RunForAtLeast(duration);
-							}
-							if (!Std::Timer::_interval.changed) {
-								EventQueue::Default()->PostTimerEvent();
-							}
-						}
-						else {
-							_Run();
-						}
-						_EndRun();
+						_Run();
 					}
 				}
 			}
