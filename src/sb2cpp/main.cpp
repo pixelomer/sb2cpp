@@ -9,6 +9,9 @@
 #include <map>
 #include <clocale>
 #include <set>
+#include <memory>
+#include <algorithm>
+#include <iomanip>
 
 #ifdef __INTELLISENSE__
 // function "Node::~Node()" (declared implicitly) cannot be referenced --
@@ -42,89 +45,70 @@ class Node {
 public:
 	Node(){}
 	enum node_type type;
-	struct {
-		struct {
-			// ASSIGNMENT
-			std::unique_ptr<Node> assignment_to;
-			std::unique_ptr<Node> assignment_value;
-		};
-		struct {
-			// FOR_LOOP
-			std::unique_ptr<Node> for_start;
-			std::unique_ptr<Node> for_end;
-			std::unique_ptr<Node> for_step;
-			std::vector<std::unique_ptr<Node>> for_statements;
-		};
-		struct {
-			// VALUE_LIST
-			std::vector<std::unique_ptr<Node>> value_list;
-		};
-		struct {
-			// WHILE_LOOP
-			std::unique_ptr<Node> while_condition;
-			std::vector<std::unique_ptr<Node>> while_statements;
-		};
-		struct {
-			// COMPARE
-			std::unique_ptr<Node> compare_left;
-			std::wstring compare_operator;
-			std::unique_ptr<Node> compare_right;
-		};
-		struct {
-			// VARIABLE
-			std::wstring variable_name;
-		};
-		struct {
-			// ARRAY_VALUE
-			std::wstring array_name;
-			std::vector<std::unique_ptr<Node>> array_indexes;
-		};
-		struct {
-			// FUNCTION_CALL
-			std::wstring function_call;
-		};
-		struct {
-			// STDLIB_CALL
-			std::wstring stdlib_class;
-			std::wstring stdlib_function;
-			std::vector<std::unique_ptr<Node>> stdlib_arguments;
-		};
-		struct {
-			// IF_ELSE
-			std::unique_ptr<Node> if_condition;
-			std::vector<std::unique_ptr<Node>> if_statements;
-		};
-		struct {
-			// IF_ELSE_LIST
-			std::vector<std::unique_ptr<Node>> if_list;
-		};
-		struct {
-			// NUMBER_LITERAL
-			long double number_literal;
-		};
-		struct {
-			// STRING_LITERAL
-			std::wstring string_literal;
-		};
-		struct {
-			// OPERATOR
-			bool operator_unary;
-			std::wstring operator_str;
-		};
-		struct {
-			// SUB
-			std::wstring sub_name;
-			std::vector<std::unique_ptr<Node>> sub_statements;
-		};
-		struct {
-			// GOTO_LABEL
-			std::wstring label_name;
-		};
-		struct {
-			// GOTO
-			std::wstring goto_name;
-		};
-	};
+
+	// ASSIGNMENT
+	std::unique_ptr<Node> assignment_to;
+	std::unique_ptr<Node> assignment_value;
+
+	// FOR_LOOP
+	std::unique_ptr<Node> for_start;
+	std::unique_ptr<Node> for_end;
+	std::unique_ptr<Node> for_step;
+	std::vector<std::unique_ptr<Node>> for_statements;
+
+	// VALUE_LIST
+	std::vector<std::unique_ptr<Node>> value_list;
+
+	// WHILE_LOOP
+	std::unique_ptr<Node> while_condition;
+	std::vector<std::unique_ptr<Node>> while_statements;
+
+	// COMPARE
+	std::unique_ptr<Node> compare_left;
+	std::wstring compare_operator;
+	std::unique_ptr<Node> compare_right;
+
+	// VARIABLE
+	std::wstring variable_name;
+
+	// ARRAY_VALUE
+	std::wstring array_name;
+	std::vector<std::unique_ptr<Node>> array_indexes;
+
+	// FUNCTION_CALL
+	std::wstring function_call;
+
+	// STDLIB_CALL
+	std::wstring stdlib_class;
+	std::wstring stdlib_function;
+	std::vector<std::unique_ptr<Node>> stdlib_arguments;
+
+	// IF_ELSE
+	std::unique_ptr<Node> if_condition;
+	std::vector<std::unique_ptr<Node>> if_statements;
+
+	// IF_ELSE_LIST
+	std::vector<std::unique_ptr<Node>> if_list;
+
+	// NUMBER_LITERAL
+	long double number_literal;
+
+	// STRING_LITERAL
+	std::wstring string_literal;
+
+	// OPERATOR
+	bool operator_unary;
+	std::wstring operator_str;
+
+	// SUB
+	std::wstring sub_name;
+	std::vector<std::unique_ptr<Node>> sub_statements;
+
+	// GOTO_LABEL
+	std::wstring label_name;
+
+	// GOTO
+	std::wstring goto_name;
 };
 
 std::wstring &get_token(std::vector<std::wstring> &tokens, size_t index
@@ -145,7 +129,7 @@ std::wstring &get_token(std::vector<std::wstring> &tokens, size_t index
 #define get_token(tokens, index) get_token(tokens, index, __FUNCTION__, __FILE__, __LINE__)
 #endif
 
-const std::set<const std::wstring> keywords{ { L"For", L"EndFor", L"To", L"Step",
+const std::set<std::wstring> keywords{ { L"For", L"EndFor", L"To", L"Step",
 	L"If", L"Then", L"Else", L"ElseIf", L"EndIf", L"Goto", L"Sub", L"EndSub",
 	L"While", L"EndWhile", L"And", L"Or" } };
 
@@ -247,7 +231,7 @@ std::unique_ptr<Node> parse_value(std::vector<std::wstring> &tokens, size_t *ind
 		std::wstring &token1 = get_token(tokens, (*index));
 		std::wstring &token2 = get_token(tokens, (*index)+1);
 		std::unique_ptr<Node> subnode;
-		if (was_operator && isnumber((int)token1[0])) {
+		if (was_operator && isdigit((int)token1[0])) {
 			(*index)++;
 			was_operator = false;
 			subnode = std::make_unique<Node>(Node());
@@ -522,11 +506,11 @@ std::vector<std::wstring> tokenize(std::wstring const& source) {
 				}
 			}
 		}
-		else if (isnumber((int)c)) {
+		else if (isdigit((int)c)) {
 			// number
 			bool parsed_dot = false;
 			do { token += c; c = source[++i]; }
-			while (isnumber((int)c) || (!parsed_dot && (parsed_dot = (c == L'.'))));
+			while (isdigit((int)c) || (!parsed_dot && (parsed_dot = (c == L'.'))));
 			i--;
 		}
 		else if (special.find(c) != std::wstring::npos) {
@@ -634,7 +618,7 @@ void sb2cpp_single(enum node_type parent_type, std::unique_ptr<Node> const& node
 			break;
 		case NUMBER_LITERAL: {
 			long double int_part;
-			long double fraction_part = std::modfl(node->number_literal, &int_part);
+			long double fraction_part = modfl(node->number_literal, &int_part);
 			if (parent_type != STDLIB_CALL) std::wcout << "Mixed(";
 			std::wcout << node->number_literal;
 			if (fraction_part == 0.L) {
