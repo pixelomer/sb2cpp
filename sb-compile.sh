@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# The standard library supports C++14 but relies on some platform-specific and
+# compiler-specific code. Use C++17 whenever possible to use platform-independent
+# equivalents.
+
 input="$1"
 output="$2"
 
@@ -13,5 +17,5 @@ fi
 ./sb2cpp "${input}" > "${input}.cpp"
 
 c++ -Isrc -I/opt/local/include -L/opt/local/lib `sdl2-config --cflags --libs` \
-	-lSDL2_ttf -O3 -flto --std=c++14 -include Liberation.hpp "${input}.cpp" -Wall \
+	-lSDL2_ttf -O3 -flto --std=c++17 -include Liberation.hpp "${input}.cpp" -Wall \
 	-Wno-reorder-ctor -o "${output}"
