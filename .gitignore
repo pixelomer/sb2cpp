@@ -15,4 +15,7 @@
 !.gitattributes
 !README.md
 !sb-compile.sh
+!Liberation.hpp
+!Liberation.AUTHORS.txt
+!Liberation.LICENSE.txt
 !Makefile

@@ -22,27 +22,21 @@ namespace SmallBasic {
 		private:
 			struct Resource {
 				String name;
-				Resource(): src(NULL) {}
-
-#if defined(SMALLBASIC_SDL)
-				SDL_RWops *src;
-				
-				Resource(String const& name, void *src, int size): name(name) {
-					this->src = SDL_RWFromConstMem(src, size);
-				}
-				~Resource() {
-					if (src != NULL) {
-						SDL_FreeRW(src);
-					}
-				}
-#else
-				void *src;
+				void *data;
 				int size;
 
-				Resource(String const& name, void *src, int size): name(name), src(src),
-					size(size) {}
+				Resource(): data(NULL) {}
 
-#endif
+				void Set(String const& name, void *data, int size) {
+					this->data = data;
+					this->size = size;
+					this->name = name;
+				}
+				Resource &operator=(Resource const& res) {
+					Set(res.name, res.data, res.size);
+					return *this;
+				}
+
 				static String NormalizedFontName(String name, bool bold, bool italic) {
 					String fullName = name + L"_";
 					if (bold) fullName += L"Bold";
@@ -105,7 +99,10 @@ namespace SmallBasic {
 			bool changed;
 
 			static void RegisterResource(String const& name, void *src, int size) {
-				_resources[name] = Resource(name, src, size);
+				_resources[name].Set(name, src, size);
+			}
+			static void LinkResource(String const& orig, String const& dest) {
+				_resources[dest] = _resources.at(orig);
 			}
 			static void SetDefaultFontName(String const& name) {
 				_defaultFontName = name;
@@ -133,7 +130,7 @@ namespace SmallBasic {
 			Color GetPixel(Number x, Number y);
 		};
 		std::map<String, Renderer::Resource> Renderer::_resources = {};
-		String Renderer::_defaultFontName = L"Ubuntu";
+		String Renderer::_defaultFontName = L"Arial";
 	}
 }
 

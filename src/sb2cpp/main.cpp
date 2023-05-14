@@ -916,6 +916,10 @@ void sb2cpp(std::wstring const& source) {
 
 	// Program main
 	std::wcout << L"int main(int argc, char **argv) {" << std::endl;
+	std::wcout << L"#ifdef SMALLBASIC_PACKED_ASSETS" << std::endl;
+	std::wcout << sb2cpp_indent(1) << L"SmallBasic_RegisterPackedAssets();"
+		<< std::endl;
+	std::wcout << L"#endif" << std::endl;
 	std::wcout << sb2cpp_indent(1) << L"Program::_Run(argc, argv, SmallBasic_Main);"
 		<< std::endl;
 	std::wcout << L"}";

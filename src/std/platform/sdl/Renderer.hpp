@@ -118,11 +118,16 @@ namespace SmallBasic {
 							}
 							name = Resource::NormalizedFontName(name, drawable.graphics.fontBold,
 								drawable.graphics.fontItalic);
+							SDL_RWops *ops = NULL;
 							if (_resources.count(name) >= 1) {
-								_activeFont.font = TTF_OpenFontRW(_resources[name].src,
-									0, _activeFont.size);
+								ops = SDL_RWFromConstMem(_resources[name].data,
+									_resources[name].size);
+								_activeFont.font = TTF_OpenFontRW(ops, 1, _activeFont.size);
 							}
 							if (_activeFont.font == NULL) {
+								if (ops != NULL) {
+									SDL_RWclose(ops);
+								}
 								_activeFont.font = TTF_OpenFont(WStringToString(name).c_str(),
 									_activeFont.size);
 							}
