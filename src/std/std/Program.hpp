@@ -45,7 +45,7 @@ namespace SmallBasic {
 				Platform::RunLoop::Default()->RunFor(milliseconds);
 			}
 			static void _Run(int argc, char **argv, void(*mainFunction)()) {
-				srandom(time(NULL));
+				srand(time(NULL));
 				for (int i=0; i<argc; i++) {
 					_arguments[i] = argv[i];
 				}

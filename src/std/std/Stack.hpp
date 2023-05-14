@@ -32,7 +32,8 @@ namespace SmallBasic {
 			}
 		};
 
-		auto Stack::stacks = std::map<Mixed, std::stack<Mixed>>{};
+		std::map<Mixed, std::stack<Mixed>> Stack::stacks =
+			std::map<Mixed, std::stack<Mixed>>{};
 	}
 }
 

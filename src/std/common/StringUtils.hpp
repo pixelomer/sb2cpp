@@ -1,6 +1,7 @@
 #ifndef SMALLBASIC_COMMON_STRINGUTILS_H
 #define SMALLBASIC_COMMON_STRINGUTILS_H
 
+#include <algorithm>
 #include "Mixed.hpp"
 
 std::wstring StringToWString(std::string const& str) {

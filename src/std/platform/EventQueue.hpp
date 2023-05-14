@@ -2,6 +2,7 @@
 #define SMALLBASIC_PLATFORM_EVENTS_HPP
 
 #include <queue>
+#include <functional>
 #include "config.hpp"
 #include "Event.hpp"
 

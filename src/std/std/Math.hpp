@@ -66,10 +66,10 @@ namespace SmallBasic {
 				return (a > b) ? b : a;
 			}
 			static Mixed Remainder(Number a, Number b) {
-				return std::fmodl(a, b);
+				return fmodl(a, b);
 			}
 			static Mixed GetRandomNumber(Number max) {
-				return (random() % (long)max) + 1;
+				return (rand() % (int)max) + 1;
 			}
 			static Mixed DoubleToDecimal(Number number) {
 				return (long long)number;

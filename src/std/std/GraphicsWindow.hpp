@@ -48,14 +48,14 @@ namespace SmallBasic {
 
 			static GraphicsState _ExportState() {
 				return GraphicsState {
-					.brushColor = _brushColor.get(),
-					.fontBold = _fontBold.get(),
-					.fontItalic = _fontItalic.get(),
 					.fontName = _fontName.get(),
 					.fontSize = _fontSize.get(),
+					.fontBold = _fontBold.get(),
+					.fontItalic = _fontItalic.get(),
+					.penColor = _penColor.get(),
+					.brushColor = _brushColor.get(),
 					.width = _rect.get().width,
 					.height = _rect.get().height,
-					.penColor = _penColor.get(),
 					.penWidth = _penWidth.get()
 				};
 			}
@@ -274,7 +274,7 @@ namespace SmallBasic {
 			}
 
 			static Mixed GetRandomColor() {
-				return GetColorFromRGB(random() % 256, random() % 256, random() % 256);
+				return GetColorFromRGB(rand() % 256, rand() % 256, rand() % 256);
 			}
 
 			static Mixed GetColorFromRGB(Number r, Number g, Number b) {

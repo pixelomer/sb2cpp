@@ -159,7 +159,7 @@ namespace SmallBasic {
 						SDL_Texture *texture = SDL_CreateTextureFromSurface(_renderer,
 							surface);
 						SDL_Rect destRect = { .x = (int)drawable.x, .y = (int)drawable.y,
-							.h = surface->h, .w = surface->w };
+							.w = surface->w, .h = surface->h };
 						SDL_RenderCopy(_renderer, texture, NULL, &destRect);
 						SDL_DestroyTexture(texture);
 						SDL_FreeSurface(surface);
