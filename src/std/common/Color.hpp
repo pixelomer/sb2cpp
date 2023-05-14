@@ -2,6 +2,7 @@
 #define SMALLBASIC_COMMON_COLOR_H
 
 #include "Mixed.hpp"
+#include "StringUtils.hpp"
 #include <stdint.h>
 
 namespace SmallBasic {
@@ -29,7 +30,7 @@ namespace SmallBasic {
 			return *this;
 		}
 		Color(String name = L"black"): r(0), g(0), b(0) {
-			std::transform(name.begin(), name.end(), name.begin(), std::towlower);
+			name = WStringToLower(name);
 			if (_colors.count(name) != 0) {
 				this->r = _colors[name][0];
 				this->g = _colors[name][1];

@@ -8,6 +8,11 @@ std::wstring StringToWString(std::string const& str) {
 	return converter.from_bytes(str);
 }
 
+SmallBasic::String WStringToLower(SmallBasic::String str) {
+	std::transform(str.begin(), str.end(), str.begin(), std::towlower);
+	return str;
+}
+
 std::string WStringToString(SmallBasic::String const& str) {
 	char buf[MB_CUR_MAX + 1];
 	std::string result;
