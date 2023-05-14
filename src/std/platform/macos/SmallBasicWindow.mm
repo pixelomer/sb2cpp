@@ -23,7 +23,6 @@
 		self.contentView = [[SmallBasicView alloc] initWithFrame:frame
 			renderer:&windowContext->renderer];
 		self.contentView.wantsLayer = YES;
-		self.title = @"SmallBasic";
 		[self makeKeyAndOrderFront:nil];
 		[self makeFirstResponder:self.contentView];
 		NSTrackingAreaOptions options = (NSTrackingActiveAlways | NSTrackingInVisibleRect |  
