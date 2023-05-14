@@ -56,7 +56,9 @@ namespace SmallBasic {
 				while (!WillTerminate()) {
 					Update();
 					if (!WillTerminate()) {
+						_PrepareRun();
 						_Run();
+						_EndRun();
 					}
 				}
 			}

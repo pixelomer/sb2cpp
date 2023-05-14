@@ -36,7 +36,7 @@ namespace SmallBasic {
 			while (!stop) {
 				Window::Default()->RedrawIfNeeded();
 				
-				while (SDL_PollEvent(&event) != 0) {
+				while (SDL_WaitEvent(&event) != 0) {
 					switch (event.type) {
 						case SDL_QUIT:
 							TTF_Quit();
@@ -67,6 +67,7 @@ namespace SmallBasic {
 							stop = true;
 							break;
 					}
+					if (stop) break;
 				}
 			}
 		}
