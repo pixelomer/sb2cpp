@@ -46,6 +46,9 @@ namespace SmallBasic {
 						case SDL_KEYDOWN:
 						case SDL_KEYUP: {
 							String keyName = StringToWString(SDL_GetKeyName(event.key.keysym.sym));
+							if (keyName[0] >= L'0' && keyName[0] <= L'9') {
+								keyName = L"D" + keyName;
+							}
 							EventQueue::Default()->PostKeyEvent(event.type == SDL_KEYDOWN,
 								keyName);
 							break;
