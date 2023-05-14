@@ -66,7 +66,7 @@ namespace SmallBasic {
 				return (a > b) ? b : a;
 			}
 			static Mixed Remainder(Number a, Number b) {
-				return remainderl(a, b);
+				return std::fmodl(a, b);
 			}
 			static Mixed GetRandomNumber(Number max) {
 				return (random() % (long)max) + 1;
