@@ -415,7 +415,7 @@ std::vector<std::unique_ptr<Node>> parse(std::vector<std::wstring> &tokens,
 				else {
 					auto condition = parse_value(tokens, &index, all_ops);
 					if (get_token(tokens, index++) != L"Then") {
-						throw std::runtime_error("expected 'Then'");
+						index--;
 					}
 					new_node->if_condition = std::move(condition);
 				}
