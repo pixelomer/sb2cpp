@@ -16,6 +16,5 @@ fi
 
 ./sb2cpp "${input}" > "${input}.cpp"
 
-c++ -Isrc `sdl2-config --cflags --libs` \
-	-lSDL2_ttf -O3 -flto --std=c++17 -include Liberation.hpp "${input}.cpp" -Wall \
-	-o "${output}"
+c++ -Isrc -O3 -flto --std=c++17 -include Liberation.hpp "${input}.cpp" -Wall \
+	`sdl2-config --cflags --libs` -lSDL2_ttf -o "${output}"
