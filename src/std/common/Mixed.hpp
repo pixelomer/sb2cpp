@@ -153,13 +153,7 @@ namespace SmallBasic {
 			return *this;
 		}
 
-		Mixed &operator=(std::string const& utf8) {
-			std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-			String str = converter.from_bytes(utf8);
-			_string = str;
-			_type = MIXED_STRING;
-			return *this;
-		}
+		Mixed &operator=(std::string const& utf8);
 
 		Mixed &operator=(Array const& array) {
 			_array = CopyArray(array);
@@ -326,6 +320,16 @@ namespace SmallBasic {
 	typedef Mixed::Number Number;
 	typedef Mixed::String String;
 	Number Mixed::_unique = 1;
+}
+
+#include "StringUtils.hpp"
+
+namespace SmallBasic {
+	Mixed &Mixed::operator=(std::string const& utf8) {
+		_string = StringToWString(utf8);
+		_type = MIXED_STRING;
+		return *this;
+	}
 }
 
 #endif

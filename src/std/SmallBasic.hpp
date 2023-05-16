@@ -12,6 +12,9 @@
 #include "std/Timer.hpp"
 #include "std/File.hpp"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 class ForIterator : public std::iterator<std::output_iterator_tag, SmallBasic::Mixed> {
 private:
 	SmallBasic::Mixed *_indexPt;
@@ -57,6 +60,8 @@ public:
 		return iterator;
 	}
 };
+
+#pragma GCC diagnostic pop
 
 #if __cplusplus >= 201703
 [[maybe_unused]]

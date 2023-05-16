@@ -4,10 +4,15 @@
 #include <algorithm>
 #include "Mixed.hpp"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 std::wstring StringToWString(std::string const& str) {
 	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 	return converter.from_bytes(str);
 }
+
+#pragma GCC diagnostic pop
 
 SmallBasic::String WStringToLower(SmallBasic::String str) {
 	std::transform(str.begin(), str.end(), str.begin(), std::towlower);
