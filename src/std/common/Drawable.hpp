@@ -101,10 +101,10 @@ namespace SmallBasic {
 			type(OVAL), x(x), y(y), width(width), height(height), filled(filled) {}
 
 		Drawable(Number x, Number y, String text):
-			type(TEXT), x(x), y(y), text(text), boundText(false) {}
+			type(TEXT), text(text), x(x), y(y), boundText(false) {}
 
 		Drawable(Number x, Number y, String text, Number width):
-			type(TEXT), x(x), y(y), text(text), width(width), boundText(true) {}
+			type(TEXT), text(text), x(x), y(y), width(width), boundText(true) {}
 	};
 }
 
