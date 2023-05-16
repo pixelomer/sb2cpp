@@ -14,7 +14,7 @@
 #if defined(SMALLBASIC_APPLE)
 @class SmallBasicWindow;
 #elif defined(SMALLBASIC_SDL)
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #endif
 
 #define INITIAL_WINDOW_WIDTH 640

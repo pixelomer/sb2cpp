@@ -26,6 +26,7 @@ distribution.
 Andreas Schiffler -- aschiffler at ferzkopp dot net
 
 */
+/* changes by pixelomer: changed SDL include path to <SDL.h> */
 
 #ifndef _SDL2_rotozoom_h
 #define _SDL2_rotozoom_h
@@ -41,7 +42,7 @@ extern "C" {
 #define M_PI	3.1415926535897932384626433832795
 #endif
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 	/* ---- Defines */
 

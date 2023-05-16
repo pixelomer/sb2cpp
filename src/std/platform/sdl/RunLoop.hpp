@@ -1,7 +1,7 @@
 #ifndef SMALLBASIC_PLATFORM_SDL_RUNLOOP_HPP
 #define SMALLBASIC_PLATFORM_SDL_RUNLOOP_HPP
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "../RunLoop.hpp"
 #include "../Window.hpp"
 #include "../../common/StringUtils.hpp"

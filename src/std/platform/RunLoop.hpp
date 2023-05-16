@@ -14,7 +14,7 @@
 #include <chrono>
 
 #if defined(SMALLBASIC_SDL)
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #endif
 
 namespace SmallBasic {

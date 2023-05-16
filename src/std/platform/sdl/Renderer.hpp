@@ -1,8 +1,8 @@
 #ifndef SMALLBASIC_PLATFORM_SDL_RENDERER_HPP
 #define SMALLBASIC_PLATFORM_SDL_RENDERER_HPP
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
+#include <SDL.h>
+#include <SDL_ttf.h>
 #include "../Renderer.hpp"
 #include "../../common/StringUtils.hpp"
 #include "SDL2_gfx/SDL2_gfx.h"

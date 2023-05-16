@@ -3,7 +3,7 @@
 
 #include "../Window.hpp"
 #include "../../common/StringUtils.hpp"
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 namespace SmallBasic {
 	namespace Platform {

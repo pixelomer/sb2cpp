@@ -1,5 +1,5 @@
 
-/* Header guard added by pixelomer */
+/* changes by pixelomer: added header guard */
 #ifndef _SDL2_gfxPrimitives_font_h
 #define _SDL2_gfxPrimitives_font_h
 

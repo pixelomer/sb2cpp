@@ -28,6 +28,7 @@ Andreas Schiffler -- aschiffler at ferzkopp dot net
 Richard Russell -- richard at rtrussell dot co dot uk
 
 */
+/* changes by pixelomer: changed SDL include path to <SDL.h> */
 
 #ifndef _SDL2_gfxPrimitives_h
 #define _SDL2_gfxPrimitives_h
@@ -37,7 +38,7 @@ Richard Russell -- richard at rtrussell dot co dot uk
 #define M_PI	3.1415926535897932384626433832795
 #endif
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
