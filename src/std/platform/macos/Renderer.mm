@@ -127,11 +127,11 @@ namespace SmallBasic {
 					}
 
 					// Create attributed string
-					auto &penColor = drawable.graphics.penColor;
+					auto &brushColor = drawable.graphics.brushColor;
 					NSAttributedString *attributedStr = [[NSAttributedString alloc]
 						initWithString:text attributes:@{ NSFontAttributeName: font,
 						NSForegroundColorAttributeName:(__bridge NSColor *)
-						CGColorFromSBColor(penColor) }];
+						CGColorFromSBColor(brushColor) }];
 					CFAttributedStringRef cfAttributedStr = (__bridge CFAttributedStringRef)
 						attributedStr;
 
