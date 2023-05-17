@@ -32,8 +32,8 @@
 			userInfo:nil];
 		[self.contentView addTrackingArea:trackingArea];
 
-		_keyMonitor = [NSEvent addLocalMonitorForEventsMatchingMask:NSKeyDownMask |
-			NSKeyUpMask handler:^(NSEvent *event) {
+		_keyMonitor = [NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskKeyDown |
+			NSEventMaskKeyUp handler:^(NSEvent *event) {
 				NSString *key = [event.characters substringWithRange:NSMakeRange(0, 1)];
 				switch (event.keyCode) {
 					case 123: key = @"Left"; break;

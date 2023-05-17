@@ -26,7 +26,7 @@ namespace SmallBasic {
 			[app stop:nil];
 			// -[NSApplication stop:] only takes effect after an event is
 			// processed
-			NSEvent *event = [NSEvent otherEventWithType:NSApplicationDefined
+			NSEvent *event = [NSEvent otherEventWithType:NSEventTypeApplicationDefined
 				location:{} modifierFlags:0 timestamp:0 windowNumber:0
 				context:NULL subtype:0 data1:0 data2:0];
 			[app postEvent:event atStart:YES];

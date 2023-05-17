@@ -2,11 +2,10 @@
 #define SMALLBASIC_PLATFORM_MACOS_UTILS_MM
 
 #include <Foundation/Foundation.h>
+#include "../../common/StringUtils.hpp"
 
 std::wstring NSStringToWString(NSString *str) {
-	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-	std::string utf8 = [str UTF8String];
-	return converter.from_bytes(utf8);
+	return StringToWString([str UTF8String]);
 }
 
 NSString *WStringToNSString(SmallBasic::String const& str) {
