@@ -16,17 +16,19 @@ fi
 
 ./sb2cpp "${input}" > "${input}.cpp"
 
-CFLAGS=""
+CFLAGS="-Isrc -O3 --std=c++17 -Wall"
+LDFLAFS="-flto"
 
 if [ "${USE_COREGRAPHICS}" = 1 ]; then
 	if [ "$(uname)" != "Darwin" ]; then
 		echo "CoreGraphics is only available on macOS"
 		exit 1
 	fi
-	CFLAGS="${CFLAGS} -ObjC++ -framework Cocoa -mmacosx-version-min=10.15"
+	CFLAGS="${CFLAGS} -ObjC++"
+	LDFLAGS="${LDFLAGS} -framework Cocoa -mmacosx-version-min=10.15"
 else
-	CFLAGS="${CFLAGS} $(sdl2-config --cflags --libs) -lSDL2_ttf"
+	CFLAGS="${CFLAGS} $(sdl2-config --cflags) -include Liberation.hpp"
+	LDFLAGS="${LDFLAGS} $(sdl2-config --libs) -lSDL2_ttf"
 fi
 
-c++ -Isrc -O3 -flto --std=c++17 -Wall -include Liberation.hpp "${input}.cpp" \
-	${CFLAGS} -o "${output}"
+c++ ${CFLAGS} "${input}.cpp" ${LDFLAGS} -o "${output}"
