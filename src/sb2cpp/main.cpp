@@ -520,8 +520,8 @@ std::vector<std::wstring> tokenize(std::wstring const& source) {
 		else if (c == '"') {
 			// strings
 			do token += source[i];
-			while ((i+1 < len) && (source[++i] != '"'));
-			token += source[i];
+			while ((i+1 < len) && (source[++i] != '"') && (source[i] != '\n'));
+			token += '"';
 		}
 		else {
 			// variable names, keywords, etc.
