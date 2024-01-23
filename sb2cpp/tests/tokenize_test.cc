@@ -4,6 +4,8 @@
 
 using namespace sb2cpp;
 
+/**** Valid/Expected inputs ****/
+
 TEST(TokenizeTest, SimpleSourceCode) {
     auto input =
         L"TextWindow.Show() ' Shows text window\n"
@@ -30,6 +32,8 @@ TEST(TokenizeTest, SimpleSourceCode) {
     ASSERT_TRUE(tokens == expected);
 }
 
+/**** Edge cases ****/
+
 // An incomplete string should be tokenized as a token that starts
 // with a quote but does not end with one.
 TEST(TokenizeTest, IncompleteString) {
@@ -37,10 +41,10 @@ TEST(TokenizeTest, IncompleteString) {
         L"str = \"Hello, world\n"
         L"TextWindow.WriteLine(str)";
     auto tokens = tokenize(input);
-    auto expected = std::vector<std::wstring>({
+    std::vector<std::wstring> expected = {
         L"str", L"=", L"\"Hello, world", L"\n",
         L"TextWindow", L".", L"WriteLine", L"(", L"str", L")"
-    });
+    };
     ASSERT_TRUE(tokens == expected);
 }
 TEST(TokenizeTest, IncompleteStringEOF) {
@@ -50,5 +54,19 @@ TEST(TokenizeTest, IncompleteStringEOF) {
     auto expected = std::vector<std::wstring>({
         L"str", L"=", L"\"Hello, world"
     });
+    ASSERT_TRUE(tokens == expected);
+}
+
+// Numbers
+TEST(TokenizeTest, NumberEOF) {
+    auto input = L"10.2";
+    auto tokens = tokenize(input);
+    std::vector<std::wstring> expected = { L"10.2" };
+    ASSERT_TRUE(tokens == expected);
+}
+TEST(TokenizeTest, InvalidNumberEOF) {
+    auto input = L"10.2.5";
+    auto tokens = tokenize(input);
+    std::vector<std::wstring> expected = { L"10.2", L".", L"5" };
     ASSERT_TRUE(tokens == expected);
 }

@@ -46,8 +46,9 @@ std::vector<std::wstring> tokenize(std::wstring const& source) {
         else if (isdigit((int)c)) {
             // number
             bool parsed_dot = false;
-            do { token += c; c = source[++i]; }
-            while (isdigit((int)c) || (!parsed_dot && (parsed_dot = (c == L'.'))));
+            do { token += source[i++]; }
+            while (i < len && (isdigit((int)(c = source[i]))
+                || (!parsed_dot && (parsed_dot = (c == L'.')))));
             i--;
         }
         else if (special.find(c) != std::wstring::npos) {
