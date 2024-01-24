@@ -19,8 +19,14 @@ std::vector<std::string> tokenize(std::string const& source) {
         wchar_t c = source[i];
         if (iswspace(c)) {
             // whitespace
-            if (c == L'\n' && last_token != "\n") {
-                token = "\n";
+            if (c == L'\n') {
+                if (last_token != "\n") {
+                    token = "\n";
+                }
+                else {
+                    tokens[tokens.size()-1] += "\n";
+                    continue;
+                }
             }
             else {
                 continue;

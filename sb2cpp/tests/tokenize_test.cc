@@ -4,6 +4,14 @@
 
 using namespace sb2cpp;
 
+void assertTokenize(std::string input, std::vector<std::string> const& expected) {
+    auto tokens = tokenize(input);
+    for (int i = 0; i<tokens.size() && i<expected.size(); i++) {
+        ASSERT_EQ(tokens[i], expected[i]) << "Different value at index " << i;
+    }
+    ASSERT_EQ(tokens.size(), expected.size());
+}
+
 /**** Valid/Expected inputs ****/
 
 TEST(TokenizeTest, SimpleSourceCode) {
@@ -18,9 +26,8 @@ TEST(TokenizeTest, SimpleSourceCode) {
         "EndIf\n"
         "ctemp = 32\n"
         "ftemp = 89.6";
-    auto tokens = tokenize(input);
     auto expected = std::vector<std::string>({
-        "TextWindow", ".", "Show", "(", ")", "\n",
+        "TextWindow", ".", "Show", "(", ")", "\n\n\n",
         "name", "=", "TextWindow", ".", "Read", "(", ")", "\n",
         "TextWindow", ".", "WriteLine", "(", "\"Your name is: \"", "+", "name", ")", "\n",
         "If", "(", "name", "=", "\"John\"", "Or", "name", "=", "\"Michael\"", ")", "Then", "\n",
@@ -29,7 +36,7 @@ TEST(TokenizeTest, SimpleSourceCode) {
         "ctemp", "=", "32", "\n",
         "ftemp", "=", "89.6"
     });
-    ASSERT_TRUE(tokens == expected);
+    assertTokenize(input, expected);
 }
 
 /**** Edge cases ****/
@@ -40,12 +47,11 @@ TEST(TokenizeTest, IncompleteString) {
     auto input = 
         "str = \"Hello, world\n"
         "TextWindow.WriteLine(str)";
-    auto tokens = tokenize(input);
     std::vector<std::string> expected = {
         "str", "=", "\"Hello, world", "\n",
         "TextWindow", ".", "WriteLine", "(", "str", ")"
     };
-    ASSERT_TRUE(tokens == expected);
+    assertTokenize(input, expected);
 }
 TEST(TokenizeTest, IncompleteStringEOF) {
     auto input = 
@@ -60,13 +66,11 @@ TEST(TokenizeTest, IncompleteStringEOF) {
 // Numbers
 TEST(TokenizeTest, NumberEOF) {
     auto input = "10.2";
-    auto tokens = tokenize(input);
     std::vector<std::string> expected = { "10.2" };
-    ASSERT_TRUE(tokens == expected);
+    assertTokenize(input, expected);
 }
 TEST(TokenizeTest, InvalidNumberEOF) {
     auto input = "10.2.5";
-    auto tokens = tokenize(input);
     std::vector<std::string> expected = { "10.2", ".", "5" };
-    ASSERT_TRUE(tokens == expected);
+    assertTokenize(input, expected);
 }
