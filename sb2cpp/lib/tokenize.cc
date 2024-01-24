@@ -10,17 +10,17 @@ namespace sb2cpp {
  * @param source Small Basic code.
  * @returns Vector of tokens.
 */
-std::vector<std::wstring> tokenize(std::wstring const& source) {
-    std::vector<std::wstring> tokens;
-    std::wstring last_token, token;
-    const std::wstring special = L"()[]<>+-/*=.',:";
+std::vector<std::string> tokenize(std::string const& source) {
+    std::vector<std::string> tokens;
+    std::string last_token, token;
+    const std::string special = "()[]<>+-/*=.',:";
     size_t len = source.length();
     for (int i=0; i<len; i++) {
         wchar_t c = source[i];
         if (iswspace(c)) {
             // whitespace
-            if (c == L'\n' && last_token != L"\n") {
-                token = L"\n";
+            if (c == L'\n' && last_token != "\n") {
+                token = "\n";
             }
             else {
                 continue;
@@ -51,7 +51,7 @@ std::vector<std::wstring> tokenize(std::wstring const& source) {
                 || (!parsed_dot && (parsed_dot = (c == L'.')))));
             i--;
         }
-        else if (special.find(c) != std::wstring::npos) {
+        else if (special.find(c) != std::string::npos) {
             // operators, etc.
             token += c;
         }
@@ -68,7 +68,7 @@ std::vector<std::wstring> tokenize(std::wstring const& source) {
             do {
                 token += source[i++];
             }
-            while (i < len && (special.find(source[i]) == std::wstring::npos)
+            while (i < len && (special.find(source[i]) == std::string::npos)
                 && !iswspace(source[i]));
             i--;
         }

@@ -2,5 +2,5 @@
 #include <vector>
 
 namespace sb2cpp {
-    std::vector<std::wstring> tokenize(std::wstring const& source);
+    std::vector<std::string> tokenize(std::string const& source);
 }
