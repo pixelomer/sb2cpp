@@ -20,7 +20,7 @@ TEST(ParseTest, AssignNumber) {
 }
 
 TEST(ParseTest, AssignStdlibCall) {
-    auto input = "num = Math.Remainder(10, 6)\n";
+    auto input = "num = Math.Remainder(10, 6)\n\n\n";
     Parser parser(input);
 
     auto result = dynamic_cast<AST::Assign *>(parser.parse_next());
