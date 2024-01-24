@@ -17,6 +17,11 @@ TEST(ParseTest, AssignNumber) {
     auto value = dynamic_cast<AST::NumberValue *>(result->value);
     ASSERT_NE(value, nullptr);
     ASSERT_EQ(value->number, 5);
+
+    delete result;
+
+    auto end = parser.parse_next();
+    ASSERT_EQ(end, nullptr);
 }
 
 TEST(ParseTest, AssignStdlibCall) {
