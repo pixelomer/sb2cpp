@@ -24,6 +24,28 @@ TEST(ParseTest, AssignNumber) {
     ASSERT_EQ(end, nullptr);
 }
 
+TEST(ParseTest, StdlibAssign) {
+    auto input = "TextWindow.Title = \"Hello\"\n";
+    Parser parser(input);
+
+    auto result = parser.parse_next();
+    ASSERT_NE(result, nullptr);
+    
+    auto assign = dynamic_cast<AST::StdlibAssign *>(result);
+    ASSERT_NE(assign, nullptr);
+    ASSERT_EQ(assign->class_name, "TextWindow");
+    ASSERT_EQ(assign->property, "Title");
+
+    auto value = dynamic_cast<AST::StringValue *>(assign->value);
+    ASSERT_NE(value, nullptr);
+    ASSERT_EQ(value->value, "Hello");
+
+    delete result;
+
+    auto end = parser.parse_next();
+    ASSERT_EQ(end, nullptr);
+}
+
 TEST(ParseTest, AssignStdlibCall) {
     auto input = "num = Math.Remainder(10, 6)\n\n\n";
     Parser parser(input);
@@ -78,7 +100,7 @@ TEST(ParseTest, AssignMultiplication) {
 }
 
 TEST(ParseTest, AssignMixedOperations) {
-    auto input = "output = +-+-----5 -+-- (((10))) +--+ ((30 - 5) * (1 + Math.Log(10) / 25 * 30) / Math.Abs(-20))";
+    auto input = "output = +-+-----5 -+-- (((10))) +--+ ((30 - 5) * (1 + Math.Log(10) / a * 30) / Math.Abs(-20))";
     Parser parser(input);
 
     auto result = parser.parse_next();

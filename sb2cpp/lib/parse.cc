@@ -123,8 +123,16 @@ AST::Value *Parser::parse_value() {
         }
         else if (expect_value) {
             if (this->token_get(this->idx + 1) == ".") {
-                elem = { AST::NoValueOp, this->parse_stdlib_call() };
-                this->idx--;
+                if (this->token_get(this->idx + 3) == "(") {
+                    elem = { AST::NoValueOp, this->parse_stdlib_call() };
+                    this->idx--;
+                }
+                else {
+                    auto value = new AST::StdlibValue(this->token_get(this->idx),
+                        this->token_get(this->idx+2));
+                    elem = { AST::NoValueOp, value };
+                    this->idx += 2;
+                }
             }
             else {
                 elem = { AST::NoValueOp, new AST::VariableValue(token) };
@@ -155,6 +163,15 @@ AST::ConditionGroup *Parser::parse_condition_group() {
     return nullptr;
 }
 
+AST::StdlibAssign *Parser::parse_stdlib_assign() {
+    auto class_name = this->try_token_next("<class>");
+    this->try_token_next(".");
+    auto property = this->try_token_next("<property>");
+    this->try_token_next("=");
+    auto value = this->parse_value();
+    return new AST::StdlibAssign(class_name, property, value);
+}
+
 AST::Statement *Parser::parse_statement() {
     AST::Statement *node = nullptr;
     
@@ -173,7 +190,12 @@ AST::Statement *Parser::parse_statement() {
             node = parse_subroutine_call();
         }
         else if (second_token == ".") {
-            node = parse_stdlib_call();
+            if (this->token_get(this->idx+3) == "=") {
+                node = parse_stdlib_assign();
+            }
+            else {
+                node = parse_stdlib_call();
+            }
         }
         else {
             throw SyntaxError(this->line, "Expected statement");

@@ -37,6 +37,7 @@ namespace sb2cpp {
 
         AST::Statement *parse_statement();
         AST::Assign *parse_assign();
+        AST::StdlibAssign *parse_stdlib_assign();
         AST::IfStatement *parse_if_statement();
         AST::Subroutine *parse_subroutine();
         AST::SubroutineCall *parse_subroutine_call();

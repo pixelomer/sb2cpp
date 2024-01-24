@@ -107,6 +107,26 @@ namespace sb2cpp::AST {
             }
         }
     };
+    class StdlibValue : virtual public Value {
+    public:
+        std::string class_name;
+        std::string property;
+        StdlibValue(std::string class_name, std::string property):
+            class_name(class_name), property(property) {}
+    };
+    class StdlibAssign : virtual public Statement {
+    public:
+        std::string class_name;
+        std::string property;
+        Value *value;
+        StdlibAssign(std::string class_name, std::string property, Value *value):
+            class_name(class_name), property(property), value(value) {}
+        ~StdlibAssign() {
+            if (this->value != nullptr) {
+                delete this->value;
+            }
+        }
+    };
     class ValueGroup : virtual public Value {
     public:
         // Either op or value will be valid, not both
