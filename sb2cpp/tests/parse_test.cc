@@ -76,3 +76,76 @@ TEST(ParseTest, AssignMultiplication) {
     auto end = parser.parse_next();
     ASSERT_EQ(end, nullptr);
 }
+
+TEST(ParseTest, AssignMixedOperations) {
+    auto input = "output = +-+-----5 -+-- (((10))) +--+ ((30 - 5) * (1 + Math.Log(10) / 25 * 30) / Math.Abs(-20))";
+    Parser parser(input);
+
+    auto result = parser.parse_next();
+    ASSERT_NE(result, nullptr);
+
+    auto assign = dynamic_cast<AST::Assign *>(result);
+    ASSERT_NE(assign, nullptr);
+    ASSERT_EQ(assign->variable, "output");
+
+    auto add_group = dynamic_cast<AST::AddGroup *>(assign->value);
+    ASSERT_NE(add_group, nullptr);
+    ASSERT_EQ(add_group->elements.size(), 3);
+
+    auto elem1 = add_group->elements[0];
+    ASSERT_EQ(elem1.sign, AST::Positive);
+    
+    auto elem1value = dynamic_cast<AST::NumberValue *>(elem1.value);
+    ASSERT_NE(elem1value, nullptr);
+    ASSERT_EQ(elem1value->number, 5);
+
+    auto elem2 = add_group->elements[1];
+    ASSERT_EQ(elem2.sign, AST::Negative);
+    
+    auto elem2value = dynamic_cast<AST::NumberValue *>(elem2.value);
+    ASSERT_NE(elem2value, nullptr);
+    ASSERT_EQ(elem2value->number, 10);
+
+    auto elem3 = add_group->elements[2];
+    ASSERT_EQ(elem3.sign, AST::Positive);
+    
+    auto elem3value = dynamic_cast<AST::DivideValue *>(elem3.value);
+    ASSERT_NE(elem3value, nullptr);
+
+    auto div_rvalue = dynamic_cast<AST::StdlibCall *>(elem3value->rvalue);
+    ASSERT_NE(div_rvalue, nullptr);
+    ASSERT_EQ(div_rvalue->class_name, "Math");
+    ASSERT_EQ(div_rvalue->method_name, "Abs");
+    ASSERT_EQ(div_rvalue->arguments.size(), 1);
+    
+    auto arg1 = dynamic_cast<AST::AddGroup *>(div_rvalue->arguments[0]);
+    ASSERT_NE(arg1, nullptr);
+    ASSERT_EQ(arg1->elements.size(), 1);
+    ASSERT_EQ(arg1->elements[0].sign, AST::Negative);
+
+    auto arg1value = dynamic_cast<AST::NumberValue *>(arg1->elements[0].value);
+    ASSERT_NE(arg1value, nullptr);
+    ASSERT_EQ(arg1value->number, 20);
+
+    auto div_lvalue = dynamic_cast<AST::MultiplyValue *>(elem3value->lvalue);
+    ASSERT_NE(div_lvalue, nullptr);
+    
+    auto lvalue = dynamic_cast<AST::AddGroup *>(div_lvalue->lvalue);
+    ASSERT_NE(lvalue, nullptr);
+    ASSERT_EQ(lvalue->elements.size(), 2);
+    ASSERT_EQ(lvalue->elements[0].sign, AST::NoSignOp);
+    ASSERT_EQ(lvalue->elements[1].sign, AST::Negative);
+
+    delete result;
+
+    auto end = parser.parse_next();
+    ASSERT_EQ(end, nullptr);
+}
+
+TEST(ParseTest, AssignInvalidOperations) {
+    Parser parser("test = 10 - * 20");
+    ASSERT_THROW(parser.parse_next(), SyntaxError);
+
+    Parser parser2("test = - 20 / 5 *");
+    ASSERT_THROW(parser2.parse_next(), SyntaxError);
+}

@@ -73,7 +73,7 @@ AST::Value *AST::ValueGroup::simplify() {
     }
 
     // If left with only one entry with no sign, return its value
-    if (values.size() == 1) {
+    if (values.size() == 1 && values[0].op == AST::NoValueOp) {
         auto value = values[0].value;
         values.clear();
         return value;
@@ -93,7 +93,7 @@ AST::Value *AST::ValueGroup::simplify() {
     }
     values.clear();
 
-    return new AddGroup(elems);
+    return new AST::AddGroup(elems);
 }
 
 }
