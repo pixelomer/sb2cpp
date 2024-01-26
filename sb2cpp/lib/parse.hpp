@@ -1,5 +1,7 @@
 #include <string>
+#include <map>
 #include <exception>
+#include <tuple>
 #include "ast.hpp"
 #include "tokenize.hpp"
 
@@ -27,6 +29,8 @@ namespace sb2cpp {
     };
     class Parser {
     private:
+        static const std::map<std::string, AST::ComparisonOp> comparators;
+        static const std::map<std::string, AST::LogicOp> logic_ops;
         int line = 1;
         int idx = 0;
         std::vector<std::string> tokens;
@@ -42,9 +46,12 @@ namespace sb2cpp {
         AST::Subroutine *parse_subroutine();
         AST::SubroutineCall *parse_subroutine_call();
         AST::StdlibCall *parse_stdlib_call();
-        AST::Value *parse_value();
+        AST::Value *parse_value(bool throw_on_comparator = true);
         AST::Condition *parse_condition();
-        AST::ConditionGroup *parse_condition_group();
+        AST::WhileLoop *parse_while_loop();
+        std::tuple<int, int> save_state();
+        void restore_state(std::tuple<int, int> state);
+        void parse_value_or_condition(AST::Value **value, AST::Condition **condition);
     public:
         AST::Node *parse_next();
         Parser(std::string const& source) {

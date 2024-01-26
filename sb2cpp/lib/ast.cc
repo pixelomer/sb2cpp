@@ -41,13 +41,9 @@ AST::Value *AST::ValueGroup::simplify() {
     for (int opidx=0; opidx < values.size(); opidx++) {
         Value *new_value;
         auto opelem = values[opidx];
-        if (opelem.op == AST::Multiply) {
-            new_value = new MultiplyValue(values[opidx-1].value,
-                values[opidx+1].value);
-        }
-        else if (opelem.op == AST::Divide) {
-            new_value = new DivideValue(values[opidx-1].value,
-                values[opidx+1].value);
+        if (opelem.op == AST::Multiply || opelem.op == AST::Divide) {
+            new_value = new BinaryValueOp(values[opidx-1].value,
+                values[opidx+1].value, opelem.op);
         }
         else {
             continue;
@@ -94,6 +90,28 @@ AST::Value *AST::ValueGroup::simplify() {
     values.clear();
 
     return new AST::AddGroup(elems);
+}
+
+void AST::ConditionGroup::group_by(AST::LogicOp group_op) {
+    auto &elems = this->conditions;
+
+    for (int i=0; i < elems.size(); i++) {
+        auto elem = elems[i];
+        if (elem.op != group_op) continue;
+        elems[i-1].condition = new AST::BinaryLogicOp(elems[i-1].condition,
+            elems[i].condition, group_op);
+        elems.erase(elems.begin() + i, elems.begin() + i + 1);
+        i--;
+    }
+}
+
+AST::Condition *AST::ConditionGroup::simplify() {
+    auto &elems = this->conditions;
+    this->group_by(AST::And);
+    this->group_by(AST::Or);
+    AST::Condition *condition = elems[0].condition;
+    elems.clear();
+    return condition;
 }
 
 }

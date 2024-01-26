@@ -1,10 +1,25 @@
 #include "parse.hpp"
 #include "util.hpp"
 #include <string>
+#include <map>
 
 #define EOF_TOKEN ""
 
 namespace sb2cpp {
+
+const std::map<std::string, AST::ComparisonOp> Parser::comparators = {
+    { "<>", AST::NotEqual },
+    { "<=", AST::LessThanOrEqual },
+    { ">=", AST::GreaterThanOrEqual },
+    { "=", AST::Equal },
+    { ">", AST::GreaterThan },
+    { "<", AST::LessThan }
+};
+
+const std::map<std::string, AST::LogicOp> Parser::logic_ops = {
+    { "and", AST::And },
+    { "or", AST::Or }
+};
 
 std::string Parser::token_get(int idx) {
     if (idx < this->tokens.size()) {
@@ -23,13 +38,16 @@ std::string Parser::token_next() {
     return token_get(this->idx++);
 }
 
-std::string Parser::try_token_next(std::string expected) {
+std::string Parser::try_token_next(std::string expected_keyword) {
     auto token = this->token_next();
     if (token == EOF_TOKEN) {
-        throw SyntaxError(this->line, expected, EOF_TOKEN);
+        throw SyntaxError(this->line, expected_keyword, EOF_TOKEN);
     }
-    else if (expected.size() > 0 && expected[0] != '<' && expected != token) {
-        throw SyntaxError(this->line, expected, token);
+    if (expected_keyword.size() > 0 && expected_keyword[0] != '<') {
+        auto received = strtolower(token);
+        if (expected_keyword != received) {
+            throw SyntaxError(this->line, expected_keyword, token);
+        }
     }
     return token;
 }
@@ -75,7 +93,7 @@ AST::StdlibCall *Parser::parse_stdlib_call() {
     return new AST::StdlibCall(class_name, method_name, arguments);
 }
 
-AST::Value *Parser::parse_value() {
+AST::Value *Parser::parse_value(bool throw_on_comparator) {
     std::vector<AST::ValueGroup::ValueGroupElement> elements;
     bool allow_add_sub = true;
     bool allow_mult_div = false;
@@ -121,7 +139,7 @@ AST::Value *Parser::parse_value() {
             allow_add_sub = true;
             allow_mult_div = false;
         }
-        else if (expect_value) {
+        else if (expect_value && comparators.count(token) == 0) {
             if (this->token_get(this->idx + 1) == ".") {
                 if (this->token_get(this->idx + 3) == "(") {
                     elem = { AST::NoValueOp, this->parse_stdlib_call() };
@@ -137,6 +155,9 @@ AST::Value *Parser::parse_value() {
             else {
                 elem = { AST::NoValueOp, new AST::VariableValue(token) };
             }
+        }
+        else if (throw_on_comparator && comparators.count(token) != 0) {
+            throw SyntaxError(this->line, "Expected arithmetic operator");
         }
         else {
             break;
@@ -155,12 +176,93 @@ AST::Value *Parser::parse_value() {
     return value;
 }
 
-AST::Condition *Parser::parse_condition() {
-    return nullptr;
+std::tuple<int, int> Parser::save_state() {
+    return { this->idx, this->line };
 }
 
-AST::ConditionGroup *Parser::parse_condition_group() {
-    return nullptr;
+void Parser::restore_state(std::tuple<int, int> state) {
+    std::tuple<int&, int&>(this->idx, this->line) = state;
+}
+
+void Parser::parse_value_or_condition(AST::Value **value,
+    AST::Condition **condition)
+{
+    auto state = this->save_state();
+    try {
+        *value = this->parse_value();
+    }
+    catch (SyntaxError err) {
+        this->restore_state(state);
+        *condition = this->parse_condition();
+    }
+}
+
+AST::Condition *Parser::parse_condition() {
+    std::vector<AST::ConditionGroup::ConditionGroupElement> elems;
+    AST::LogicOp next_logic = AST::NoLogicOp;
+    AST::ComparisonOp next_comp = AST::NoComparisonOp;
+    AST::Value *lvalue = nullptr;
+    while (true) {
+        auto token = this->token_get(this->idx);
+        AST::Value *value = nullptr;
+        AST::Condition *condition = nullptr;
+        if (token == "(") {
+            this->idx++;
+            this->parse_value_or_condition(&value, &condition);
+            this->try_token_next(")");
+        }
+        else {
+            value = this->parse_value(false);
+        }
+        if (lvalue != nullptr) {
+            if (condition != nullptr) {
+                throw SyntaxError(this->line, "Expected value");
+            }
+            elems.push_back({ next_logic, new AST::SingleCondition(lvalue,
+                value, next_comp) });
+            lvalue = nullptr;
+        }
+        else if (condition != nullptr) {
+            elems.push_back({ next_logic, condition });
+        }
+        else {
+            lvalue = value;
+            token = this->token_next();
+            if (comparators.count(token) == 0) {
+                throw SyntaxError(this->line, "<comparator>", token);
+            }
+            next_comp = comparators.at(token);
+        }
+        if (lvalue == nullptr) {
+            token = strtolower(this->token_get(this->idx));
+            if (logic_ops.count(token) == 0) {
+                break;
+            }
+            else {
+                this->idx++;
+                next_logic = logic_ops.at(token);
+                lvalue = nullptr;
+            }
+        }
+    }
+    if (elems.size() == 0) {
+        throw SyntaxError(this->line, "Expected condition");
+    }
+    AST::ConditionGroup condition_group(elems);
+    return condition_group.simplify();
+}
+
+AST::WhileLoop *Parser::parse_while_loop() {
+    this->try_token_next("while");
+    AST::Condition *condition = this->parse_condition();
+    this->try_token_next("\n");
+    std::vector<AST::Statement *> statements;
+    while (strtolower(this->token_get(this->idx)) != "endwhile") {
+        statements.push_back(this->parse_statement());
+    }
+    this->try_token_next("endwhile");
+    return new AST::WhileLoop(condition,
+        new AST::StatementGroup(statements));
 }
 
 AST::StdlibAssign *Parser::parse_stdlib_assign() {
@@ -180,6 +282,9 @@ AST::Statement *Parser::parse_statement() {
 
     if (first_keyword == "if") {
         node = parse_if_statement();
+    }
+    else if (first_keyword == "while") {
+        node = parse_while_loop();
     }
     else {
         auto second_token = this->token_get(this->idx+1);

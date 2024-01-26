@@ -1,16 +1,17 @@
 #include <string>
 
 namespace sb2cpp::AST {
-    enum Comparison {
-        NoComparison = 0, // Used for else statement
+    enum ComparisonOp {
+        NoComparisonOp = 0,
         Equal,
+        NotEqual,
         GreaterThan,
         GreaterThanOrEqual,
         LessThan,
         LessThanOrEqual
     };
-    enum ConditionOp {
-        NoConditionOp = 0,
+    enum LogicOp {
+        NoLogicOp = 0,
         And,
         Or
     };
@@ -35,6 +36,18 @@ namespace sb2cpp::AST {
     class Statement : virtual public Node {};
     class Declaration : virtual public Node {};
 
+    template <typename T>
+    class BinaryOperation : virtual public Node {
+    public:
+        T *lvalue;
+        T *rvalue;
+        BinaryOperation(T *lvalue, T *rvalue): lvalue(lvalue),
+            rvalue(rvalue) {}
+        ~BinaryOperation() {
+            delete lvalue;
+            delete rvalue;
+        }
+    };
     class StringValue : virtual public Value {
     public:
         std::string value;
@@ -46,19 +59,23 @@ namespace sb2cpp::AST {
         double number;
         NumberValue(double number): number(number) {}
     };
-    class MultiplyValue : virtual public Value {
+    class BinaryValueOp : virtual public BinaryOperation<Value>, virtual public Value {
     public:
-        Value *lvalue;
-        Value *rvalue;
-        MultiplyValue(Value *lvalue, Value *rvalue): lvalue(lvalue),
-            rvalue(rvalue) {}
+        AST::ValueOp op;
+        BinaryValueOp(Value *lvalue, Value *rvalue, AST::ValueOp op):
+            BinaryOperation(lvalue, rvalue), op(op) {}
     };
-    class DivideValue : virtual public Value {
+    class BinaryLogicOp : virtual public BinaryOperation<Condition>, virtual public Condition {
     public:
-        Value *lvalue;
-        Value *rvalue;
-        DivideValue(Value *lvalue, Value *rvalue): lvalue(lvalue),
-            rvalue(rvalue) {}
+        AST::LogicOp op;
+        BinaryLogicOp(Condition *lvalue, Condition *rvalue, AST::LogicOp op):
+            BinaryOperation(lvalue, rvalue), op(op) {}
+    };
+    class BinaryCompareOp : virtual public BinaryOperation<Value>, virtual public Condition {
+    public:
+        AST::ComparisonOp op;
+        BinaryCompareOp(Value *lvalue, Value *rvalue, AST::ComparisonOp op):
+            BinaryOperation(lvalue, rvalue), op(op) {}
     };
     class AddGroup : virtual public Value {
     public:
@@ -155,8 +172,8 @@ namespace sb2cpp::AST {
     public:
         Value *lvalue;
         Value *rvalue;
-        Comparison comparison;
-        SingleCondition(Value *lvalue, Value *rvalue, Comparison comparison):
+        ComparisonOp comparison;
+        SingleCondition(Value *lvalue, Value *rvalue, ComparisonOp comparison):
             lvalue(lvalue), rvalue(rvalue), comparison(comparison) {}
         ~SingleCondition() {
             if (lvalue != nullptr) delete lvalue;
@@ -164,12 +181,15 @@ namespace sb2cpp::AST {
         }
     };
     class ConditionGroup : virtual public Condition {
+    private:
+        void group_by(AST::LogicOp op);
     public:
         struct ConditionGroupElement {
-            ConditionOp op; // None for first element
-            SingleCondition *condition;
+            LogicOp op; // None for first element
+            Condition *condition;
         };
         std::vector<ConditionGroupElement> conditions;
+        Condition *simplify();
         ConditionGroup(std::vector<ConditionGroupElement> const& conditions):
             conditions(conditions) {}
         ~ConditionGroup() {
@@ -194,6 +214,17 @@ namespace sb2cpp::AST {
         SubroutineCall(std::string const& subroutine_name):
             subroutine_name(subroutine_name) {}
     };
+    class WhileLoop : virtual public Statement {
+    public:
+        Condition *condition;
+        Statement *statement;
+        WhileLoop(Condition *condition, Statement *statement):
+            condition(condition), statement(statement) {}
+        ~WhileLoop() {
+            delete condition;
+            delete statement;
+        }
+    };
     class IfStatement : virtual public Statement {
     public:
         struct IfStatementPart {
@@ -205,7 +236,9 @@ namespace sb2cpp::AST {
             parts(parts) {}
         ~IfStatement() {
             for (auto const& part : this->parts) {
-                delete part.condition;
+                if (part.condition) {
+                    delete part.condition;
+                }
                 delete part.statement;
             }
         }

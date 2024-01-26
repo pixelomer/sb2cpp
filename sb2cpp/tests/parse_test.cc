@@ -82,8 +82,9 @@ TEST(ParseTest, AssignMultiplication) {
     ASSERT_NE(result, nullptr);
     ASSERT_EQ(result->variable, "result");
 
-    auto calc = dynamic_cast<AST::MultiplyValue *>(result->value);
+    auto calc = dynamic_cast<AST::BinaryValueOp *>(result->value);
     ASSERT_NE(calc, nullptr);
+    ASSERT_EQ(calc->op, AST::Multiply);
 
     auto lvalue = dynamic_cast<AST::NumberValue *>(calc->lvalue);
     ASSERT_NE(lvalue, nullptr);
@@ -131,8 +132,9 @@ TEST(ParseTest, AssignMixedOperations) {
     auto elem3 = add_group->elements[2];
     ASSERT_EQ(elem3.sign, AST::Positive);
     
-    auto elem3value = dynamic_cast<AST::DivideValue *>(elem3.value);
+    auto elem3value = dynamic_cast<AST::BinaryValueOp *>(elem3.value);
     ASSERT_NE(elem3value, nullptr);
+    ASSERT_EQ(elem3value->op, AST::Divide);
 
     auto div_rvalue = dynamic_cast<AST::StdlibCall *>(elem3value->rvalue);
     ASSERT_NE(div_rvalue, nullptr);
@@ -149,8 +151,9 @@ TEST(ParseTest, AssignMixedOperations) {
     ASSERT_NE(arg1value, nullptr);
     ASSERT_EQ(arg1value->number, 20);
 
-    auto div_lvalue = dynamic_cast<AST::MultiplyValue *>(elem3value->lvalue);
+    auto div_lvalue = dynamic_cast<AST::BinaryValueOp *>(elem3value->lvalue);
     ASSERT_NE(div_lvalue, nullptr);
+    ASSERT_EQ(div_lvalue->op, AST::Multiply);
     
     auto lvalue = dynamic_cast<AST::AddGroup *>(div_lvalue->lvalue);
     ASSERT_NE(lvalue, nullptr);
@@ -170,4 +173,38 @@ TEST(ParseTest, AssignInvalidOperations) {
 
     Parser parser2("test = - 20 / 5 *");
     ASSERT_THROW(parser2.parse_next(), SyntaxError);
+}
+
+TEST(ParseTest, WhileLoop) {
+    auto input = "a = 1\n"
+        "b = -5\n"
+        "While (a + b) < 10 And (5 - 6 > 2 Or (\"yes\" <> Test.Method(\"no\")))\n"
+        "a = a + 1\n"
+        "EndWhile";
+
+    Parser parser(input);
+
+    ASSERT_NE(parser.parse_next(), nullptr);
+    ASSERT_NE(parser.parse_next(), nullptr);
+
+    auto next = parser.parse_next();
+    ASSERT_NE(next, nullptr);
+
+    auto while_loop = dynamic_cast<AST::WhileLoop *>(next);
+    ASSERT_NE(while_loop, nullptr);
+
+    auto while_condition = dynamic_cast<AST::BinaryLogicOp *>(while_loop->condition);
+    ASSERT_NE(while_condition, nullptr);
+    ASSERT_EQ(while_condition->op, AST::And);
+
+    auto lvalue = dynamic_cast<AST::SingleCondition *>(while_condition->lvalue);
+    ASSERT_NE(lvalue, nullptr);
+    ASSERT_EQ(lvalue->comparison, AST::LessThan);
+
+    auto rvalue = dynamic_cast<AST::BinaryLogicOp *>(while_condition->rvalue);
+    ASSERT_NE(rvalue, nullptr);
+    ASSERT_EQ(rvalue->op, AST::Or);
+
+    auto end = parser.parse_next();
+    ASSERT_EQ(end, nullptr);
 }
