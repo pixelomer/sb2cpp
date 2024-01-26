@@ -53,6 +53,23 @@ std::string Parser::try_token_next(std::string expected_keyword) {
     return token;
 }
 
+AST::VariableValue *Parser::parse_variable(std::string token) {
+    const std::vector<std::string> wordlist = { "for", "endfor", "to",
+        "step", "if", "then", "else", "elseif", "endif", "goto", "sub",
+        "endsub", "while", "endwhile", "and", "or" };
+    const std::vector<char> charlist = { '=', '>', '<', '-', '+',
+        '/', '*', ',', '\'' };
+    auto token_lower = strtolower(token);
+    auto word_match = std::find(wordlist.begin(), wordlist.end(), token_lower)
+        != wordlist.end();
+    auto char_match = token == "" || std::find(charlist.begin(), charlist.end(),
+        token_lower[0]) != charlist.end();
+    if (word_match || char_match) {
+        throw SyntaxError(this->line, "<varname>", token);
+    }
+    return new AST::VariableValue(token);
+}
+
 AST::Assign *Parser::parse_assign() {
     auto variable = token_next();
     auto assignment_op = token_next();
@@ -154,7 +171,7 @@ AST::Value *Parser::parse_value(bool throw_on_comparator) {
                 }
             }
             else {
-                elem = { AST::NoValueOp, new AST::VariableValue(token) };
+                elem = { AST::NoValueOp, this->parse_variable(token) };
             }
         }
         else if (throw_on_comparator && comparators.count(token) != 0) {

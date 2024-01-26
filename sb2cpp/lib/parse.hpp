@@ -29,6 +29,7 @@ namespace sb2cpp {
     };
     class Parser {
     private:
+
         static const std::map<std::string, AST::ComparisonOp> comparators;
         static const std::map<std::string, AST::LogicOp> logic_ops;
         int line = 1;
@@ -49,6 +50,7 @@ namespace sb2cpp {
         AST::Value *parse_value(bool throw_on_comparator = true);
         AST::Condition *parse_condition();
         AST::WhileLoop *parse_while_loop();
+        AST::VariableValue *parse_variable(std::string token);
         std::tuple<int, int> save_state();
         void restore_state(std::tuple<int, int> state);
         void parse_value_or_condition(AST::Value **value, AST::Condition **condition);
