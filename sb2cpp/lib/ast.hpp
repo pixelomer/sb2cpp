@@ -93,6 +93,28 @@ namespace sb2cpp::AST {
             }
         }
     };
+    class ArrayAssign : virtual public Statement {
+    public:
+        std::string variable;
+        Value *key;
+        Value *value;
+        ArrayAssign(std::string variable, Value *key, Value *value):
+            variable(variable), key(key), value(value) {}
+        ~ArrayAssign() {
+            delete key;
+            delete value;
+        }
+    };
+    class ArrayValue : virtual public Value {
+    public:
+        std::string variable;
+        Value *key;
+        ArrayValue(std::string variable, Value *key): variable(variable),
+            key(key) {}
+        ~ArrayValue() {
+            delete key;
+        }
+    };
     class VariableValue : virtual public Value {
     public:
         std::string variable;

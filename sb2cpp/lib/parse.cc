@@ -71,10 +71,28 @@ std::string Parser::parse_varname(std::string token) {
 }
 
 AST::Assign *Parser::parse_assign() {
-    auto variable = this->parse_varname(token_next());
+    auto variable = this->parse_varname(this->token_next());
     this->try_token_next("=");
-    auto value = parse_value();
+    auto value = this->parse_value();
     return new AST::Assign(variable, value);
+}
+
+AST::ArrayAssign *Parser::parse_array_assign() {
+    auto variable = this->parse_varname(this->token_next());
+    this->try_token_next("[");
+    auto key = this->parse_value();
+    this->try_token_next("]");
+    this->try_token_next("=");
+    auto value = this->parse_value();
+    return new AST::ArrayAssign(variable, key, value);
+}
+
+AST::ArrayValue *Parser::parse_array_value() {
+    auto variable = this->parse_varname(this->token_next());
+    this->try_token_next("[");
+    auto key = this->parse_value();
+    this->try_token_next("]");
+    return new AST::ArrayValue(variable, key);
 }
 
 AST::IfStatement *Parser::parse_if_statement() {
@@ -166,6 +184,10 @@ AST::Value *Parser::parse_value(bool throw_on_comparator) {
                     elem = { AST::NoValueOp, value };
                     this->idx += 2;
                 }
+            }
+            else if (this->token_get(this->idx + 1) == "[") {
+                elem = { AST::NoValueOp, this->parse_array_value() };
+                this->idx--;
             }
             else {
                 elem = { AST::NoValueOp,
@@ -309,6 +331,9 @@ AST::Statement *Parser::parse_statement() {
         }
         else if (second_token == "(") {
             node = parse_subroutine_call();
+        }
+        else if (second_token == "[") {
+            node = parse_array_assign();
         }
         else if (second_token == ".") {
             if (this->token_get(this->idx+3) == "=") {

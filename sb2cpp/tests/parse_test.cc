@@ -175,6 +175,29 @@ TEST(ParseTest, AssignInvalidOperations) {
     ASSERT_THROW(parser2.parse_next(), SyntaxError);
 }
 
+TEST(ParseTest, ArrayValue) {
+    auto input = "var[1 + 2] = 3 + 4\nvar[5] = Math.Floor(var[3 + var5])";
+    Parser parser(input);
+
+    auto assign1 = dynamic_cast<AST::ArrayAssign *>(parser.parse_next());
+    ASSERT_NE(assign1, nullptr);
+    ASSERT_EQ(assign1->variable, "var");
+    
+    auto assign1key = dynamic_cast<AST::AddGroup *>(assign1->key);
+    ASSERT_NE(assign1key, nullptr);
+    ASSERT_EQ(assign1key->elements.size(), 2);
+
+    auto elem1 = dynamic_cast<AST::NumberValue *>(assign1key->elements[0].value);
+    ASSERT_NE(elem1, nullptr);
+    ASSERT_EQ(elem1->number, 1);
+
+    auto assign2 = dynamic_cast<AST::ArrayAssign *>(parser.parse_next());
+    ASSERT_NE(assign2, nullptr);
+
+    auto end = parser.parse_next();
+    ASSERT_EQ(end, nullptr);
+}
+
 TEST(ParseTest, WhileLoop) {
     auto input = "a = 1\n"
         "b = -5\n"
