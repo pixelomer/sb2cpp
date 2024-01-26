@@ -44,8 +44,9 @@ std::string Parser::try_token_next(std::string expected_keyword) {
         throw SyntaxError(this->line, expected_keyword, EOF_TOKEN);
     }
     if (expected_keyword.size() > 0 && expected_keyword[0] != '<') {
-        auto received = strtolower(token);
-        if (expected_keyword != received) {
+        auto token_lower = strtolower(token);
+        auto expected_lower = strtolower(expected_keyword);
+        if (expected_lower != token_lower) {
             throw SyntaxError(this->line, expected_keyword, token);
         }
     }
@@ -253,14 +254,14 @@ AST::Condition *Parser::parse_condition() {
 }
 
 AST::WhileLoop *Parser::parse_while_loop() {
-    this->try_token_next("while");
+    this->try_token_next("While");
     AST::Condition *condition = this->parse_condition();
     this->try_token_next("\n");
     std::vector<AST::Statement *> statements;
     while (strtolower(this->token_get(this->idx)) != "endwhile") {
         statements.push_back(this->parse_statement());
     }
-    this->try_token_next("endwhile");
+    this->try_token_next("EndWhile");
     return new AST::WhileLoop(condition,
         new AST::StatementGroup(statements));
 }
