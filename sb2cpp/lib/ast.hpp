@@ -1,6 +1,8 @@
 #include <string>
 
-namespace sb2cpp::AST {
+namespace sb2cpp {
+namespace AST {
+
     enum ComparisonOp {
         NoComparisonOp = 0,
         Equal,
@@ -275,4 +277,6 @@ namespace sb2cpp::AST {
             delete this->contents;
         }
     };
+    
+}
 }
