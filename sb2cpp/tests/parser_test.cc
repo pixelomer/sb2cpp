@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
 #include <string>
-#include "../lib/parse.hpp"
+#include "../lib/parser.hpp"
 
 using namespace sb2cpp;
 
-TEST(ParseTest, AssignNumber) {
+TEST(ParserTest, AssignNumber) {
     auto input = "num = 5";
     Parser parser(input);
 
@@ -22,7 +22,7 @@ TEST(ParseTest, AssignNumber) {
     ASSERT_EQ(end, nullptr);
 }
 
-TEST(ParseTest, StdlibAssign) {
+TEST(ParserTest, StdlibAssign) {
     auto input = "TextWindow.Title = \"Hello\"\n";
     Parser parser(input);
 
@@ -44,7 +44,7 @@ TEST(ParseTest, StdlibAssign) {
     ASSERT_EQ(end, nullptr);
 }
 
-TEST(ParseTest, AssignStdlibCall) {
+TEST(ParserTest, AssignStdlibCall) {
     auto input = "num = Math.Remainder(10, 6)\n\n\n";
     Parser parser(input);
 
@@ -72,7 +72,7 @@ TEST(ParseTest, AssignStdlibCall) {
     ASSERT_EQ(end, nullptr);
 }
 
-TEST(ParseTest, AssignMultiplication) {
+TEST(ParserTest, AssignMultiplication) {
     auto input = "result = 10 * 6";
     Parser parser(input);
 
@@ -98,7 +98,7 @@ TEST(ParseTest, AssignMultiplication) {
     ASSERT_EQ(end, nullptr);
 }
 
-TEST(ParseTest, AssignMixedOperations) {
+TEST(ParserTest, AssignMixedOperations) {
     auto input = "output = +-+-----5 -+-- (((10))) +--+ ((30 - 5) * (1 + Math.Log(10) / a * 30) / Math.Abs(-20))";
     Parser parser(input);
 
@@ -165,7 +165,7 @@ TEST(ParseTest, AssignMixedOperations) {
     ASSERT_EQ(end, nullptr);
 }
 
-TEST(ParseTest, AssignInvalidOperations) {
+TEST(ParserTest, AssignInvalidOperations) {
     Parser parser("test = 10 - * 20");
     ASSERT_THROW(parser.parse_next(), SyntaxError);
 
@@ -173,7 +173,7 @@ TEST(ParseTest, AssignInvalidOperations) {
     ASSERT_THROW(parser2.parse_next(), SyntaxError);
 }
 
-TEST(ParseTest, ArrayValue) {
+TEST(ParserTest, ArrayValue) {
     auto input = "var[1 + 2] = 3 + 4\nvar[5] = Math.Floor(var[3 + var5])";
     Parser parser(input);
 
@@ -199,7 +199,7 @@ TEST(ParseTest, ArrayValue) {
     delete assign2;
 }
 
-TEST(ParseTest, WhileLoop) {
+TEST(ParserTest, WhileLoop) {
     auto input = "a = 1\n"
         "b = -5\n"
         "While (a + b) < 10 And (5 - 6 > 2 Or (\"yes\" <> Test.Method(\"no\")))\n"
@@ -242,7 +242,7 @@ TEST(ParseTest, WhileLoop) {
     delete while_loop;
 }
 
-TEST(ParseTest, EmptyStatements) {
+TEST(ParserTest, EmptyStatements) {
     auto input = "Sub test\nEndSub\nWhile 2 > 1\nEndWhile";
     Parser parser(input);
 
@@ -259,7 +259,7 @@ TEST(ParseTest, EmptyStatements) {
     delete while_loop;
 }
 
-TEST(ParseTest, ForLoop) {
+TEST(ParserTest, ForLoop) {
     auto input = "For i = 1 - 5 To 5 Step Math.floor(a)\n"
         "TextWindow.WriteLine(i)\n"
         "EndFor\n";
@@ -275,7 +275,7 @@ TEST(ParseTest, ForLoop) {
     delete for_loop;
 }
 
-TEST(ParseTest, Goto) {
+TEST(ParserTest, Goto) {
     auto input = "Sub main\n"
         "i = 0\n"
         "Loop:\n"
@@ -313,7 +313,7 @@ TEST(ParseTest, Goto) {
     delete subroutine;
 }
 
-TEST(ParseTest, IfStatement) {
+TEST(ParserTest, IfStatement) {
     auto input = "If Math.Floor(a) > 5 Then\n"
         "TextWindow.WriteLine(\"wow\")\n"
         "a = a / 5\n"
