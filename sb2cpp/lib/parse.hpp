@@ -53,6 +53,7 @@ namespace sb2cpp {
         AST::Value *parse_value(bool throw_on_comparator = true);
         AST::Condition *parse_condition();
         AST::WhileLoop *parse_while_loop();
+        AST::ForLoop *parse_for_loop();
         std::string parse_id(std::string token);
         std::tuple<int, int> save_state();
         void restore_state(std::tuple<int, int> state);

@@ -333,6 +333,21 @@ AST::StdlibAssign *Parser::parse_stdlib_assign() {
     return new AST::StdlibAssign(class_name, property, value);
 }
 
+AST::ForLoop *Parser::parse_for_loop() {
+    this->try_token_next("For");
+    auto init = this->parse_assign();
+    this->try_token_next("To");
+    auto end = this->parse_value();
+    AST::Value *step = nullptr;
+    if (strtolower(this->token_get(this->idx)) == "step") {
+        this->idx++;
+        step = this->parse_value();
+    }
+    this->try_token_next("\n");
+    auto statements = this->parse_statement_group("EndFor");
+    return new AST::ForLoop(init, end, step, statements);
+}
+
 AST::Statement *Parser::parse_statement() {
     AST::Statement *node = nullptr;
     
@@ -344,6 +359,9 @@ AST::Statement *Parser::parse_statement() {
     }
     else if (first_keyword == "while") {
         node = parse_while_loop();
+    }
+    else if (first_keyword == "for") {
+        node = parse_for_loop();
     }
     else {
         auto second_token = this->token_get(this->idx+1);
@@ -365,7 +383,7 @@ AST::Statement *Parser::parse_statement() {
             }
         }
         else {
-            throw SyntaxError(this->line, "Expected statement");
+            throw SyntaxError(this->line, "<statement>", first_token);
         }
     }
 

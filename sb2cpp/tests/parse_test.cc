@@ -258,3 +258,19 @@ TEST(ParseTest, EmptyStatements) {
     delete sub;
     delete while_loop;
 }
+
+TEST(ParseTest, ForLoop) {
+    auto input = "For i = 1 - 5 To 5 Step Math.floor(a)\n"
+        "TextWindow.WriteLine(i)\n"
+        "EndFor\n";
+    Parser parser(input);
+
+    auto for_loop = dynamic_cast<AST::ForLoop *>(parser.parse_next());
+    ASSERT_NE(for_loop, nullptr);
+    ASSERT_NE(for_loop->step_value, nullptr);
+
+    auto end = parser.parse_next();
+    ASSERT_EQ(end, nullptr);
+
+    delete for_loop;
+}

@@ -277,6 +277,35 @@ namespace AST {
             delete this->contents;
         }
     };
-    
+
+    // For <init> To <last> (Step <step>) ... EndFor
+    // <last> is internally converted into a number. <step> is not.
+    // By default, <step> is 1. Both <last> and <step> are evaluated
+    // again every loop.
+    //
+    // Examples:
+    //   For i = 1 To 10                'Runs 10 times
+    //   For i = 5 To 2                 'Does not run
+    //   For i = 5 To 2 Step -1         'Runs 4 times
+    //   For i = 5 To 2 Step -2         'Runs 2 times
+    //   For i = "a" To "aaa" Step "a"  'Runs forever ("aaa" becomes 0)
+    class ForLoop : virtual public Statement {
+    public:
+        Assign *initializer;
+        Value *last_value; // inclusive
+        Value *step_value; // optional
+        Statement *statement;
+        ForLoop(Assign *initializer, Value *last_value, Value *step_value,
+            Statement *statement): initializer(initializer), last_value(last_value),
+            step_value(step_value), statement(statement) {}
+        ~ForLoop() {
+            delete initializer;
+            delete last_value;
+            if (step_value != nullptr) {
+                delete step_value;
+            }
+        }
+    };
+
 }
 }
