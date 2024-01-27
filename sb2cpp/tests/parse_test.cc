@@ -312,3 +312,33 @@ TEST(ParseTest, Goto) {
     delete sub_call;
     delete subroutine;
 }
+
+TEST(ParseTest, IfStatement) {
+    auto input = "If Math.Floor(a) > 5 Then\n"
+        "TextWindow.WriteLine(\"wow\")\n"
+        "a = a / 5\n"
+        "ElseIf a < 0 Then\n"
+        "Else\n"
+        "Program.End()\n"
+        "EndIf\n"
+        "a = 1 / a\n"
+        "If a = 1 Then\n"
+        "a = 0\n"
+        "EndIf\n";
+        
+    Parser parser(input);
+    auto if_statement = dynamic_cast<AST::IfStatement *>(parser.parse_next());
+    ASSERT_NE(if_statement, nullptr);
+
+    auto assign = dynamic_cast<AST::Assign *>(parser.parse_next());
+    ASSERT_NE(assign, nullptr);
+
+    auto if_statement2 = dynamic_cast<AST::IfStatement *>(parser.parse_next());
+    ASSERT_NE(if_statement2, nullptr);
+
+    auto end = parser.parse_next();
+    ASSERT_EQ(end, nullptr);
+
+    delete assign;
+    delete if_statement;
+}

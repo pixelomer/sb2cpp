@@ -96,7 +96,40 @@ AST::ArrayValue *Parser::parse_array_value() {
 }
 
 AST::IfStatement *Parser::parse_if_statement() {
-    return nullptr;
+    std::vector<AST::IfStatement::IfStatementPart> parts;
+    
+    while (true) {
+        auto token = strtolower(this->token_next());
+        if (parts.size() == 0 && token != "if") {
+            throw SyntaxError(this->line, "If", token);
+        }
+        if (token == "elseif" || token == "if") {
+            if (parts.size() > 0 && token != "elseif") {
+                throw SyntaxError(this->line, "ElseIf", token);
+            }
+            AST::Condition *condition = this->parse_condition();
+            this->try_token_next("Then");
+            this->try_token_next("\n");
+            AST::Statement *statement = this->parse_statement_group({ "else",
+                "elseif", "endif" });
+            this->idx--;
+            parts.push_back({ condition, statement });
+        }
+        else if (token == "else") {
+            this->try_token_next("\n");
+            AST::Statement *statement = this->parse_statement_group("endif");
+            parts.push_back({ nullptr, statement });
+            break;
+        }
+        else if (token == "endif") {
+            break;
+        }
+        else {
+            throw SyntaxError(this->line, "EndIf", token);
+        }
+    }
+
+    return new AST::IfStatement(parts);
 }
 
 AST::Statement *Parser::parse_statement_group(std::vector<std::string> end_tokens) {
