@@ -134,9 +134,9 @@ AST::SubroutineCall *Parser::parse_subroutine_call() {
 }
 
 AST::StdlibCall *Parser::parse_stdlib_call() {
-    auto class_name = this->try_token_next("<class>");
+    auto class_name = this->parse_varname(this->try_token_next("<class>"));
     this->try_token_next(".");
-    auto method_name = this->try_token_next("<method>");
+    auto method_name = this->parse_varname(this->try_token_next("<method>"));
     this->try_token_next("(");
     std::vector<AST::Value *> arguments;
     while (this->token_get(this->idx) != ")") {
@@ -325,9 +325,9 @@ AST::WhileLoop *Parser::parse_while_loop() {
 }
 
 AST::StdlibAssign *Parser::parse_stdlib_assign() {
-    auto class_name = this->try_token_next("<class>");
+    auto class_name = this->parse_varname(this->try_token_next("<class>"));
     this->try_token_next(".");
-    auto property = this->try_token_next("<property>");
+    auto property = this->parse_varname(this->try_token_next("<property>"));
     this->try_token_next("=");
     auto value = this->parse_value();
     return new AST::StdlibAssign(class_name, property, value);
