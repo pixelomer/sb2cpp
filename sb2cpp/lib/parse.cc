@@ -99,10 +99,11 @@ AST::IfStatement *Parser::parse_if_statement() {
     return nullptr;
 }
 
-AST::Statement *Parser::parse_statement_group(std::string end_token) {
-    auto end_lower = strtolower(end_token);
+AST::Statement *Parser::parse_statement_group(std::vector<std::string> end_tokens) {
     std::vector<AST::Statement *> statements;
-    while (strtolower(this->token_get(this->idx)) != end_lower) {
+    while (std::find(end_tokens.begin(), end_tokens.end(),
+        strtolower(this->token_get(this->idx))) == end_tokens.end())
+    {
         statements.push_back(this->parse_statement());
     }
     this->idx++;
@@ -112,11 +113,16 @@ AST::Statement *Parser::parse_statement_group(std::string end_token) {
     return new AST::StatementGroup(statements);
 }
 
+AST::Statement *Parser::parse_statement_group(std::string end_token) {
+    std::vector<std::string> tokens = { end_token };
+    return this->parse_statement_group(tokens);
+}
+
 AST::Subroutine *Parser::parse_subroutine() {
     this->try_token_next("Sub");
     auto name = this->parse_id(this->token_next());
     this->try_token_next("\n");
-    auto statement_group = this->parse_statement_group("EndSub");
+    auto statement_group = this->parse_statement_group("endsub");
 
     auto token = this->token_next();
     if (token != "\n" && token != EOF_TOKEN) {
@@ -320,7 +326,7 @@ AST::WhileLoop *Parser::parse_while_loop() {
     this->try_token_next("While");
     AST::Condition *condition = this->parse_condition();
     this->try_token_next("\n");
-    auto statement_group = this->parse_statement_group("EndWhile");
+    auto statement_group = this->parse_statement_group("endwhile");
     return new AST::WhileLoop(condition, statement_group);
 }
 
@@ -344,8 +350,20 @@ AST::ForLoop *Parser::parse_for_loop() {
         step = this->parse_value();
     }
     this->try_token_next("\n");
-    auto statements = this->parse_statement_group("EndFor");
+    auto statements = this->parse_statement_group("endfor");
     return new AST::ForLoop(init, end, step, statements);
+}
+
+AST::GotoLabel *Parser::parse_goto_label() {
+    auto name = this->parse_id(this->token_next());
+    this->try_token_next(":");
+    return new AST::GotoLabel(name);
+}
+
+AST::GotoStatement *Parser::parse_goto_statement() {
+    this->try_token_next("Goto");
+    auto label = this->parse_id(this->token_next());
+    return new AST::GotoStatement(label);
 }
 
 AST::Statement *Parser::parse_statement() {
@@ -363,9 +381,15 @@ AST::Statement *Parser::parse_statement() {
     else if (first_keyword == "for") {
         node = parse_for_loop();
     }
+    else if (first_keyword == "goto") {
+        node = parse_goto_statement();
+    }
     else {
         auto second_token = this->token_get(this->idx+1);
-        if (second_token == "=") {
+        if (second_token == ":") {
+            node = parse_goto_label();
+        }
+        else if (second_token == "=") {
             node = parse_assign();
         }
         else if (second_token == "(") {

@@ -63,7 +63,7 @@ namespace AST {
     };
     class BinaryValueOp : virtual public BinaryOperation<Value>, virtual public Value {
     public:
-        AST::ValueOp op;
+        AST::ValueOp op; // May only be '*' or '/'
         BinaryValueOp(Value *lvalue, Value *rvalue, AST::ValueOp op):
             BinaryOperation(lvalue, rvalue), op(op) {}
     };
@@ -248,6 +248,16 @@ namespace AST {
             delete condition;
             delete statement;
         }
+    };
+    class GotoLabel : virtual public Statement {
+    public:
+        std::string name;
+        GotoLabel(std::string name): name(name) {}
+    };
+    class GotoStatement : virtual public Statement {
+    public:
+        std::string label;
+        GotoStatement(std::string label): label(label) {}
     };
     class IfStatement : virtual public Statement {
     public:

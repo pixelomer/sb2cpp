@@ -274,3 +274,41 @@ TEST(ParseTest, ForLoop) {
 
     delete for_loop;
 }
+
+TEST(ParseTest, Goto) {
+    auto input = "Sub main\n"
+        "i = 0\n"
+        "Loop:\n"
+        "TextWindow.WriteLine(i)\n"
+        "i = i + 1\n"
+        "Goto Loop\n"
+        "EndSub\n"
+        "main()\n";
+    
+    Parser parser(input);
+    auto subroutine = dynamic_cast<AST::Subroutine *>(parser.parse_next());
+    ASSERT_NE(subroutine, nullptr);
+    ASSERT_EQ(subroutine->subroutine_name, "main");
+
+    auto group = dynamic_cast<AST::StatementGroup *>(subroutine->contents);
+    ASSERT_NE(group, nullptr);
+    ASSERT_EQ(group->statements.size(), 5);
+
+    auto label = dynamic_cast<AST::GotoLabel *>(group->statements[1]);
+    ASSERT_NE(label, nullptr);
+    ASSERT_EQ(label->name, "Loop");
+
+    auto goto_statement = dynamic_cast<AST::GotoStatement *>(group->statements[4]);
+    ASSERT_NE(goto_statement, nullptr);
+    ASSERT_EQ(goto_statement->label, "Loop");
+
+    auto sub_call = dynamic_cast<AST::SubroutineCall *>(parser.parse_next());
+    ASSERT_NE(sub_call, nullptr);
+    ASSERT_EQ(sub_call->subroutine_name, "main");
+
+    auto end = parser.parse_next();
+    ASSERT_EQ(end, nullptr);
+
+    delete sub_call;
+    delete subroutine;
+}
