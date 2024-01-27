@@ -53,7 +53,7 @@ std::string Parser::try_token_next(std::string expected_keyword) {
     return token;
 }
 
-std::string Parser::parse_varname(std::string token) {
+std::string Parser::parse_id(std::string token) {
     const std::vector<std::string> wordlist = { "for", "endfor", "to",
         "step", "if", "then", "else", "elseif", "endif", "goto", "sub",
         "endsub", "while", "endwhile", "and", "or" };
@@ -65,20 +65,20 @@ std::string Parser::parse_varname(std::string token) {
     auto char_match = token == "" || std::find(charlist.begin(), charlist.end(),
         token_lower[0]) != charlist.end();
     if (word_match || char_match) {
-        throw SyntaxError(this->line, "<varname>", token);
+        throw SyntaxError(this->line, "<identifier>", token);
     }
     return token;
 }
 
 AST::Assign *Parser::parse_assign() {
-    auto variable = this->parse_varname(this->token_next());
+    auto variable = this->parse_id(this->token_next());
     this->try_token_next("=");
     auto value = this->parse_value();
     return new AST::Assign(variable, value);
 }
 
 AST::ArrayAssign *Parser::parse_array_assign() {
-    auto variable = this->parse_varname(this->token_next());
+    auto variable = this->parse_id(this->token_next());
     this->try_token_next("[");
     auto key = this->parse_value();
     this->try_token_next("]");
@@ -88,7 +88,7 @@ AST::ArrayAssign *Parser::parse_array_assign() {
 }
 
 AST::ArrayValue *Parser::parse_array_value() {
-    auto variable = this->parse_varname(this->token_next());
+    auto variable = this->parse_id(this->token_next());
     this->try_token_next("[");
     auto key = this->parse_value();
     this->try_token_next("]");
@@ -114,7 +114,7 @@ AST::Statement *Parser::parse_statement_group(std::string end_token) {
 
 AST::Subroutine *Parser::parse_subroutine() {
     this->try_token_next("Sub");
-    auto name = this->parse_varname(this->token_next());
+    auto name = this->parse_id(this->token_next());
     this->try_token_next("\n");
     auto statement_group = this->parse_statement_group("EndSub");
 
@@ -127,16 +127,16 @@ AST::Subroutine *Parser::parse_subroutine() {
 }
 
 AST::SubroutineCall *Parser::parse_subroutine_call() {
-    auto name = this->parse_varname(this->token_next());
+    auto name = this->parse_id(this->token_next());
     this->try_token_next("(");
     this->try_token_next(")");
     return new AST::SubroutineCall(name);
 }
 
 AST::StdlibCall *Parser::parse_stdlib_call() {
-    auto class_name = this->parse_varname(this->try_token_next("<class>"));
+    auto class_name = this->parse_id(this->try_token_next("<class>"));
     this->try_token_next(".");
-    auto method_name = this->parse_varname(this->try_token_next("<method>"));
+    auto method_name = this->parse_id(this->try_token_next("<method>"));
     this->try_token_next("(");
     std::vector<AST::Value *> arguments;
     while (this->token_get(this->idx) != ")") {
@@ -217,7 +217,7 @@ AST::Value *Parser::parse_value(bool throw_on_comparator) {
             }
             else {
                 elem = { AST::NoValueOp,
-                    new AST::VariableValue(this->parse_varname(token)) };
+                    new AST::VariableValue(this->parse_id(token)) };
             }
         }
         else if (throw_on_comparator && comparators.count(token) != 0) {
@@ -325,9 +325,9 @@ AST::WhileLoop *Parser::parse_while_loop() {
 }
 
 AST::StdlibAssign *Parser::parse_stdlib_assign() {
-    auto class_name = this->parse_varname(this->try_token_next("<class>"));
+    auto class_name = this->parse_id(this->try_token_next("<class>"));
     this->try_token_next(".");
-    auto property = this->parse_varname(this->try_token_next("<property>"));
+    auto property = this->parse_id(this->try_token_next("<property>"));
     this->try_token_next("=");
     auto value = this->parse_value();
     return new AST::StdlibAssign(class_name, property, value);
