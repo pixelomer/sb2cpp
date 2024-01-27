@@ -40,6 +40,7 @@ namespace sb2cpp {
         std::string try_token_next(std::string expected);
         std::string token_get(int idx);
 
+        AST::Statement *parse_statement_group(std::string end_token);
         AST::Statement *parse_statement();
         AST::Assign *parse_assign();
         AST::ArrayAssign *parse_array_assign();

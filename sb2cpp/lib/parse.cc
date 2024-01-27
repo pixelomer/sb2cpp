@@ -99,12 +99,38 @@ AST::IfStatement *Parser::parse_if_statement() {
     return nullptr;
 }
 
+AST::Statement *Parser::parse_statement_group(std::string end_token) {
+    auto end_lower = strtolower(end_token);
+    std::vector<AST::Statement *> statements;
+    while (strtolower(this->token_get(this->idx)) != end_lower) {
+        statements.push_back(this->parse_statement());
+    }
+    this->idx++;
+    if (statements.size() == 1) {
+        return statements[0];
+    }
+    return new AST::StatementGroup(statements);
+}
+
 AST::Subroutine *Parser::parse_subroutine() {
-    return nullptr;
+    this->try_token_next("Sub");
+    auto name = this->parse_varname(this->token_next());
+    this->try_token_next("\n");
+    auto statement_group = this->parse_statement_group("EndSub");
+
+    auto token = this->token_next();
+    if (token != "\n" && token != EOF_TOKEN) {
+        throw SyntaxError(this->line, "\n", token);
+    }
+
+    return new AST::Subroutine(name, statement_group);
 }
 
 AST::SubroutineCall *Parser::parse_subroutine_call() {
-    return nullptr;
+    auto name = this->parse_varname(this->token_next());
+    this->try_token_next("(");
+    this->try_token_next(")");
+    return new AST::SubroutineCall(name);
 }
 
 AST::StdlibCall *Parser::parse_stdlib_call() {
@@ -294,13 +320,8 @@ AST::WhileLoop *Parser::parse_while_loop() {
     this->try_token_next("While");
     AST::Condition *condition = this->parse_condition();
     this->try_token_next("\n");
-    std::vector<AST::Statement *> statements;
-    while (strtolower(this->token_get(this->idx)) != "endwhile") {
-        statements.push_back(this->parse_statement());
-    }
-    this->try_token_next("EndWhile");
-    return new AST::WhileLoop(condition,
-        new AST::StatementGroup(statements));
+    auto statement_group = this->parse_statement_group("EndWhile");
+    return new AST::WhileLoop(condition, statement_group);
 }
 
 AST::StdlibAssign *Parser::parse_stdlib_assign() {

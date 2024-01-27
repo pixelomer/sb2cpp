@@ -4,8 +4,6 @@
 
 using namespace sb2cpp;
 
-/**** Valid/Expected inputs ****/
-
 TEST(ParseTest, AssignNumber) {
     auto input = "num = 5";
     Parser parser(input);
@@ -196,6 +194,9 @@ TEST(ParseTest, ArrayValue) {
 
     auto end = parser.parse_next();
     ASSERT_EQ(end, nullptr);
+
+    delete assign1;
+    delete assign2;
 }
 
 TEST(ParseTest, WhileLoop) {
@@ -228,6 +229,32 @@ TEST(ParseTest, WhileLoop) {
     ASSERT_NE(rvalue, nullptr);
     ASSERT_EQ(rvalue->op, AST::Or);
 
+    auto statement = dynamic_cast<AST::Assign *>(while_loop->statement);
+    ASSERT_NE(statement, nullptr);
+    ASSERT_EQ(statement->variable, "a");
+
+    auto value = dynamic_cast<AST::AddGroup *>(statement->value);
+    ASSERT_NE(value, nullptr);
+
     auto end = parser.parse_next();
     ASSERT_EQ(end, nullptr);
+
+    delete while_loop;
+}
+
+TEST(ParseTest, EmptyStatements) {
+    auto input = "Sub test\nEndSub\nWhile 2 > 1\nEndWhile";
+    Parser parser(input);
+
+    auto sub = dynamic_cast<AST::Subroutine *>(parser.parse_next());
+    ASSERT_NE(sub, nullptr);
+
+    auto while_loop = dynamic_cast<AST::WhileLoop *>(parser.parse_next());
+    ASSERT_NE(while_loop, nullptr);
+
+    auto end = parser.parse_next();
+    ASSERT_EQ(end, nullptr);
+
+    delete sub;
+    delete while_loop;
 }
