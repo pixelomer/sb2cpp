@@ -2,9 +2,60 @@
 
 #include <string>
 
+#define ACCEPT(visit_func) virtual void accept(BaseVisitor *visitor) { \
+    visitor->visit_func(this); \
+}
+
 namespace sb2cpp {
 namespace AST {
-
+    class StringValue;
+    class NumberValue;
+    class BinaryValueOp;
+    class BinaryLogicOp;
+    class BinaryCompareOp;
+    class AddGroup;
+    class ArrayAssign;
+    class ArrayValue;
+    class VariableValue;
+    class StatementGroup;
+    class StdlibCall;
+    class StdlibValue;
+    class StdlibAssign;
+    class SingleCondition;
+    class Assign;
+    class SubroutineCall;
+    class WhileLoop;
+    class GotoLabel;
+    class GotoStatement;
+    class IfStatement;
+    class Subroutine;
+    class ForLoop;
+    class BaseVisitor {
+    public:
+        virtual void visit_string(StringValue *) = 0;
+        virtual void visit_number(NumberValue *) = 0;
+        virtual void visit_value_op(BinaryValueOp *) = 0;
+        virtual void visit_logic_op(BinaryLogicOp *) = 0;
+        virtual void visit_compare_op(BinaryCompareOp *) = 0;
+        virtual void visit_add_group(AddGroup *) = 0;
+        virtual void visit_array_assign(ArrayAssign *) = 0;
+        virtual void visit_array_value(ArrayValue *) = 0;
+        virtual void visit_variable_value(VariableValue *) = 0;
+        virtual void visit_statement_group(StatementGroup *) = 0;
+        virtual void visit_stdlib_call(StdlibCall *) = 0;
+        virtual void visit_stdlib_value(StdlibValue *) = 0;
+        virtual void visit_stdlib_assign(StdlibAssign *) = 0;
+        virtual void visit_single_condition(SingleCondition *) = 0;
+        virtual void visit_assign(Assign *) = 0;
+        virtual void visit_subroutine_call(SubroutineCall *) = 0;
+        virtual void visit_while_loop(WhileLoop *) = 0;
+        virtual void visit_goto_label(GotoLabel *) = 0;
+        virtual void visit_goto_statement(GotoStatement *) = 0;
+        virtual void visit_if_statement(IfStatement *) = 0;
+        virtual void visit_subroutine(Subroutine *) = 0;
+        virtual void visit_for_loop(ForLoop *) = 0;
+    };
+    class Visitor;
     enum ComparisonOp {
         NoComparisonOp = 0,
         Equal,
@@ -34,6 +85,9 @@ namespace AST {
     class Node {
     public:
         virtual ~Node() {}
+        virtual void accept(BaseVisitor *visitor) {
+            throw std::runtime_error("Node::accept() is not implemented");
+        }
     };
     class Condition : virtual public Node {};
     class Value : virtual public Node {};
@@ -57,29 +111,34 @@ namespace AST {
         std::string value;
         StringValue(std::string value): value(value) {}
         ~StringValue() {}
+        ACCEPT(visit_string)
     };
     class NumberValue : virtual public Value {
     public:
         double number;
         NumberValue(double number): number(number) {}
+        ACCEPT(visit_number)
     };
     class BinaryValueOp : virtual public BinaryOperation<Value>, virtual public Value {
     public:
         AST::ValueOp op; // May only be '*' or '/'
         BinaryValueOp(Value *lvalue, Value *rvalue, AST::ValueOp op):
             BinaryOperation(lvalue, rvalue), op(op) {}
+        ACCEPT(visit_value_op)
     };
     class BinaryLogicOp : virtual public BinaryOperation<Condition>, virtual public Condition {
     public:
         AST::LogicOp op;
         BinaryLogicOp(Condition *lvalue, Condition *rvalue, AST::LogicOp op):
             BinaryOperation(lvalue, rvalue), op(op) {}
+        ACCEPT(visit_logic_op)
     };
     class BinaryCompareOp : virtual public BinaryOperation<Value>, virtual public Condition {
     public:
         AST::ComparisonOp op;
         BinaryCompareOp(Value *lvalue, Value *rvalue, AST::ComparisonOp op):
             BinaryOperation(lvalue, rvalue), op(op) {}
+        ACCEPT(visit_compare_op)
     };
     class AddGroup : virtual public Value {
     public:
@@ -96,6 +155,7 @@ namespace AST {
                 delete elem.value;
             }
         }
+        ACCEPT(visit_add_group)
     };
     class ArrayAssign : virtual public Statement {
     public:
@@ -108,6 +168,7 @@ namespace AST {
             delete key;
             delete value;
         }
+        ACCEPT(visit_array_assign)
     };
     class ArrayValue : virtual public Value {
     public:
@@ -118,12 +179,14 @@ namespace AST {
         ~ArrayValue() {
             delete key;
         }
+        ACCEPT(visit_array_value)
     };
     class VariableValue : virtual public Value {
     public:
         std::string variable;
         VariableValue(std::string variable): variable(variable) {}
         ~VariableValue() {}
+        ACCEPT(visit_variable_value)
     };
     class StatementGroup : virtual public Statement {
     public:
@@ -135,6 +198,7 @@ namespace AST {
                 delete statement;
             }
         }
+        ACCEPT(visit_statement_group)
     };
     class StdlibCall : virtual public Value, virtual public Statement {
     public:
@@ -149,6 +213,7 @@ namespace AST {
                 delete argument;
             }
         }
+        ACCEPT(visit_stdlib_call)
     };
     class StdlibValue : virtual public Value {
     public:
@@ -156,6 +221,7 @@ namespace AST {
         std::string property;
         StdlibValue(std::string class_name, std::string property):
             class_name(class_name), property(property) {}
+        ACCEPT(visit_stdlib_value)
     };
     class StdlibAssign : virtual public Statement {
     public:
@@ -169,6 +235,7 @@ namespace AST {
                 delete this->value;
             }
         }
+        ACCEPT(visit_stdlib_assign)
     };
     class ValueGroup : virtual public Value {
     public:
@@ -205,6 +272,7 @@ namespace AST {
             if (lvalue != nullptr) delete lvalue;
             if (rvalue != nullptr) delete rvalue;
         }
+        ACCEPT(visit_single_condition)
     };
     class ConditionGroup : virtual public Condition {
     private:
@@ -233,12 +301,14 @@ namespace AST {
         ~Assign() {
             delete this->value;
         }
+        ACCEPT(visit_assign)
     };
     class SubroutineCall : virtual public Statement {
     public:
         std::string subroutine_name;
         SubroutineCall(std::string const& subroutine_name):
             subroutine_name(subroutine_name) {}
+        ACCEPT(visit_subroutine_call)
     };
     class WhileLoop : virtual public Statement {
     public:
@@ -250,16 +320,19 @@ namespace AST {
             delete condition;
             delete statement;
         }
+        ACCEPT(visit_while_loop)
     };
     class GotoLabel : virtual public Statement {
     public:
         std::string name;
         GotoLabel(std::string name): name(name) {}
+        ACCEPT(visit_goto_label)
     };
     class GotoStatement : virtual public Statement {
     public:
         std::string label;
         GotoStatement(std::string label): label(label) {}
+        ACCEPT(visit_goto_statement)
     };
     class IfStatement : virtual public Statement {
     public:
@@ -278,6 +351,7 @@ namespace AST {
                 delete part.statement;
             }
         }
+        ACCEPT(visit_if_statement)
     };
     class Subroutine : virtual public Declaration {
     public:
@@ -288,6 +362,7 @@ namespace AST {
         ~Subroutine() {
             delete this->contents;
         }
+        ACCEPT(visit_subroutine)
     };
 
     // For <init> To <last> (Step <step>) ... EndFor
@@ -317,7 +392,88 @@ namespace AST {
                 delete step_value;
             }
         }
+        ACCEPT(visit_for_loop)
+    };
+
+    class Visitor : public BaseVisitor {
+    public:
+        virtual void visit_value_op(BinaryValueOp *op) override {
+            op->lvalue->accept(this);
+            op->rvalue->accept(this);
+        }
+        virtual void visit_logic_op(BinaryLogicOp *op) override {
+            op->lvalue->accept(this);
+            op->rvalue->accept(this);
+        }
+        virtual void visit_compare_op(BinaryCompareOp *op) override {
+            op->lvalue->accept(this);
+            op->rvalue->accept(this);
+        }
+        virtual void visit_add_group(AddGroup *group) override {
+            for (auto &elem : group->elements) {
+                elem.value->accept(this);
+            }
+        }
+        virtual void visit_array_assign(ArrayAssign *assign) override {
+            assign->key->accept(this);
+            assign->value->accept(this);
+        }
+        virtual void visit_array_value(ArrayValue *value) override {
+            value->key->accept(this);
+        }
+        virtual void visit_statement_group(StatementGroup *group) override {
+            for (auto &stmt : group->statements) {
+                stmt->accept(this);
+            }
+        }
+        virtual void visit_stdlib_call(StdlibCall *call) override {
+            for (auto &arg : call->arguments) {
+                arg->accept(this);
+            }
+        }
+        virtual void visit_stdlib_assign(StdlibAssign *assign) override {
+            assign->value->accept(this);
+        }
+        virtual void visit_single_condition(SingleCondition *cond) override {
+            cond->lvalue->accept(this);
+            cond->rvalue->accept(this);
+        }
+        virtual void visit_assign(Assign *assign) override {
+            assign->value->accept(this);
+        }
+        virtual void visit_while_loop(WhileLoop *loop) override {
+            loop->condition->accept(this);
+            loop->statement->accept(this);
+        }
+        virtual void visit_if_statement(IfStatement *if_stmt) override {
+            for (auto &part : if_stmt->parts) {
+                if (part.condition != nullptr) {
+                    part.condition->accept(this);
+                }
+                part.statement->accept(this);
+            }
+        }
+        virtual void visit_subroutine(Subroutine *sub) override {
+            sub->contents->accept(this);
+        }
+        virtual void visit_for_loop(ForLoop *for_loop) override {
+            for_loop->initializer->accept(this);
+            for_loop->last_value->accept(this);
+            if (for_loop->step_value != nullptr) {
+                for_loop->step_value->accept(this);
+            }
+            for_loop->statement->accept(this);
+        }
+        virtual void visit_string(StringValue *) override { }
+        virtual void visit_number(NumberValue *) override { }
+        virtual void visit_stdlib_value(StdlibValue *) override { }
+        virtual void visit_goto_label(GotoLabel *) override { }
+        virtual void visit_goto_statement(GotoStatement *) override { }
+        virtual void visit_variable_value(VariableValue *) override { }
+        virtual void visit_subroutine_call(SubroutineCall *) override { }
     };
 
 }
 }
+
+#undef ACCEPT

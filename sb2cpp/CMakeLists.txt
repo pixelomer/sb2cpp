@@ -18,6 +18,7 @@ add_library(
     sb2cpp_lib
     lib/ast.cc
     lib/parser.cc
+    lib/source.cc
     lib/tokenize.cc
     lib/util.cc
 )
@@ -46,6 +47,7 @@ if(TEST)
         sb2cpp_test
         tests/tokenize_test.cc
         tests/parser_test.cc
+        tests/source_test.cc
     )
     target_link_libraries(sb2cpp_test GTest::gtest_main)
     target_link_libraries(sb2cpp_test sb2cpp_lib)
