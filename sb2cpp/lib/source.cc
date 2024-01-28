@@ -1,6 +1,5 @@
 #include "source.hpp"
 #include "util.hpp"
-#include <iostream>
 
 namespace sb2cpp {
 
