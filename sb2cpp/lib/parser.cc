@@ -21,11 +21,13 @@ const std::map<std::string, AST::LogicOp> Parser::logic_ops = {
     { "or", AST::Or }
 };
 
-std::string Parser::token_get(int idx) {
+std::string Parser::token_get(int idx, bool commit_nl) {
     if (idx < this->tokens.size()) {
         std::string token = this->tokens[idx];
         if (token[0] == '\n') {
-            this->line += token.length();
+            if (commit_nl) {
+                this->line += token.length();
+            }
             token = "\n";
         }
         return token;
@@ -35,7 +37,7 @@ std::string Parser::token_get(int idx) {
 
 std::string Parser::token_next() {
     if (this->idx >= this->tokens.size()) return EOF_TOKEN;
-    return token_get(this->idx++);
+    return token_get(this->idx++, true);
 }
 
 std::string Parser::try_token_next(std::string expected_keyword) {
@@ -321,7 +323,7 @@ AST::Condition *Parser::parse_condition() {
             if (condition != nullptr) {
                 throw SyntaxError(this->line, "Expected value");
             }
-            elems.push_back({ next_logic, new AST::SingleCondition(lvalue,
+            elems.push_back({ next_logic, new AST::BinaryCompareOp(lvalue,
                 value, next_comp) });
             lvalue = nullptr;
         }

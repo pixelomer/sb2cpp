@@ -167,10 +167,10 @@ TEST(ParserTest, AssignMixedOperations) {
 
 TEST(ParserTest, AssignInvalidOperations) {
     Parser parser("test = 10 - * 20");
-    ASSERT_THROW(parser.parse_next(), SyntaxError);
+    ASSERT_THROW(parser.parse_next(), Parser::SyntaxError);
 
     Parser parser2("test = - 20 / 5 *");
-    ASSERT_THROW(parser2.parse_next(), SyntaxError);
+    ASSERT_THROW(parser2.parse_next(), Parser::SyntaxError);
 }
 
 TEST(ParserTest, ArrayValue) {
@@ -221,9 +221,9 @@ TEST(ParserTest, WhileLoop) {
     ASSERT_NE(while_condition, nullptr);
     ASSERT_EQ(while_condition->op, AST::And);
 
-    auto lvalue = dynamic_cast<AST::SingleCondition *>(while_condition->lvalue);
+    auto lvalue = dynamic_cast<AST::BinaryCompareOp *>(while_condition->lvalue);
     ASSERT_NE(lvalue, nullptr);
-    ASSERT_EQ(lvalue->comparison, AST::LessThan);
+    ASSERT_EQ(lvalue->op, AST::LessThan);
 
     auto rvalue = dynamic_cast<AST::BinaryLogicOp *>(while_condition->rvalue);
     ASSERT_NE(rvalue, nullptr);

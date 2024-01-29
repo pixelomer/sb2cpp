@@ -21,7 +21,6 @@ namespace AST {
     class StdlibCall;
     class StdlibValue;
     class StdlibAssign;
-    class SingleCondition;
     class Assign;
     class SubroutineCall;
     class WhileLoop;
@@ -45,7 +44,6 @@ namespace AST {
         virtual void visit_stdlib_call(StdlibCall *) = 0;
         virtual void visit_stdlib_value(StdlibValue *) = 0;
         virtual void visit_stdlib_assign(StdlibAssign *) = 0;
-        virtual void visit_single_condition(SingleCondition *) = 0;
         virtual void visit_assign(Assign *) = 0;
         virtual void visit_subroutine_call(SubroutineCall *) = 0;
         virtual void visit_while_loop(WhileLoop *) = 0;
@@ -261,19 +259,6 @@ namespace AST {
             }
         }
     };
-    class SingleCondition : virtual public Condition {
-    public:
-        Value *lvalue;
-        Value *rvalue;
-        ComparisonOp comparison;
-        SingleCondition(Value *lvalue, Value *rvalue, ComparisonOp comparison):
-            lvalue(lvalue), rvalue(rvalue), comparison(comparison) {}
-        ~SingleCondition() {
-            if (lvalue != nullptr) delete lvalue;
-            if (rvalue != nullptr) delete rvalue;
-        }
-        ACCEPT(visit_single_condition)
-    };
     class ConditionGroup : virtual public Condition {
     private:
         void group_by(AST::LogicOp op);
@@ -433,10 +418,6 @@ namespace AST {
         }
         virtual void visit_stdlib_assign(StdlibAssign *assign) override {
             assign->value->accept(this);
-        }
-        virtual void visit_single_condition(SingleCondition *cond) override {
-            cond->lvalue->accept(this);
-            cond->rvalue->accept(this);
         }
         virtual void visit_assign(Assign *assign) override {
             assign->value->accept(this);

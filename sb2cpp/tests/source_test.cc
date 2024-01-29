@@ -19,10 +19,13 @@ TEST(SourceTest, SimpleSourceCode) {
     Source source(input);
     
     ASSERT_EQ(source.subroutines.size(), 2);
+    ASSERT_EQ(source.subroutines.at("Add").cname, "Add");
+    ASSERT_EQ(source.subroutines.at("Mult").cname, "Mult");
+
     ASSERT_EQ(source.variables.size(), 3);
-    ASSERT_EQ(source.variables.at("a").name, "A");
-    ASSERT_EQ(source.variables.at("b").name, "b");
-    ASSERT_EQ(source.variables.at("result").name, "Result");
+    ASSERT_EQ(source.variables.at("A").cname, "A");
+    ASSERT_EQ(source.variables.at("b").cname, "b");
+    ASSERT_EQ(source.variables.at("Result").cname, "Result");
 }
 
 TEST(SourceTest, SubroutineDefinedTwice) {
@@ -35,11 +38,11 @@ TEST(SourceTest, SubroutineDefinedTwice) {
         "b = 0\n"
         "Add()";
     
-    ASSERT_THROW(Source source(input), SourceError);
+    ASSERT_THROW(Source source(input), Source::SourceError);
 }
 
 TEST(SourceTest, UndefinedVariable) {
     auto input = "TextWindow.WriteLine(str)";
 
-    ASSERT_THROW(Source source(input), SourceError);
+    ASSERT_THROW(Source source(input), Source::SourceError);
 }

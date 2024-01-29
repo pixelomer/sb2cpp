@@ -3,42 +3,45 @@
 
 namespace sb2cpp {
 
-void Source::register_variable(std::string const& name, RegisterType type) {
+void Source::register_variable(std::string &name, RegisterType type) {
     auto name_lower = strtolower(name);
     Variable &var = this->variables[name_lower];
-    if (var.name == "") {
-        // First name used for a variable is canonical
-        var.name = name;
+    // First name used for a variable is canonical
+    if (var.cname == "") {
+        var.cname = name;
+    }
+    else {
+        name = var.cname;
     }
     var.used = var.used || (type == Use);
     var.defined = var.defined || (type == Define);
 }
 
+#warning register_goto_label() not implemented
 void Source::register_goto_label(AST::GotoLabel *label) {
-    auto name_lower = strtolower(label->name);
-    AST::GotoLabel *&label_in_array = this->goto_labels[name_lower];
-    if (label_in_array != nullptr) {
-        throw SourceError("Goto label '" + name_lower + "' declared "
-            "multiple times");
-    }
-    label_in_array = label;
+    // NOT IMPLEMENETED
 }
 
-void Source::register_subroutine(AST::Subroutine *subroutine) {
-    auto name_lower = strtolower(subroutine->subroutine_name);
-    Subroutine &sub = this->subroutines[name_lower];
-    if (sub.subroutine != nullptr) {
-        throw SourceError("Subroutine '" + name_lower +
-            "' declared multiple times");
-    }
-    sub.subroutine = subroutine;
-    sub.defined = true;
-}
-
-void Source::register_call(std::string const& name) {
+void Source::register_subroutine(std::string &name, AST::Subroutine *subroutine) {
     auto name_lower = strtolower(name);
-    Subroutine &sub = this->subroutines[name_lower];
-    sub.used = true;
+    Subroutine &elem = this->subroutines[name_lower];
+    if (subroutine != nullptr) {
+        if (elem.subroutine != nullptr) {
+            throw SourceError("Subroutine '" + name_lower +
+                "' declared multiple times");
+        }
+        elem.subroutine = subroutine;
+        elem.defined = true;
+    }
+    else {
+        elem.used = true;
+    }
+    if (elem.cname == "") {
+        elem.cname = name;
+    }
+    else {
+        name = elem.cname;
+    }
 }
 
 void Source::visit_array_assign(AST::ArrayAssign *assign) {
@@ -62,12 +65,12 @@ void Source::visit_assign(AST::Assign *assign) {
 }
 
 void Source::visit_subroutine_call(AST::SubroutineCall *call) {
-    Source::register_call(call->subroutine_name);
+    Source::register_subroutine(call->subroutine_name, nullptr);
     AST::Visitor::visit_subroutine_call(call);
 }
 
 void Source::visit_subroutine(AST::Subroutine *subroutine) {
-    Source::register_subroutine(subroutine);
+    Source::register_subroutine(subroutine->subroutine_name, subroutine);
     AST::Visitor::visit_subroutine(subroutine);
 }
 

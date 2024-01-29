@@ -8,30 +8,30 @@
 #include "tokenize.hpp"
 
 namespace sb2cpp {
-    class SyntaxError : public std::runtime_error {
-    private:
-        static std::string normalize(std::string token) {
-            if (token == "") return "EOF";
-            else if (token == "\n") return "newline";
-            else return "'" + token + "'";
-        }
-    public:
-        int line;
-        SyntaxError(int line, std::string description):
-            runtime_error(description)
-        {
-            this->line = line;
-        }
-        SyntaxError(int line, std::string expected, std::string got):
-            runtime_error("Expected " + normalize(expected) +
-                ", got " + normalize(got))
-        {
-            this->line = line;
-        }
-    };
     class Parser {
+    public:
+        class SyntaxError : public std::runtime_error {
+        private:
+            static std::string normalize(std::string token) {
+                if (token == "") return "EOF";
+                else if (token == "\n") return "newline";
+                else return "'" + token + "'";
+            }
+        public:
+            int line;
+            SyntaxError(int line, std::string description):
+                runtime_error(description)
+            {
+                this->line = line;
+            }
+            SyntaxError(int line, std::string expected, std::string got):
+                runtime_error("Expected " + normalize(expected) +
+                    ", got " + normalize(got))
+            {
+                this->line = line;
+            }
+        };
     private:
-
         static const std::map<std::string, AST::ComparisonOp> comparators;
         static const std::map<std::string, AST::LogicOp> logic_ops;
         int line = 1;
@@ -40,7 +40,7 @@ namespace sb2cpp {
         
         std::string token_next();
         std::string try_token_next(std::string expected);
-        std::string token_get(int idx);
+        std::string token_get(int idx, bool commit_nl = false);
 
         AST::GotoLabel *parse_goto_label();
         AST::GotoStatement *parse_goto_statement();

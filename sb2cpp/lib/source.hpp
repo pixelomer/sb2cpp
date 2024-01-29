@@ -26,16 +26,17 @@ The following is perfectly valid code:
 
 namespace sb2cpp {
 
-class SourceError : public std::runtime_error {
-public:
-    SourceError(std::string const& msg): std::runtime_error(msg) {}
-};
 
 class Source : virtual public AST::Visitor {
 public:
+    class SourceError : public std::runtime_error {
+    public:
+        SourceError(std::string const& msg): std::runtime_error(msg) {}
+    };
     struct Symbol {
         bool defined = false;
         bool used = false;
+        std::string cname;
     };
 private:
     // Class.Property = <identifier>
@@ -45,14 +46,14 @@ private:
     enum RegisterType {
         Use, Define
     };
-    void register_variable(std::string const& name, RegisterType type);
-    void register_subroutine(AST::Subroutine *subroutine);
+    void register_variable(std::string &name, RegisterType type);
+    void register_subroutine(std::string &name, AST::Subroutine *subroutine);
     void register_goto_label(AST::GotoLabel *label);
-    void register_call(std::string const& name);
 
     template<typename T>
-    void verify_defined(std::map<std::string, T> const& symbols) {
+    void verify_defined(std::map<std::string, T> &symbols) {
         auto &unknown = this->unknown_identifiers;
+        std::map<std::string, T> new_symbols;
         for (auto &pair : symbols) {
             auto &name = pair.first;
             auto &symbol = pair.second;
@@ -64,21 +65,26 @@ private:
             if (unknown_pt != unknown.end()) {
                 unknown.erase(unknown_pt, unknown_pt + 1);
             }
-
+            new_symbols[symbol.cname] = symbol;
         }
+        symbols = new_symbols;
     }
 public:
     struct Variable : public Symbol {
-        std::string name;
     };
     struct Subroutine : public Symbol {
         AST::Subroutine *subroutine = nullptr;
     };
 
     Source(std::string const& code) {
+        this->entry_point = new AST::StatementGroup({ });
         Parser parser(code);
         AST::Node *node;
         while ((node = parser.parse_next()) != nullptr) {
+            AST::Statement *statement = dynamic_cast<AST::Statement *>(node);
+            if (statement != nullptr) {
+                this->entry_point->statements.push_back(statement);
+            }
             node->accept(this);
         }
         verify_defined(this->variables);
@@ -89,11 +95,13 @@ public:
         }
     }
 
-    // variables["var"] = "Var"
     std::map<std::string, Variable> variables;
-    // variables["sub"] = { "Sub", ... }
     std::map<std::string, Subroutine> subroutines;
+
+    // NOT IMPLEMENTED
     std::map<std::string, AST::GotoLabel *> goto_labels;
+
+    AST::StatementGroup *entry_point;
 
     virtual void visit_array_assign(AST::ArrayAssign *) override;
     virtual void visit_array_value(AST::ArrayValue *) override;

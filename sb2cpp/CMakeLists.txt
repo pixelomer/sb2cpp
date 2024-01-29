@@ -19,6 +19,8 @@ add_library(
     lib/ast.cc
     lib/parser.cc
     lib/source.cc
+    lib/transpiler.cc
+    lib/code_writer.cc
     lib/tokenize.cc
     lib/util.cc
 )
