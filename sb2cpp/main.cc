@@ -21,5 +21,9 @@ int main() {
             << std::endl;
         return EXIT_FAILURE;
     }
+    catch (Source::SourceError err) {
+        std::cerr << "source: error: " << err.what() << std::endl;
+        return EXIT_FAILURE;
+    }
     return EXIT_SUCCESS;
 }

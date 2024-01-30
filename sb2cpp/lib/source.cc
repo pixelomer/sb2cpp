@@ -1,11 +1,10 @@
 #include "source.hpp"
-#include "util.hpp"
 
 namespace sb2cpp {
 
 void Source::register_variable(std::string &name, RegisterType type) {
     auto name_lower = strtolower(name);
-    Variable &var = this->variables[name_lower];
+    VariableSymbol &var = this->variables[name_lower];
     // First name used for a variable is canonical
     if (var.cname == "") {
         var.cname = name;
@@ -17,31 +16,11 @@ void Source::register_variable(std::string &name, RegisterType type) {
     var.defined = var.defined || (type == Define);
 }
 
-#warning register_goto_label() not implemented
-void Source::register_goto_label(AST::GotoLabel *label) {
-    // NOT IMPLEMENETED
-}
-
 void Source::register_subroutine(std::string &name, AST::Subroutine *subroutine) {
-    auto name_lower = strtolower(name);
-    Subroutine &elem = this->subroutines[name_lower];
-    if (subroutine != nullptr) {
-        if (elem.subroutine != nullptr) {
-            throw SourceError("Subroutine '" + name_lower +
-                "' declared multiple times");
-        }
-        elem.subroutine = subroutine;
-        elem.defined = true;
-    }
-    else {
-        elem.used = true;
-    }
-    if (elem.cname == "") {
-        elem.cname = name;
-    }
-    else {
-        name = elem.cname;
-    }
+    this->register_node(name, subroutine, this->subroutines, "Subroutine");
+}
+void Source::register_goto_label(std::string &name, AST::GotoLabel *label) {
+    this->register_node(name, label, this->goto_labels, "Goto label");
 }
 
 void Source::visit_array_assign(AST::ArrayAssign *assign) {
@@ -92,8 +71,13 @@ void Source::visit_stdlib_assign(AST::StdlibAssign *assign) {
 }
 
 void Source::visit_goto_label(AST::GotoLabel *label) {
-    this->register_goto_label(label);
+    this->register_goto_label(label->name, label);
     AST::Visitor::visit_goto_label(label);
+}
+
+void Source::visit_goto_statement(AST::GotoStatement *goto_statement) {
+    this->register_goto_label(goto_statement->label, nullptr);
+    AST::Visitor::visit_goto_statement(goto_statement);
 }
 
 }

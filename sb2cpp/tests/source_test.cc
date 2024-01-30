@@ -5,7 +5,9 @@
 using namespace sb2cpp;
 
 TEST(SourceTest, SimpleSourceCode) {
-    auto input = "Result = 0\n"
+    auto input =
+        "Start:\n"
+        "Result = 0\n"
         "Sub Add\n"
         "RESULT = A + b\n"
         "EndSub\n"
@@ -15,7 +17,10 @@ TEST(SourceTest, SimpleSourceCode) {
         "a = 10\n"
         "b = 20\n"
         "add()\n"
-        "mult()\n";
+        "mult()\n"
+        "Goto start\n"
+        "Goto NEXT\n"
+        "next:\n";
     Source source(input);
     
     ASSERT_EQ(source.subroutines.size(), 2);
@@ -26,6 +31,10 @@ TEST(SourceTest, SimpleSourceCode) {
     ASSERT_EQ(source.variables.at("A").cname, "A");
     ASSERT_EQ(source.variables.at("b").cname, "b");
     ASSERT_EQ(source.variables.at("Result").cname, "Result");
+
+    ASSERT_EQ(source.goto_labels.size(), 2);
+    ASSERT_EQ(source.goto_labels.at("Start").cname, "Start");
+    ASSERT_EQ(source.goto_labels.at("NEXT").cname, "NEXT");
 }
 
 TEST(SourceTest, SubroutineDefinedTwice) {

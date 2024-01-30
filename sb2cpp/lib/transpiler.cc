@@ -31,7 +31,7 @@ std::string Transpiler::transpile() {
 
     // Subroutines
     for (auto &sub_elem : this->source.subroutines) {
-        auto &sub = sub_elem.second.subroutine;
+        auto &sub = sub_elem.second.node;
         sub->accept(this);
     }
 

@@ -3,6 +3,7 @@
 #include <string>
 #include "ast.hpp"
 #include "parser.hpp"
+#include "util.hpp"
 #include <exception>
 
 /*
@@ -46,12 +47,36 @@ private:
     enum RegisterType {
         Use, Define
     };
+    template<typename Tnode, typename Tsym>
+    void register_node(std::string &name, Tnode *node,
+        std::map<std::string, Tsym> &map, std::string const& type_name)
+    {
+        auto name_lower = strtolower(name);
+        Tsym &elem = map[name_lower];
+        if (node != nullptr) {
+            if (elem.node != nullptr) {
+                throw SourceError(type_name + " '" + name_lower +
+                    "' declared multiple times");
+            }
+            elem.node = node;
+            elem.defined = true;
+        }
+        else {
+            elem.used = true;
+        }
+        if (elem.cname == "") {
+            elem.cname = name;
+        }
+        else {
+            name = elem.cname;
+        }
+    }
     void register_variable(std::string &name, RegisterType type);
     void register_subroutine(std::string &name, AST::Subroutine *subroutine);
-    void register_goto_label(AST::GotoLabel *label);
+    void register_goto_label(std::string &name, AST::GotoLabel *subroutine);
 
     template<typename T>
-    void verify_defined(std::map<std::string, T> &symbols) {
+    void canonicalize(std::map<std::string, T> &symbols) {
         auto &unknown = this->unknown_identifiers;
         std::map<std::string, T> new_symbols;
         for (auto &pair : symbols) {
@@ -70,11 +95,14 @@ private:
         symbols = new_symbols;
     }
 public:
-    struct Variable : public Symbol {
+    struct VariableSymbol : public Symbol {
     };
-    struct Subroutine : public Symbol {
-        AST::Subroutine *subroutine = nullptr;
+    template<typename T>
+    struct NodeSymbol : public Symbol {
+        T *node;
     };
+    typedef NodeSymbol<AST::GotoLabel> GotoSymbol;
+    typedef NodeSymbol<AST::Subroutine> SubroutineSymbol;
 
     Source(std::string const& code) {
         this->entry_point = new AST::StatementGroup({ });
@@ -87,19 +115,18 @@ public:
             }
             node->accept(this);
         }
-        verify_defined(this->variables);
-        verify_defined(this->subroutines);
+        canonicalize(this->variables);
+        canonicalize(this->subroutines);
         if (this->unknown_identifiers.size() != 0) {
             throw SourceError("Undefined symbol: '" +
                 this->unknown_identifiers[0] + "'");
         }
+        canonicalize(this->goto_labels);
     }
 
-    std::map<std::string, Variable> variables;
-    std::map<std::string, Subroutine> subroutines;
-
-    // NOT IMPLEMENTED
-    std::map<std::string, AST::GotoLabel *> goto_labels;
+    std::map<std::string, VariableSymbol> variables;
+    std::map<std::string, SubroutineSymbol> subroutines;
+    std::map<std::string, GotoSymbol> goto_labels;
 
     AST::StatementGroup *entry_point;
 
@@ -110,6 +137,7 @@ public:
     virtual void visit_subroutine_call(AST::SubroutineCall *) override;
     virtual void visit_subroutine(AST::Subroutine *) override;
     virtual void visit_goto_label(AST::GotoLabel *) override;
+    virtual void visit_goto_statement(AST::GotoStatement *) override;
     virtual void visit_stdlib_assign(AST::StdlibAssign *) override;
 };
 
