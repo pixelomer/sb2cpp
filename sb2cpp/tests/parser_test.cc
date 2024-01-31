@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <string>
-#include "../lib/parser.hpp"
+#include "../libsb2cpp/parser.hpp"
 
 using namespace sb2cpp;
 

@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <string>
-#include "../lib/source.hpp"
+#include "../libsb2cpp/source.hpp"
 
 using namespace sb2cpp;
 

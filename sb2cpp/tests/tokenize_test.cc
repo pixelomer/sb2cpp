@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <string>
-#include "../lib/tokenize.hpp"
+#include "../libsb2cpp/tokenize.hpp"
 
 using namespace sb2cpp;
 

@@ -16,13 +16,13 @@ endif()
 
 add_library(
     sb2cpp_lib
-    lib/ast.cc
-    lib/parser.cc
-    lib/source.cc
-    lib/transpiler.cc
-    lib/code_writer.cc
-    lib/tokenize.cc
-    lib/util.cc
+    libsb2cpp/ast.cc
+    libsb2cpp/parser.cc
+    libsb2cpp/source.cc
+    libsb2cpp/transpiler.cc
+    libsb2cpp/code_writer.cc
+    libsb2cpp/tokenize.cc
+    libsb2cpp/util.cc
 )
 add_executable(sb2cpp main.cc)
 target_link_libraries(sb2cpp sb2cpp_lib)

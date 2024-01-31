@@ -1,7 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include "lib/transpiler.hpp"
+#include "libsb2cpp/transpiler.hpp"
 
 using namespace sb2cpp;
 
