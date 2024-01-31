@@ -71,3 +71,11 @@ TEST(ObjectTest, Compare) {
     ASSERT_FALSE(str1 == str2); // ("hello" == "John") == false
     ASSERT_TRUE(str1 != str2);
 }
+
+TEST(ObjectTest, Math) {
+    ASSERT_EQ(Obj(1) + Obj(2), Obj(3));
+    ASSERT_DOUBLE_EQ((double)(Obj(5) / Obj(2)), (double)Obj(2.5));
+    ASSERT_EQ(Obj("2") * Obj("9"), Obj("18.00"));
+    ASSERT_EQ(Obj(10.5) + Obj("test"), Obj("10.5test"));
+    ASSERT_EQ(Obj(10.5) * Obj("test"), Obj(0));
+}
