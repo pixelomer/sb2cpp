@@ -23,6 +23,7 @@ add_library(
     libsb2cpp/code_writer.cc
     libsb2cpp/tokenize.cc
     libsb2cpp/util.cc
+    libsb2cpp/interpreter.cc
 )
 add_executable(sb2cpp main.cc)
 target_link_libraries(sb2cpp sb2cpp_lib)
@@ -51,6 +52,7 @@ if(TEST)
         tests/parser_test.cc
         tests/source_test.cc
         tests/object_test.cc
+        tests/interpreter_test.cc
     )
     target_link_libraries(sb2cpp_test GTest::gtest_main)
     target_link_libraries(sb2cpp_test sb2cpp_lib)

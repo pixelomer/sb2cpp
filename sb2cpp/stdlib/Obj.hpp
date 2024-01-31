@@ -1,12 +1,38 @@
 #pragma once
 
 #include <string>
-#include "utils.hpp"
 
 namespace SmallBasic {
 
 class Obj {
 private:
+    class Substr {
+    public:
+        size_t index = std::string::npos;
+        size_t length = 0;
+        std::string str;
+
+        Substr(size_t index, size_t length, std::string const& str):
+            index(index), length(length), str(str) {}
+        Substr() {}
+    };
+
+    static Substr substr_until(size_t start, std::string const& str, char c) {
+        std::string search_list = "\\" + std::string(&c, 1);
+        size_t idx = start;
+        while (true) {
+            idx = str.find_first_of(search_list, idx);
+            if (idx == std::string::npos) return Substr();
+            else if (str[idx] == '\\') {
+                idx += 2;
+                continue;
+            }
+            else break;
+        }
+        Substr substr(start, idx-start, str.substr(start, idx-start));
+        return substr;
+    }
+
     static std::string escape(std::string const& in) {
         std::string out;
         size_t last_idx = 0, idx = 0;
@@ -218,6 +244,12 @@ public:
     }
     friend bool operator<=(Obj const& lhs, Obj const& rhs) {
         return (lhs < rhs) || (lhs == rhs);
+    }
+    Obj operator+() const {
+        return (double)*this;
+    }
+    Obj operator-() const {
+        return -(double)*this;
     }
     Obj operator[](Obj const& key) {
         Obj proxy;
