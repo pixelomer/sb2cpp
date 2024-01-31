@@ -10,8 +10,15 @@ namespace sb2cpp {
 
 class Transpiler : public AST::BaseVisitor {
 private:
+    std::stack<AST::Node *> node_parents;
     void write_block(AST::Statement *);
     void write_condition(AST::Condition *);
+    template<typename T>
+    T *get_parent() {
+        AST::Node *node = this->node_parents.top();
+        T *cast_node = dynamic_cast<T *>(node);
+        return cast_node;
+    }
 public:
     Source source;
     CodeWriter out;
@@ -19,7 +26,9 @@ public:
     public:
         TranspilerError(std::string const& msg): std::runtime_error(msg) {}
     };
-    Transpiler(std::string const& code): source(code) {}
+    Transpiler(std::string const& code): source(code) {
+        this->node_parents.push(nullptr);
+    }
 
     std::string transpile();
 

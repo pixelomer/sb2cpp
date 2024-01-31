@@ -54,7 +54,7 @@ namespace sb2cpp {
         AST::IfStatement *parse_if_statement();
         AST::Subroutine *parse_subroutine();
         AST::SubroutineCall *parse_subroutine_call();
-        AST::StdlibCall *parse_stdlib_call();
+        AST::StdlibCall *parse_stdlib_call(bool returns_value);
         AST::Value *parse_value(bool throw_on_comparator = true);
         AST::Condition *parse_condition();
         AST::WhileLoop *parse_while_loop();

@@ -174,7 +174,7 @@ AST::SubroutineCall *Parser::parse_subroutine_call() {
     return new AST::SubroutineCall(name);
 }
 
-AST::StdlibCall *Parser::parse_stdlib_call() {
+AST::StdlibCall *Parser::parse_stdlib_call(bool returns_value) {
     auto class_name = this->parse_id(this->try_token_next("<class>"));
     this->try_token_next(".");
     auto method_name = this->parse_id(this->try_token_next("<method>"));
@@ -190,7 +190,8 @@ AST::StdlibCall *Parser::parse_stdlib_call() {
         }
     }
     this->idx++;
-    return new AST::StdlibCall(class_name, method_name, arguments);
+    return new AST::StdlibCall(class_name, method_name, arguments,
+        returns_value);
 }
 
 AST::Value *Parser::parse_value(bool throw_on_comparator) {
@@ -242,7 +243,7 @@ AST::Value *Parser::parse_value(bool throw_on_comparator) {
         else if (expect_value && comparators.count(token) == 0) {
             if (this->token_get(this->idx + 1) == ".") {
                 if (this->token_get(this->idx + 3) == "(") {
-                    elem = { AST::NoValueOp, this->parse_stdlib_call() };
+                    elem = { AST::NoValueOp, this->parse_stdlib_call(true) };
                     this->idx--;
                 }
                 else {
@@ -438,7 +439,7 @@ AST::Statement *Parser::parse_statement() {
                 node = parse_stdlib_assign();
             }
             else {
-                node = parse_stdlib_call();
+                node = parse_stdlib_call(false);
             }
         }
         else {

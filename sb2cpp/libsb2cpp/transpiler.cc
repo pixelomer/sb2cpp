@@ -61,8 +61,8 @@ void Transpiler::visit_string(AST::StringValue *str_value) {
 void Transpiler::visit_number(AST::NumberValue *num_value) {
     this->out << num_value->number;
 }
-//FIXME: Place AddGroups inside parentheses
 void Transpiler::visit_value_op(AST::BinaryValueOp *op) {
+    this->node_parents.push(op);
     op->lvalue->accept(this);
     switch (op->op) {
         case AST::ValueOp::Multiply: this->out << " * "; break;
@@ -70,9 +70,15 @@ void Transpiler::visit_value_op(AST::BinaryValueOp *op) {
         default: throw TranspilerError("Illegal value operator");
     }
     op->rvalue->accept(this);
+    this->node_parents.pop();
 }
-//FIXME: Implement And precedence
 void Transpiler::visit_logic_op(AST::BinaryLogicOp *op) {
+    auto parent = this->get_parent<AST::BinaryLogicOp>();
+    bool use_paran = (parent != nullptr) &&
+        (parent->op == AST::LogicOp::And) &&
+        (op->op == AST::LogicOp::Or);
+    if (use_paran) this->out << "(";
+    this->node_parents.push(op);
     op->lvalue->accept(this);
     switch (op->op) {
         case AST::LogicOp::And: this->out << " && "; break;
@@ -80,6 +86,8 @@ void Transpiler::visit_logic_op(AST::BinaryLogicOp *op) {
         default: throw TranspilerError("Illegal logic operator");
     }
     op->rvalue->accept(this);
+    this->node_parents.pop();
+    if (use_paran) this->out << ")";
 }
 void Transpiler::visit_compare_op(AST::BinaryCompareOp *op) {
     op->lvalue->accept(this);
@@ -95,6 +103,9 @@ void Transpiler::visit_compare_op(AST::BinaryCompareOp *op) {
     op->rvalue->accept(this);
 }
 void Transpiler::visit_add_group(AST::AddGroup *group) {
+    auto mult_div_op = this->get_parent<AST::BinaryValueOp>();
+    if (mult_div_op != nullptr) this->out << "(";
+    this->node_parents.push(group);
     for (auto &elem : group->elements) {
         if (elem.sign != AST::NoSignOp) {
             switch (elem.sign) {
@@ -105,6 +116,8 @@ void Transpiler::visit_add_group(AST::AddGroup *group) {
         }
         elem.value->accept(this);
     }
+    this->node_parents.pop();
+    if (mult_div_op != nullptr) this->out << ")";
 }
 void Transpiler::visit_array_assign(AST::ArrayAssign *assign) {
     this->out << VAR(assign->variable) << "[";
@@ -135,7 +148,10 @@ void Transpiler::visit_stdlib_call(AST::StdlibCall *call) {
             this->out << ", ";
         }
     }
-    this->out << ");" << CodeWriter::endl;
+    this->out << ")";
+    if (!call->returns_value) {
+        this->out << ";" << CodeWriter::endl;
+    }
 }
 void Transpiler::visit_stdlib_value(AST::StdlibValue *value) {
     this->out << value->class_name << "::" << "_Get" << value->property

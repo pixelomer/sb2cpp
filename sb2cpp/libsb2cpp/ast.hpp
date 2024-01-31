@@ -203,9 +203,11 @@ namespace AST {
         std::string class_name;
         std::string method_name;
         std::vector<Value *> arguments;
+        bool returns_value;
         StdlibCall(std::string class_name, std::string method_name,
-            std::vector<Value *> arguments): class_name(class_name),
-            method_name(method_name), arguments(arguments) {}
+            std::vector<Value *> arguments, bool returns_value):
+            class_name(class_name), method_name(method_name),
+            arguments(arguments), returns_value(returns_value) {}
         ~StdlibCall() {
             for (auto argument : this->arguments) {
                 delete argument;
