@@ -25,7 +25,7 @@ std::string Transpiler::transpile() {
             this->out << ";" << CodeWriter::endl; \
         } \
     } while (0)
-    DECLARE(this->source.variables, "Mixed", VAR_LSTR, "");
+    DECLARE(this->source.variables, "Obj", VAR_LSTR, "");
     DECLARE(this->source.subroutines, "void", SUB_LSTR, "()");
     #undef DECLARE
 
@@ -56,10 +56,10 @@ void Transpiler::write_condition(AST::Condition *condition) {
     this->out << ")";
 }
 void Transpiler::visit_string(AST::StringValue *str_value) {
-    this->out << "\"" + str_value->value + "\"";
+    this->out << "Obj(\"" + str_value->value + "\")";
 }
 void Transpiler::visit_number(AST::NumberValue *num_value) {
-    this->out << num_value->number;
+    this->out << "Obj(" << num_value->number << ")";
 }
 void Transpiler::visit_value_op(AST::BinaryValueOp *op) {
     this->node_parents.push(op);
