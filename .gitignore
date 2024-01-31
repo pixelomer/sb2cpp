@@ -5,6 +5,8 @@
 !sb2cpp/libsb2cpp/
 !sb2cpp/libsb2cpp/*.cc
 !sb2cpp/libsb2cpp/*.hpp
+!sb2cpp/stdlib/
+!sb2cpp/stdlib/*.hpp
 !sb2cpp/tests/
 !sb2cpp/tests/*.cc
 !sb2cpp/main.cc
