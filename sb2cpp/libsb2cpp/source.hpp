@@ -40,6 +40,8 @@ public:
         std::string cname;
     };
 private:
+    static bool did_register_builtin;
+    static void register_builtin();
     // Class.Property = <identifier>
     // <identifier> could be a variable or a subroutine
     std::vector<std::string> unknown_identifiers;
@@ -105,6 +107,7 @@ public:
     typedef NodeSymbol<AST::Subroutine> SubroutineSymbol;
 
     Source(std::string const& code) {
+        register_builtin();
         this->entry_point = new AST::StatementGroup({ });
         Parser parser(code);
         AST::Node *node;
@@ -139,6 +142,7 @@ public:
     virtual void visit_goto_label(AST::GotoLabel *) override;
     virtual void visit_goto_statement(AST::GotoStatement *) override;
     virtual void visit_stdlib_assign(AST::StdlibAssign *) override;
+    virtual void visit_stdlib_call(AST::StdlibCall *) override;
 };
 
 }

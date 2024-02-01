@@ -13,7 +13,8 @@ TEST(InterpreterTest, ForLoop) {
         "A = A + I\n"
         "EndFor\n"
         "EndSub\n"
-        "main()\n";
+        "main()\n"
+        "TextWindow.WriteLine(\"Hello, world!\")";
     Interpreter interpreter(code);
     interpreter.run();
 

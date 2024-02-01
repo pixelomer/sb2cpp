@@ -1,6 +1,17 @@
 #include "source.hpp"
+#include "../stdlib/Runtime.hpp"
+#include "../stdlib/Runtime_generated.hpp"
 
 namespace sb2cpp {
+
+bool Source::did_register_builtin = false;
+
+void Source::register_builtin() {
+    if (!did_register_builtin) {
+        did_register_builtin = true;
+        SmallBasic::register_builtin();
+    }
+}
 
 void Source::register_variable(std::string &name, RegisterType type) {
     auto name_lower = strtolower(name);
@@ -51,6 +62,33 @@ void Source::visit_subroutine_call(AST::SubroutineCall *call) {
 void Source::visit_subroutine(AST::Subroutine *subroutine) {
     Source::register_subroutine(subroutine->subroutine_name, subroutine);
     AST::Visitor::visit_subroutine(subroutine);
+}
+
+void Source::visit_stdlib_call(AST::StdlibCall *call) {
+    auto class_name = strtolower(call->class_name);
+    if (SmallBasic::Runtime::classes.count(class_name) == 0) {
+        throw SourceError("Unrecognized class: '" + call->class_name + "'");
+    }
+    auto &cls = SmallBasic::Runtime::classes.at(class_name);
+
+    auto method_name = strtolower(call->method_name);
+    if (cls.methods.count(method_name) == 0) {
+        throw SourceError("Unrecognized method: '" + cls.cname + "." +
+            call->method_name + "()");
+    }
+    auto &method = cls.methods.at(method_name);
+
+    if (call->returns_value && !method.returns_value) {
+        throw SourceError("Does not return value: '" + cls.cname + "." +
+            method.cname + "()");
+    }
+    if (call->arguments.size() != method.argc) {
+        throw SourceError("Argument count mismatch (" + std::to_string(method.argc) +
+            " != " + std::to_string(call->arguments.size()) + "): " + cls.cname +
+            "." + method.cname + "()");
+    }
+    call->method = method;
+    AST::Visitor::visit_stdlib_call(call);
 }
 
 // FIXME: This needs to be updated after the standard library is implemented.

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "../stdlib/RuntimeTypes.hpp"
 
 #define ACCEPT(visit_func) virtual void accept(BaseVisitor *visitor) { \
     visitor->visit_func(this); \
@@ -202,6 +203,7 @@ namespace AST {
     public:
         std::string class_name;
         std::string method_name;
+        SmallBasic::Method method;
         std::vector<Value *> arguments;
         bool returns_value;
         StdlibCall(std::string class_name, std::string method_name,

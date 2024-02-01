@@ -97,9 +97,18 @@ void Interpreter::visit_statement_group(AST::StatementGroup *group) {
     }
 }
 
-#warning visit_stdlib_call() not implemented
 void Interpreter::visit_stdlib_call(AST::StdlibCall *call) {
-    throw std::runtime_error("stdlib calls not implemented");
+    auto &method = call->method;
+
+    std::vector<Obj> args;
+    for (int i=0; i<method.argc; i++) {
+        args.push_back(this->eval(call->arguments[i]));
+    }
+    
+    Obj ret = method.handler(args);
+    if (call->returns_value) {
+        this->push_val(ret);
+    }
 }
 
 #warning visit_stdlib_value() not implemented

@@ -14,6 +14,17 @@ else()
     set(CMAKE_CXX_FLAGS "-Wall")
 endif()
 
+add_custom_command(
+    OUTPUT runtime_list
+    COMMAND ./generate_runtime_list.py > stdlib/Runtime_generated.cc
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    DEPENDS generate_runtime_list.py
+)
+add_custom_target(
+    stdlib
+    DEPENDS runtime_list
+)
+
 add_library(
     sb2cpp_lib
     libsb2cpp/ast.cc
@@ -24,7 +35,11 @@ add_library(
     libsb2cpp/tokenize.cc
     libsb2cpp/util.cc
     libsb2cpp/interpreter.cc
+    stdlib/Runtime_generated.cc
+    stdlib/Runtime.cc
+    stdlib/util.cc
 )
+add_dependencies(sb2cpp_lib stdlib)
 add_executable(sb2cpp main.cc)
 target_link_libraries(sb2cpp sb2cpp_lib)
 
