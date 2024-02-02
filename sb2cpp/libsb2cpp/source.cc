@@ -102,13 +102,13 @@ void Source::visit_stdlib_assign(AST::StdlibAssign *assign) {
             rvalue_var->is_subroutine = true;
         }
         else {
-            throw SourceError("Cannot assign to read-only property " +
+            throw SourceError("Cannot assign variable to read-only property " +
                 cls.cname + "." + property.cname);
         }
     }
     else {
         if (property.value_setter == nullptr) {
-            throw SourceError("Cannot assign to read-only property " +
+            throw SourceError("Cannot assign value to read-only property " +
                 cls.cname + "." + property.cname);
         }
         AST::Visitor::visit_stdlib_assign(assign);

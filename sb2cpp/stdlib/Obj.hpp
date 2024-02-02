@@ -183,8 +183,7 @@ public:
     }
     Obj& operator+=(Obj const& rhs) {
         if (this->is_number() && rhs.is_number()) {
-            *this = std::to_string((double)*this +
-                (double)rhs);
+            *this = (double)*this + (double)rhs;
         }
         else {
             *this = this->str + rhs.str;
@@ -192,15 +191,15 @@ public:
         return *this;
     }
     Obj& operator-=(Obj const& rhs) {
-        *this = std::to_string((double)*this - (double)rhs);
+        *this = (double)*this - (double)rhs;
         return *this;
     }
     Obj& operator*=(Obj const& rhs) {
-        *this = std::to_string((double)*this * (double)rhs);
+        *this = (double)*this * (double)rhs;
         return *this;
     }
     Obj& operator/=(Obj const& rhs) {
-        *this = std::to_string((double)*this / (double)rhs);
+        *this = (double)*this / (double)rhs;
         return *this;
     }
     friend Obj operator+(Obj lhs, Obj const& rhs) {
