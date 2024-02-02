@@ -90,3 +90,20 @@ TEST(InterpreterTest, StdlibCalls) {
     ASSERT_EQ(foo, 300);
     ASSERT_EQ(output, "!100\n900");
 }
+
+TEST(InterpreterTest, SharedNames) {
+    auto code =
+        "foo = 0\n"
+        "Sub foo\n"
+        "foo = foo + 1\n"
+        "EndSub\n"
+        "While foo < 5\n"
+        "foo()\n"
+        "EndWhile\n"
+        "TextWindow.WriteLine(foo)";
+    
+    Interpreter interpreter = make_interpreter(code);
+    interpreter.run();
+
+    ASSERT_EQ(output, "5\n");
+}
