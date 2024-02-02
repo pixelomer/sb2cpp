@@ -65,19 +65,8 @@ void Source::visit_subroutine(AST::Subroutine *subroutine) {
 }
 
 void Source::visit_stdlib_call(AST::StdlibCall *call) {
-    auto class_name = strtolower(call->class_name);
-    if (SmallBasic::Runtime::classes.count(class_name) == 0) {
-        throw SourceError("Unrecognized class: '" + call->class_name + "'");
-    }
-    auto &cls = SmallBasic::Runtime::classes.at(class_name);
-
-    auto method_name = strtolower(call->method_name);
-    if (cls.methods.count(method_name) == 0) {
-        throw SourceError("Unrecognized method: '" + cls.cname + "." +
-            call->method_name + "()");
-    }
-    auto &method = cls.methods.at(method_name);
-
+    auto &cls = SmallBasic::Runtime::get_class(call->class_name);
+    auto &method = cls.get_method(call->method_name);
     if (call->returns_value && !method.returns_value) {
         throw SourceError("Does not return value: '" + cls.cname + "." +
             method.cname + "()");
@@ -87,25 +76,59 @@ void Source::visit_stdlib_call(AST::StdlibCall *call) {
             " != " + std::to_string(call->arguments.size()) + "): " + cls.cname +
             "." + method.cname + "()");
     }
-    call->method = method;
+    call->class_name = cls.cname;
+    call->method_name = method.cname;
+    call->cls = &cls;
+    call->method = &method;
     AST::Visitor::visit_stdlib_call(call);
 }
 
-// FIXME: This needs to be updated after the standard library is implemented.
-// It should be able to determine the expected argument type by querying the
-// standard library.
 void Source::visit_stdlib_assign(AST::StdlibAssign *assign) {
+    auto &cls = SmallBasic::Runtime::get_class(assign->class_name);
+    auto &property = cls.get_property(assign->property_name);
+
+    assign->class_name = cls.cname;
+    assign->property_name = property.cname;
+    assign->cls = &cls;
+    assign->property = &property;
+
     auto rvalue_var = dynamic_cast<AST::VariableValue *>(assign->value);
     if (rvalue_var != nullptr) {
-        // This may be the name of either a subroutine or a variable
-        auto &unknown = this->unknown_identifiers;
-        auto name_lower = strtolower(rvalue_var->variable);
-        if (std::find(unknown.begin(), unknown.end(), name_lower) == unknown.end()) {
-            unknown.push_back(name_lower);
+        if (property.value_setter != nullptr) {
+            this->register_variable(rvalue_var->variable, Use);
         }
-        return;
+        else if (property.callback_setter != nullptr) {
+            this->register_subroutine(rvalue_var->variable, nullptr);
+            rvalue_var->is_subroutine = true;
+        }
+        else {
+            throw SourceError("Cannot assign to read-only property " +
+                cls.cname + "." + property.cname);
+        }
     }
-    AST::Visitor::visit_stdlib_assign(assign);
+    else {
+        if (property.value_setter == nullptr) {
+            throw SourceError("Cannot assign to read-only property " +
+                cls.cname + "." + property.cname);
+        }
+        AST::Visitor::visit_stdlib_assign(assign);
+    }
+}
+
+void Source::visit_stdlib_value(AST::StdlibValue *value) {
+    auto &cls = SmallBasic::Runtime::get_class(value->class_name);
+    auto &property = cls.get_property(value->property_name);
+
+    value->class_name = cls.cname;
+    value->property_name = property.cname;
+    value->cls = &cls;
+    value->property = &property;
+
+    if (property.value_getter == nullptr) {
+        throw SourceError("Property has no getter: " + cls.cname +
+            "." + property.cname);
+    }
+    AST::Visitor::visit_stdlib_value(value);
 }
 
 void Source::visit_goto_label(AST::GotoLabel *label) {

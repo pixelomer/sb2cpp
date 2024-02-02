@@ -1,7 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include "libsb2cpp/transpiler.hpp"
+#include "libsb2cpp/interpreter.hpp"
 
 using namespace sb2cpp;
 
@@ -12,9 +12,11 @@ int main() {
     auto input = buffer.str();
 
     try {
-        Transpiler transpiler(input);
+        Interpreter interpreter(input);
+        interpreter.run();
+        /*Transpiler transpiler(input);
         auto output = transpiler.transpile();
-        std::cout << output;
+        std::cout << output;*/
     }
     catch (Parser::SyntaxError err) {
         std::cerr << "source(line " << err.line << "): error: " << err.what()

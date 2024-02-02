@@ -42,9 +42,6 @@ public:
 private:
     static bool did_register_builtin;
     static void register_builtin();
-    // Class.Property = <identifier>
-    // <identifier> could be a variable or a subroutine
-    std::vector<std::string> unknown_identifiers;
 
     enum RegisterType {
         Use, Define
@@ -79,18 +76,12 @@ private:
 
     template<typename T>
     void canonicalize(std::map<std::string, T> &symbols) {
-        auto &unknown = this->unknown_identifiers;
         std::map<std::string, T> new_symbols;
         for (auto &pair : symbols) {
             auto &name = pair.first;
             auto &symbol = pair.second;
             if (!symbol.defined) {
                 throw SourceError("Undefined symbol: '" + name + "'");
-            }
-            auto unknown_pt = std::find(unknown.begin(), unknown.end(),
-                name);
-            if (unknown_pt != unknown.end()) {
-                unknown.erase(unknown_pt, unknown_pt + 1);
             }
             new_symbols[symbol.cname] = symbol;
         }
@@ -120,10 +111,6 @@ public:
         }
         canonicalize(this->variables);
         canonicalize(this->subroutines);
-        if (this->unknown_identifiers.size() != 0) {
-            throw SourceError("Undefined symbol: '" +
-                this->unknown_identifiers[0] + "'");
-        }
         canonicalize(this->goto_labels);
     }
 
@@ -141,6 +128,7 @@ public:
     virtual void visit_subroutine(AST::Subroutine *) override;
     virtual void visit_goto_label(AST::GotoLabel *) override;
     virtual void visit_goto_statement(AST::GotoStatement *) override;
+    virtual void visit_stdlib_value(AST::StdlibValue *) override;
     virtual void visit_stdlib_assign(AST::StdlibAssign *) override;
     virtual void visit_stdlib_call(AST::StdlibCall *) override;
 };

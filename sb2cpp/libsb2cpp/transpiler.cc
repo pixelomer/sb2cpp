@@ -132,7 +132,12 @@ void Transpiler::visit_array_value(AST::ArrayValue *value) {
     this->out << "]";
 }
 void Transpiler::visit_variable_value(AST::VariableValue *var) {
-    this->out << VAR(var->variable);
+    if (var->is_subroutine) {
+        this->out << SUB(var->variable);
+    }
+    else {
+        this->out << VAR(var->variable);
+    }
 }
 void Transpiler::visit_statement_group(AST::StatementGroup *group) {
     for (auto &statement : group->statements) {
@@ -154,13 +159,11 @@ void Transpiler::visit_stdlib_call(AST::StdlibCall *call) {
     }
 }
 void Transpiler::visit_stdlib_value(AST::StdlibValue *value) {
-    this->out << value->class_name << "::" << "_Get" << value->property
+    this->out << value->class_name << "::" << "_Get" << value->property_name
         << "()";
 }
-// FIXME: Needs special check if rvalue is AST::VariableValue
-// (rvalue may be a subroutine)
 void Transpiler::visit_stdlib_assign(AST::StdlibAssign *assign) {
-    this->out << assign->class_name << "::" << "_Set" << assign->property
+    this->out << assign->class_name << "::" << "_Set" << assign->property_name
         << "(";
     assign->value->accept(this);
     this->out << ");" << CodeWriter::endl;

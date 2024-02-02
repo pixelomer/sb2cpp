@@ -65,8 +65,8 @@ void Interpreter::visit_add_group(AST::AddGroup *group) {
     for (auto &elem : group->elements) {
         Obj rhs = this->eval(elem.value);
         switch (elem.sign) {
-            case AST::Positive: obj += +rhs; break;
-            case AST::Negative: obj += -rhs; break;
+            case AST::Positive: obj += rhs; break;
+            case AST::Negative: obj -= rhs; break;
             case AST::NoSignOp: obj += rhs; break;
         }
     }
@@ -87,6 +87,9 @@ void Interpreter::visit_array_value(AST::ArrayValue *value) {
 }
 
 void Interpreter::visit_variable_value(AST::VariableValue *value) {
+    if (value->is_subroutine) {
+        throw std::runtime_error("Cannot evaluate subroutine as a variable");
+    }
     Obj &var = this->var(value->variable);
     this->push_val(var);
 }
@@ -98,27 +101,38 @@ void Interpreter::visit_statement_group(AST::StatementGroup *group) {
 }
 
 void Interpreter::visit_stdlib_call(AST::StdlibCall *call) {
-    auto &method = call->method;
+    auto method = call->method;
 
     std::vector<Obj> args;
-    for (int i=0; i<method.argc; i++) {
+    for (int i=0; i<method->argc; i++) {
         args.push_back(this->eval(call->arguments[i]));
     }
     
-    Obj ret = method.handler(args);
+    Obj ret = method->handler(args);
     if (call->returns_value) {
         this->push_val(ret);
     }
 }
 
-#warning visit_stdlib_value() not implemented
-void Interpreter::visit_stdlib_value(AST::StdlibValue *) {
-    throw std::runtime_error("stdlib calls not implemented");
+void Interpreter::visit_stdlib_value(AST::StdlibValue *value) {
+    this->push_val(value->property->value_getter());
 }
 
-#warning visit_stdlib_assign() not implemented
-void Interpreter::visit_stdlib_assign(AST::StdlibAssign *) {
-    throw std::runtime_error("stdlib calls not implemented");
+void Interpreter::visit_stdlib_assign(AST::StdlibAssign *assign) {
+    auto property = assign->property;
+
+    auto rvalue = dynamic_cast<AST::VariableValue *>(assign->value);
+    if (rvalue != nullptr && rvalue->is_subroutine) {
+        auto sub_name = rvalue->variable;
+        AST::SubroutineCall call(sub_name);
+        auto callback = [&call, this]() {
+            call.accept(this);
+        };
+        property->callback_setter(callback);
+    }
+    else {
+        property->value_setter(this->eval(assign->value));
+    }
 }
 
 void Interpreter::visit_assign(AST::Assign *assign) {

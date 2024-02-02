@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from typing import List
+from typing import List, Dict
 
 import sys
 import os
@@ -8,17 +8,30 @@ import re
 
 os.chdir("stdlib")
 
+def debug(str):
+    print(str, file=sys.stderr)
+
 class Method:
     name: str
     arguments: int
     returns: bool
 
+class Property:
+    name: str
+    has_callback: bool = False
+    has_getter: bool = False
+    has_setter: bool = False
+
 class Class:
     name: str
     methods: List[Method]
+    properties: Dict[str, Property]
 
 re_class = re.compile("SB_CLASS\(([^)]+)\)")
 re_method = re.compile("SB_METHOD_([0-9]+)\(([^)]+)\)")
+re_val_getter = re.compile("SB_VALUE_GETTER\(([^)]+)\)")
+re_val_setter = re.compile("SB_VALUE_SETTER\(([^)]+)\)")
+re_cb_setter = re.compile("SB_CALLBACK_SETTER\(([^)]+)\)")
 
 classes: List[Class] = list()
 
@@ -29,13 +42,21 @@ for file in os.scandir("."):
     
     cls: Class = None
     mtd: Method = None
+
+    def get_prop(name: str):
+        if name not in cls.properties:
+            cls.properties[name] = Property()
+            cls.properties[name].name = name
+        return cls.properties[name]
+
     for line in header.readlines():
         if cls is None:
             m = re_class.match(line)
-            if m is not None:
+            if m:
                 cls = Class()
                 cls.name = m.group(1)
-                cls.methods = []
+                cls.methods = list()
+                cls.properties = dict()
                 classes.append(cls)
         else:
             m = re_method.match(line)
@@ -45,9 +66,24 @@ for file in os.scandir("."):
                 mtd.name = m.group(2)
                 mtd.returns = True
                 cls.methods.append(mtd)
-                print(cls.name + "." + mtd.name + "(" +
-                    str(mtd.arguments) + ")", file=sys.stderr)
-            elif "SB_VOID" in line:
+                debug(cls.name + "." + mtd.name + "(" +
+                    str(mtd.arguments) + ")")
+            m = re_val_getter.match(line)
+            if m is not None:
+                prop = get_prop(m.group(1))
+                prop.has_getter = True
+                debug(cls.name + "." + prop.name + " (GET_VAL)")
+            m = re_val_setter.match(line)
+            if m is not None:
+                prop = get_prop(m.group(1))
+                prop.has_setter = True
+                debug(cls.name + "." + prop.name + " (SET_VAL)")
+            m = re_cb_setter.match(line)
+            if m is not None:
+                prop = get_prop(m.group(1))
+                prop.has_callback = True
+                debug(cls.name + "." + prop.name + " (SET_CB)")
+            if "SB_VOID" in line:
                 mtd.returns = False
     
     header.close()
@@ -84,6 +120,16 @@ for cls in classes:
         write("$" + cls.name + ".register_method({ \"" + mtd.name + "\", " +
               cls.name + "::dispatch_" + mtd.name + ", " + str(mtd.arguments) +
               ", " + ("true" if mtd.returns else "false") + " });")
+    for prop in cls.properties.values():
+        def func(exists: bool, name: str):
+            if not exists:
+                return "nullptr"
+            else:
+                return cls.name + "::dispatch_" + name
+        write("$" + cls.name + ".register_property({ \"" + prop.name +
+              "\", " + func(prop.has_getter, "_Get" + prop.name) + ", " +
+              func(prop.has_setter, "_Set" + prop.name) + ", " +
+              func(prop.has_callback, "_Set" + prop.name) + " });")
     write("Runtime::register_class($" + cls.name + ");")
     if classes[-1] is not cls:
         write("")

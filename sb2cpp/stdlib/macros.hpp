@@ -12,7 +12,10 @@
     public:
 #define SB_CLASS_END };}
 
+#define SB_PRIVATE private: static
+
 #define SB_METHOD(name, arglist...) \
+public: \
     static Obj dispatch_##name(std::vector<Obj> const& args) { \
         return name(arglist); \
     } \
@@ -30,3 +33,22 @@
     SB_METHOD(name, args[0], args[1], args[2], args[3])
 #define SB_METHOD_5(name) \
     SB_METHOD(name, args[0], args[1], args[2], args[3], args[4])
+
+#define SB_VALUE_GETTER(name) \
+public: \
+    static Obj dispatch__Get##name() { \
+        return _Get##name(); \
+    } \
+    static Obj _Get##name
+#define SB_VALUE_SETTER(name) \
+public: \
+    static void dispatch__Set##name(Obj const& value) { \
+        _Set##name(value); \
+    } \
+    static void _Set##name
+#define SB_CALLBACK_SETTER(name) \
+public: \
+    static void dispatch__Set##name(std::function<void()> const& cb) { \
+        _Set##name(cb); \
+    } \
+    static void _Set##name

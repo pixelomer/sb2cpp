@@ -183,6 +183,7 @@ namespace AST {
     class VariableValue : virtual public Value {
     public:
         std::string variable;
+        bool is_subroutine = false;
         VariableValue(std::string variable): variable(variable) {}
         ~VariableValue() {}
         ACCEPT(visit_variable_value)
@@ -203,7 +204,8 @@ namespace AST {
     public:
         std::string class_name;
         std::string method_name;
-        SmallBasic::Method method;
+        SmallBasic::Class *cls;
+        SmallBasic::Method *method;
         std::vector<Value *> arguments;
         bool returns_value;
         StdlibCall(std::string class_name, std::string method_name,
@@ -220,18 +222,22 @@ namespace AST {
     class StdlibValue : virtual public Value {
     public:
         std::string class_name;
-        std::string property;
-        StdlibValue(std::string class_name, std::string property):
-            class_name(class_name), property(property) {}
+        std::string property_name;
+        SmallBasic::Class *cls;
+        SmallBasic::Property *property;
+        StdlibValue(std::string class_name, std::string property_name):
+            class_name(class_name), property_name(property_name) {}
         ACCEPT(visit_stdlib_value)
     };
     class StdlibAssign : virtual public Statement {
     public:
         std::string class_name;
-        std::string property;
+        std::string property_name;
+        SmallBasic::Class *cls;
+        SmallBasic::Property *property;
         Value *value;
-        StdlibAssign(std::string class_name, std::string property, Value *value):
-            class_name(class_name), property(property), value(value) {}
+        StdlibAssign(std::string class_name, std::string property_name, Value *value):
+            class_name(class_name), property_name(property_name), value(value) {}
         ~StdlibAssign() {
             if (this->value != nullptr) {
                 delete this->value;

@@ -32,7 +32,7 @@ TEST(ParserTest, StdlibAssign) {
     auto assign = dynamic_cast<AST::StdlibAssign *>(result);
     ASSERT_NE(assign, nullptr);
     ASSERT_EQ(assign->class_name, "TextWindow");
-    ASSERT_EQ(assign->property, "Title");
+    ASSERT_EQ(assign->property_name, "Title");
 
     auto value = dynamic_cast<AST::StringValue *>(assign->value);
     ASSERT_NE(value, nullptr);
