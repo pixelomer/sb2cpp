@@ -78,7 +78,14 @@ void Transpiler::write_condition(AST::Condition *condition) {
     this->out << ")";
 }
 void Transpiler::visit_string(AST::StringValue *str_value) {
-    this->out << "Obj(\"" + str_value->value + "\")";
+    auto str = str_value->value;
+    for (int i=0; i<str.length(); i++) {
+        if (str[i] == '\\') {
+            str.insert(i, "\\");
+            i++;
+        }
+    }
+    this->out << "Obj(\"" + str + "\")";
 }
 void Transpiler::visit_number(AST::NumberValue *num_value) {
     this->out << "Obj(" << num_value->number << ")";
