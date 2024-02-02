@@ -101,9 +101,32 @@ TEST(InterpreterTest, SharedNames) {
         "foo()\n"
         "EndWhile\n"
         "TextWindow.WriteLine(foo)";
-    
+
     Interpreter interpreter = make_interpreter(code);
     interpreter.run();
 
     ASSERT_EQ(output, "5\n");
+}
+
+TEST(InterpreterTest, Arrays) {
+    auto code =
+        "array = \"1=apple;2=pear;3=1\\=banana\\;2\\=orange\\;;\"\n"
+        "TextWindow.WriteLine(array[2])\n"
+        "TextWindow.WriteLine(array[3])\n"
+        "array2 = array[3]\n"
+        "TextWindow.WriteLine(array2[1])\n"
+        "array2[2] = \"cherry\"\n"
+        "TextWindow.WriteLine(array2)\n"
+        "TextWindow.WriteLine(array[3][2])\n";
+    
+    Interpreter interpreter = make_interpreter(code);
+    interpreter.run();
+
+    auto expected =
+        "pear\n"
+        "1=banana;2=orange;\n"
+        "banana\n"
+        "1=banana;2=cherry;\n"
+        "orange\n";
+    ASSERT_EQ(output, expected);
 }

@@ -142,16 +142,23 @@ void Transpiler::visit_add_group(AST::AddGroup *group) {
     if (mult_div_op != nullptr) this->out << ")";
 }
 void Transpiler::visit_array_assign(AST::ArrayAssign *assign) {
-    this->out << VAR(assign->variable) << "[";
-    assign->key->accept(this);
-    this->out << "] = ";
+    this->out << VAR(assign->variable);
+    for (auto key : assign->keys) {
+        this->out << "[";
+        key->accept(this);
+        this->out << "]";
+    }
+    this->out << " = ";
     assign->value->accept(this);
     this->out << ";" << CodeWriter::endl;
 }
 void Transpiler::visit_array_value(AST::ArrayValue *value) {
-    this->out << VAR(value->variable) << "[";
-    value->key->accept(this);
-    this->out << "]";
+    this->out << VAR(value->variable);
+    for (auto key : value->keys) {
+        this->out << "[";
+        key->accept(this);
+        this->out << "]";
+    }
 }
 void Transpiler::visit_variable_value(AST::VariableValue *var) {
     if (var->is_subroutine) {

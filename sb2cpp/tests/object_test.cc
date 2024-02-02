@@ -84,9 +84,12 @@ TEST(ObjectTest, MultiDimensionalArray) {
     Obj array;
     array[1][2] = "two";
     array[1][3][3] = "three";
-    array[1][3][4] = "four";
+    array[{1,3,4}] = "four";
     ASSERT_EQ(array, "1=2\\=two\\;3\\=3\\\\\\=three\\\\\\;4\\\\\\=four\\\\\\;\\;;");
     ASSERT_EQ(array[1][2], "two");
+    ASSERT_EQ((array[{1, 2}]), "two");
     ASSERT_EQ(array[1][3][3], "three");
+    ASSERT_EQ((array[{1, 3, 3}]), "three");
     ASSERT_EQ(array[1][3][4], "four");
+    ASSERT_EQ((array[{1, 3, 4}]), "four");
 }

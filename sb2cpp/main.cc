@@ -28,5 +28,8 @@ int main() {
         std::cerr << "source: error: " << err.what() << std::endl;
         return EXIT_FAILURE;
     }
+    catch (std::runtime_error err) {
+        std::cerr << "source: error: " << err.what() << std::endl;
+    }
     return EXIT_SUCCESS;
 }

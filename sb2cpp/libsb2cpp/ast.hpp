@@ -159,12 +159,14 @@ namespace AST {
     class ArrayAssign : virtual public Statement {
     public:
         std::string variable;
-        Value *key;
+        std::vector<AST::Value *> keys;
         Value *value;
-        ArrayAssign(std::string variable, Value *key, Value *value):
-            variable(variable), key(key), value(value) {}
+        ArrayAssign(std::string variable, std::vector<AST::Value *> keys, Value *value):
+            variable(variable), keys(keys), value(value) {}
         ~ArrayAssign() {
-            delete key;
+            for (auto value : keys) {
+                delete value;
+            }
             delete value;
         }
         ACCEPT(visit_array_assign)
@@ -172,11 +174,13 @@ namespace AST {
     class ArrayValue : virtual public Value {
     public:
         std::string variable;
-        Value *key;
-        ArrayValue(std::string variable, Value *key): variable(variable),
-            key(key) {}
+        std::vector<Value *> keys;
+        ArrayValue(std::string variable, std::vector<Value *> keys):
+            variable(variable), keys(keys) {}
         ~ArrayValue() {
-            delete key;
+            for (auto key : keys) {
+                delete key;
+            }
         }
         ACCEPT(visit_array_value)
     };
@@ -410,11 +414,15 @@ namespace AST {
             }
         }
         virtual void visit_array_assign(ArrayAssign *assign) override {
-            assign->key->accept(this);
+            for (auto key : assign->keys) {
+                key->accept(this);
+            }
             assign->value->accept(this);
         }
         virtual void visit_array_value(ArrayValue *value) override {
-            value->key->accept(this);
+            for (auto key : value->keys) {
+                key->accept(this);
+            }
         }
         virtual void visit_statement_group(StatementGroup *group) override {
             for (auto &stmt : group->statements) {

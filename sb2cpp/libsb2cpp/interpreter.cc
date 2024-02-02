@@ -75,15 +75,20 @@ void Interpreter::visit_add_group(AST::AddGroup *group) {
 
 void Interpreter::visit_array_assign(AST::ArrayAssign *assign) {
     Obj &var = this->var(assign->variable);
-    Obj key = this->eval(assign->key);
-    Obj value = this->eval(assign->value);
-    var[key] = value;
+    std::vector<Obj> keys;
+    for (auto key : assign->keys) {
+        keys.push_back(this->eval(key));
+    }
+    var[keys] = this->eval(assign->value);
 }
 
 void Interpreter::visit_array_value(AST::ArrayValue *value) {
     Obj &var = this->var(value->variable);
-    Obj key = this->eval(value->key);
-    this->push_val(var[key]);
+    std::vector<Obj> keys;
+    for (auto key : value->keys) {
+        keys.push_back(this->eval(key));
+    }
+    this->push_val(var[keys]);
 }
 
 void Interpreter::visit_variable_value(AST::VariableValue *value) {

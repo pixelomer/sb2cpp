@@ -81,20 +81,26 @@ AST::Assign *Parser::parse_assign() {
 
 AST::ArrayAssign *Parser::parse_array_assign() {
     auto variable = this->parse_id(this->token_next());
-    this->try_token_next("[");
-    auto key = this->parse_value();
-    this->try_token_next("]");
+    std::vector<AST::Value *> keys;
+    while (this->token_get(this->idx) == "[") {
+        this->try_token_next("[");
+        keys.push_back(this->parse_value());
+        this->try_token_next("]");
+    }
     this->try_token_next("=");
     auto value = this->parse_value();
-    return new AST::ArrayAssign(variable, key, value);
+    return new AST::ArrayAssign(variable, keys, value);
 }
 
 AST::ArrayValue *Parser::parse_array_value() {
     auto variable = this->parse_id(this->token_next());
-    this->try_token_next("[");
-    auto key = this->parse_value();
-    this->try_token_next("]");
-    return new AST::ArrayValue(variable, key);
+    std::vector<AST::Value *> keys;
+    while (this->token_get(this->idx) == "[") {
+        this->try_token_next("[");
+        keys.push_back(this->parse_value());
+        this->try_token_next("]");
+    }
+    return new AST::ArrayValue(variable, keys);
 }
 
 AST::IfStatement *Parser::parse_if_statement() {

@@ -181,7 +181,7 @@ TEST(ParserTest, ArrayValue) {
     ASSERT_NE(assign1, nullptr);
     ASSERT_EQ(assign1->variable, "var");
     
-    auto assign1key = dynamic_cast<AST::AddGroup *>(assign1->key);
+    auto assign1key = dynamic_cast<AST::AddGroup *>(assign1->keys[0]);
     ASSERT_NE(assign1key, nullptr);
     ASSERT_EQ(assign1key->elements.size(), 2);
 

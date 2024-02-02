@@ -63,6 +63,7 @@ private:
         return out;
     }
 
+    std::vector<Obj> associated_objects;
     Obj *owner = nullptr;
     std::string owner_key;
     std::string str;
@@ -260,6 +261,33 @@ public:
         proxy.owner = this;
         proxy.owner_key = (std::string)key;
         return proxy;
+    }
+    Obj operator[](std::vector<Obj> const& keys) {
+        if (keys.size() == 0) {
+            throw std::runtime_error("keys.size() == 0");
+        }
+        else if (keys.size() == 1) {
+            return (*this)[keys[0]];
+        }
+        Obj obj;
+        obj = (*this)[keys[0]];
+        std::vector<Obj> incomplete_objects;
+        for (int i=1; i<keys.size(); i++) {
+            incomplete_objects.push_back(obj);
+            obj = obj[keys[i]];
+        }
+        obj.associated_objects = incomplete_objects;
+
+        auto &objects = obj.associated_objects;
+        objects[0].owner = this;
+        objects[0].owner_key = (std::string)keys[0];
+        for (int i=1; i<objects.size(); i++) {
+            objects[i].owner = &objects[i-1];
+            objects[i].owner_key = (std::string)keys[i];
+        }
+        obj.owner = &objects[objects.size()-1];
+        obj.owner_key = (std::string)keys[objects.size()];
+        return obj;
     }
     void array_delete(Obj const& key) {
         size_t idx = 0;
