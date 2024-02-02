@@ -4,6 +4,8 @@
 #include <vector>
 
 #define SB_VOID Obj()
+#define SB_TRUE Obj("True")
+#define SB_FALSE Obj("False")
 #define SB_ARG Obj const&
 
 #define SB_CLASS(name) \

@@ -153,7 +153,7 @@ public:
         }
         return 0;
     }
-    operator std::string() const {
+    operator std::string const&() const {
         return this->str;
     }
     Obj(): Obj("") {}

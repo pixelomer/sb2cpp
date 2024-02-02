@@ -35,8 +35,9 @@ re_cb_setter = re.compile("SB_CALLBACK_SETTER\(([^)]+)\)")
 
 classes: List[Class] = list()
 
+blacklist = ["Runtime_generated.hpp", "macros.hpp"]
 for file in os.scandir("."):
-    if file.name == "Runtime_generated.hpp":
+    if file.name in blacklist:
         continue
     header = open(file, "r")
     
