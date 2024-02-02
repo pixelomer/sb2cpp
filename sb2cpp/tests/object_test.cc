@@ -79,3 +79,14 @@ TEST(ObjectTest, Math) {
     ASSERT_EQ(Obj(10.5) + Obj("test"), Obj("10.5test"));
     ASSERT_EQ(Obj(10.5) * Obj("test"), Obj(0));
 }
+
+TEST(ObjectTest, MultiDimensionalArray) {
+    Obj array;
+    array[1][2] = "two";
+    array[1][3][3] = "three";
+    array[1][3][4] = "four";
+    ASSERT_EQ(array, "1=2\\=two\\;3\\=3\\\\\\=three\\\\\\;4\\\\\\=four\\\\\\;\\;;");
+    ASSERT_EQ(array[1][2], "two");
+    ASSERT_EQ(array[1][3][3], "three");
+    ASSERT_EQ(array[1][3][4], "four");
+}
