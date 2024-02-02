@@ -11,6 +11,20 @@ namespace sb2cpp {
 std::string Transpiler::transpile() {
     this->out.clear();
 
+    this->out << "#include \"stdlib/SmallBasic.hpp\"" << CodeWriter::endl;
+
+    this->out << "using namespace SmallBasic;" << CodeWriter::endl;
+    this->out << CodeWriter::endl;
+
+    // For iterator
+    this->out << "inline bool ForIter(Obj const& acc, Obj const& end, " <<
+        "Obj const& step) {" << CodeWriter::endl;
+    this->out.indent++;
+    this->out << "return (step >= Obj(0) && acc <= end) || " <<
+        "(step <= Obj(0) && acc >= end);" << CodeWriter::endl;
+    this->out.indent--;
+    this->out << "}" << CodeWriter::endl << CodeWriter::endl;
+
     // Declarations
     #define DECLARE(map, type, lstr, rstr) do { \
         if (map.size() > 0) { \
@@ -39,8 +53,16 @@ std::string Transpiler::transpile() {
     this->out << "void SmallBasic_EntryPoint()";
     this->write_block(this->source.entry_point);
 
+    // Program start
+    this->out << "int main() {" << CodeWriter::endl;
+    this->out.indent++;
+    this->out << "SmallBasic_EntryPoint();" << CodeWriter::endl;
+    this->out.indent--;
+    this->out << "}";
+
     std::string result = this->out.str();
     this->out.clear();
+
     return result;
 }
 void Transpiler::write_block(AST::Statement *statement) {
@@ -205,9 +227,23 @@ void Transpiler::visit_subroutine(AST::Subroutine *sub) {
     this->out << "void " << SUB(sub->subroutine_name) << "()";
     this->write_block(sub->contents);
 }
-#warning visit_for_loop() not implemented
 void Transpiler::visit_for_loop(AST::ForLoop *loop) {
-    throw std::runtime_error("not implemented");
+    auto acc = loop->initializer->variable;
+    auto step = loop->step_value;
+    AST::NumberValue default_step(1);
+    if (step == nullptr) {
+        step = &default_step;
+    }
+    this->out << "for (" << VAR(acc) << " = ";
+    loop->initializer->value->accept(this);
+    this->out << "; ForIter(" << VAR(acc) << ", ";
+    loop->last_value->accept(this);
+    this->out << ", ";
+    step->accept(this);
+    this->out << "); " << VAR(acc) << " += ";
+    step->accept(this);
+    this->out << ")";
+    this->write_block(loop->statement);
 }
 
 }
