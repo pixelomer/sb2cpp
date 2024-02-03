@@ -39,6 +39,7 @@ add_library(
     stdlib/Runtime.cc
     stdlib/Stack.cc
     stdlib/util.cc
+    stdlib/Array.cc
 )
 add_dependencies(sb2cpp_lib stdlib)
 add_executable(sb2cpp main.cc)

@@ -6,3 +6,4 @@
 #include "Program.hpp"
 #include "Text.hpp"
 #include "Stack.hpp"
+#include "Array.hpp"

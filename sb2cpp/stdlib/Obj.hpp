@@ -5,7 +5,7 @@
 namespace SmallBasic {
 
 class Obj {
-private:
+public:
     class Substr {
     public:
         size_t index = std::string::npos;
@@ -17,6 +17,7 @@ private:
         Substr() {}
     };
 
+private:
     static Substr substr_until(size_t start, std::string const& str, char c) {
         std::string search_list = "\\" + std::string(&c, 1);
         size_t idx = start;
@@ -67,6 +68,7 @@ private:
     Obj *owner = nullptr;
     std::string owner_key;
     std::string str;
+public:
     bool is_number(double *res = nullptr) const {
         try {
             size_t idx;
@@ -87,7 +89,7 @@ private:
             return false;
         }
     }
-    bool array_iter(size_t &idx, Substr &key, Substr &value) {
+    bool array_iter(size_t &idx, Substr &key, Substr &value) const {
         auto arr_key = substr_until(idx, this->str, '=');
         if (arr_key.index == std::string::npos) return false;
         idx += arr_key.length + 1;
@@ -103,7 +105,7 @@ private:
         
         return true;
     }
-    bool array_has(std::string const& key, Substr *value_pt = nullptr) {
+    bool array_has(std::string const& key, Substr *value_pt = nullptr) const {
         size_t idx = 0;
         Substr arr_key, value;
         while (array_iter(idx, arr_key, value)) {
@@ -116,7 +118,7 @@ private:
         }
         return false;
     }
-    Obj array_get(Obj const& key) {
+    Obj array_get(Obj const& key) const {
         Substr value;
         if (!array_has(key, &value)) {
             throw std::out_of_range("no element with key: " +
@@ -140,6 +142,7 @@ private:
         *this = this->str.substr(0, idx) + escape((std::string)key) +
             "=" + escape((std::string)value) + ";";
     }
+private:
     void update_owner() {
         if (this->owner != nullptr) {
             this->owner->array_set(this->owner_key, *this);

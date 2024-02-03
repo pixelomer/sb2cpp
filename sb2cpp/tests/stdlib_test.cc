@@ -75,3 +75,31 @@ TEST(StdlibTest, StackClass) {
     ASSERT_EQ(Stack::PopValue(foo), 5000);
     ASSERT_EQ(Stack::GetCount(foo), 0);
 }
+
+TEST(StdlibTest, ArrayClass) {
+    Obj foo;
+    ASSERT_EQ(Array::IsArray(foo), SB_FALSE);
+    
+    foo[Obj("hello")] = "world";
+    foo[1337] = 7331;
+    ASSERT_EQ(Array::ContainsIndex(foo, "hello"), SB_TRUE);
+    ASSERT_EQ(Array::ContainsIndex(foo, "world"), SB_FALSE);
+    ASSERT_EQ(Array::ContainsValue(foo, "7331.0"), SB_TRUE);
+    ASSERT_EQ(Array::ContainsValue(foo, 1337), SB_FALSE);
+    ASSERT_EQ(Array::GetItemCount(foo), 2);
+    ASSERT_EQ(Array::IsArray(foo), SB_TRUE);
+
+    auto indices = Array::GetAllIndices(foo);
+    ASSERT_EQ(indices, "1=hello;2=1337;");
+
+    Array::SetValue("foo", 1337, "test");
+    Array::SetValue("foo", "bar", "test2");
+    ASSERT_EQ(Array::GetValue("foo", 1337), "test");
+    ASSERT_EQ(Array::GetValue("foo", "1337"), "test");
+    ASSERT_EQ(Array::GetValue("foo", "1337.0"), "");
+    ASSERT_EQ(Array::GetValue("foo", "1337.0000"), "");
+    ASSERT_EQ(Array::GetValue("foo", "bar"), "test2");
+
+    Array::RemoveValue("foo", "bar");
+    ASSERT_EQ(Array::GetValue("foo", "bar"), "");
+}
