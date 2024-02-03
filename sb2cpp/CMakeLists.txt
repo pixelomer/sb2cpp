@@ -9,9 +9,9 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 if(CMAKE_BUILD_TYPE EQUAL "Release")
-    set(CMAKE_CXX_FLAGS "-O3 -Wall")
+    set(CMAKE_CXX_FLAGS "-O3 -Wall -Werror=return-type")
 else()
-    set(CMAKE_CXX_FLAGS "-Wall")
+    set(CMAKE_CXX_FLAGS "-Wall -Werror=return-type")
 endif()
 
 add_custom_command(
@@ -37,6 +37,7 @@ add_library(
     libsb2cpp/interpreter.cc
     stdlib/Runtime_generated.cc
     stdlib/Runtime.cc
+    stdlib/Stack.cc
     stdlib/util.cc
 )
 add_dependencies(sb2cpp_lib stdlib)

@@ -45,3 +45,33 @@ TEST(StdlibTest, TextClass) {
     str = Text::Append(Obj("10"), Obj("20"));
     ASSERT_EQ(str, "1020");
 }
+
+TEST(StdlibTest, StackClass) {
+    auto foo = Obj("foo");
+    auto bar = Obj("bar");
+
+    ASSERT_EQ(Stack::GetCount(foo), 0);
+    ASSERT_EQ(Stack::GetCount(bar), 0);
+
+    Stack::PushValue(foo, 5000);
+    Stack::PushValue(foo, "hello");
+    Stack::PushValue(foo, -1337);
+
+    Stack::PushValue(bar, "hi");
+    Stack::PushValue(bar, -999);
+
+    ASSERT_EQ(Stack::GetCount(foo), 3);
+    ASSERT_EQ(Stack::PopValue(foo), -1337);
+    ASSERT_EQ(Stack::GetCount(foo), 2);
+    ASSERT_EQ(Stack::PopValue(foo), "hello");
+
+    ASSERT_EQ(Stack::GetCount(bar), 2);
+    ASSERT_EQ(Stack::PopValue(bar), -999);
+    ASSERT_EQ(Stack::GetCount(bar), 1);
+    ASSERT_EQ(Stack::PopValue(bar), "hi");
+    ASSERT_EQ(Stack::GetCount(bar), 0);
+
+    ASSERT_EQ(Stack::GetCount(foo), 1);
+    ASSERT_EQ(Stack::PopValue(foo), 5000);
+    ASSERT_EQ(Stack::GetCount(foo), 0);
+}
