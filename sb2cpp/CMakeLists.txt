@@ -68,6 +68,7 @@ if(TEST)
         tests/source_test.cc
         tests/object_test.cc
         tests/interpreter_test.cc
+        tests/stdlib_test.cc
     )
     target_link_libraries(sb2cpp_test GTest::gtest_main)
     target_link_libraries(sb2cpp_test sb2cpp_lib)
