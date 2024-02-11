@@ -89,6 +89,17 @@ private:
         return name;
     }
 
+    SDL_Texture *get_texture(int idx) {
+        auto &texture = this->textures[idx];
+        if (texture == NULL) {
+            //FIXME: constant texture size
+            texture = SDL_CreateTexture(this->renderer, SDL_PIXELFORMAT_RGBA8888,
+                SDL_TEXTUREACCESS_TARGET, 800, 640);
+            SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+        }
+        return texture;
+    }
+
     void render_window() {
         SDL_SetRenderTarget(renderer, NULL);
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
@@ -231,17 +242,17 @@ public:
         });
     }
 
+    void request_draw(int idx, Drawable const& drawable) {
+        request_renderer(idx, [&drawable](SDL_Renderer *renderer) {
+            drawable.render(renderer);
+        });
+    }
+
     void request_renderer(int idx, std::function<void(SDL_Renderer *)> cb) {
         dispatch_main_sync([this, idx, cb]() {
             this->initialize_window();
-            std::lock_guard<std::mutex> guard(mutex);
-            auto &texture = this->textures[idx];
-            if (texture == NULL) {
-                //FIXME: static texture size
-                texture = SDL_CreateTexture(this->renderer, SDL_PIXELFORMAT_RGBA8888,
-                    SDL_TEXTUREACCESS_TARGET, 800, 640);
-                SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-            }
+            std::unique_lock<std::mutex> lock(mutex);
+            SDL_Texture *texture = get_texture(idx);
             SDL_SetRenderTarget(this->renderer, texture);
             this->needs_redraw = true;
             cb(this->renderer);

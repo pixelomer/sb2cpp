@@ -93,22 +93,16 @@ SB_METHOD_0(Hide) () {
 SB_METHOD_4(DrawRectangle) (int x, int y, int w, int h) {
     int line_width = pen_width;
     Color line_color = pen_color.color;
-    RunLoop::current()->request_renderer(BACKGROUND_LAYER,
-        [x, y, w, h, line_width, line_color](SDL_Renderer *renderer)
-    {
+    RunLoop::current()->request_draw(BACKGROUND_LAYER,
         DrawablePath({x,y}, { {0,0}, {w,0}, {w,h}, {0,h} },
-            line_width, line_color, {}).render(renderer);
-    });
+            line_width, line_color, {}));
     return SB_VOID;
 }
 SB_METHOD_4(FillRectangle) (int x, int y, int w, int h) {
     Color fill_color = brush_color.color;
-    RunLoop::current()->request_renderer(BACKGROUND_LAYER,
-        [x, y, w, h, fill_color](SDL_Renderer *renderer)
-    {
+    RunLoop::current()->request_draw(BACKGROUND_LAYER,
         DrawablePath({x,y}, { {0,0}, {w,0}, {w,h}, {0,h} },
-            0, {}, fill_color).render(renderer);
-    });
+            0, {}, fill_color));
     return SB_VOID;
 }
 SB_METHOD_4(DrawEllipse) (int x, int y, int w, int h) {
@@ -119,12 +113,26 @@ SB_METHOD_4(FillEllipse) (int x, int y, int width, int height) {
     return SB_VOID;
 }
 SB_METHOD_6(DrawTriangle) (int x1, int y1, int x2, int y2, int x3, int y3) {
+    int line_width = pen_width;
+    Color line_color = pen_color.color;
+    RunLoop::current()->request_draw(BACKGROUND_LAYER,
+        DrawablePath({0,0}, { {x1,y1}, {x2,y2}, {x3,y3} },
+            line_width, line_color, {}));
     return SB_VOID;
 }
 SB_METHOD_6(FillTriangle) (int x1, int y1, int x2, int y2, int x3, int y3) {
+    Color fill_color = brush_color.color;
+    RunLoop::current()->request_draw(BACKGROUND_LAYER,
+        DrawablePath({0,0}, { {x1,y1}, {x2,y2}, {x3,y3} },
+            0, {}, fill_color));
     return SB_VOID;
 }
 SB_METHOD_4(DrawLine) (int x1, int y1, int x2, int y2) {
+    int line_width = pen_width;
+    Color line_color = pen_color.color;
+    RunLoop::current()->request_draw(BACKGROUND_LAYER,
+        DrawablePath({0,0}, { {x1,y1}, {x2,y2} },
+            line_width, line_color, {}));
     return SB_VOID;
 }
 SB_METHOD_3(DrawText) (int x, int y, std::string const& text) {
@@ -163,6 +171,8 @@ SB_METHOD_3(GetColorFromRGB) (int red, int green, int blue) {
     return color.name;
 }
 SB_METHOD_0(Clear) () {
+    RunLoop::current()->request_draw(BACKGROUND_LAYER,
+        DrawableClear());
     return SB_VOID;
 }
 SB_METHOD_2(ShowMessage) (std::string const& text, std::string const& title) {
