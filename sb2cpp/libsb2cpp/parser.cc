@@ -227,10 +227,11 @@ AST::Value *Parser::parse_value(bool throw_on_comparator) {
             elem = { AST::NoValueOp, new AST::NumberValue(std::stod(token)) };
         }
         else if (expect_value && token[0] == '"') {
-            if (token[token.length()-1] != '"' || token.length() == 1) {
-                throw SyntaxError(this->line, "\"", EOF_TOKEN);
+            int str_size = token.length()-2;
+            if (token.length() > 1 && token[token.length()-1] != '"') {
+                str_size += 1;
             }
-            auto str = token.substr(1, token.length()-2);
+            auto str = token.substr(1, str_size);
             elem = { AST::NoValueOp, new AST::StringValue(str) };
         }
         else if (allow_add_sub && (token == "+" || token == "-")) {
@@ -412,6 +413,10 @@ AST::Statement *Parser::parse_statement() {
     AST::Statement *node = nullptr;
     
     auto first_token = this->token_get(this->idx);
+    if (first_token == "\n") {
+        this->token_next();
+        first_token = this->token_get(this->idx);
+    }
     auto first_keyword = strtolower(first_token);
 
     if (first_keyword == "if") {
