@@ -26,14 +26,14 @@ struct Vec2 {
 class Drawable {
 public:
     Vec2 pos;
-    virtual void render(SDL_Renderer *renderer) = 0;
+    virtual void render(SDL_Renderer *renderer) const = 0;
     Drawable(Vec2 pos): pos(pos) {}
     virtual ~Drawable() = default;
 };
 
 class DrawableClear : public Drawable {
 public:
-    virtual void render(SDL_Renderer *renderer) final {
+    virtual void render(SDL_Renderer *renderer) const final {
         SDL_RenderClear(renderer);
     }
     DrawableClear(): Drawable({0, 0}) {}
@@ -47,7 +47,7 @@ public:
     Color line_color;
     Color fill_color;
 
-    virtual void render(SDL_Renderer *renderer) final {
+    virtual void render(SDL_Renderer *renderer) const final {
         int n = points.size();
         std::vector<Vec2> const& points = this->points;
         Sint16 abs_x[n];
@@ -85,7 +85,7 @@ public:
     Color line_color;
     Color fill_color;
 
-    virtual void render(SDL_Renderer *renderer) final {
+    virtual void render(SDL_Renderer *renderer) const final {
         int rx = width / 2;
         int ry = height / 2;
         int cx = pos.x + rx;
