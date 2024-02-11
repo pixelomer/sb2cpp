@@ -14,7 +14,7 @@ int main() {
 
     try {
         Interpreter interpreter(input);
-        interpreter.run();
+        interpreter.run(true);
     }
     catch (Parser::SyntaxError err) {
         std::cerr << "source(line " << err.line << "): error: " << err.what()

@@ -34,7 +34,7 @@ public:
     std::map<std::string, SmallBasic::Obj> variables;
     Interpreter(std::string code): source(code) {}
 
-    void run();
+    void run(bool use_run_loop = false);
 
     SmallBasic::Obj &var(std::string const& name) {
         return this->variables.at(name);

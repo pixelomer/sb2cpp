@@ -5,14 +5,19 @@ using namespace SmallBasic;
 
 namespace sb2cpp {
 
-void Interpreter::run() {
+void Interpreter::run(bool use_run_loop) {
     // Initialize variables
     for (auto &sym : this->source.variables) {
         this->variables[sym.first] = "";
     }
-    RunLoop::current()->run([this]() {
+    if (use_run_loop) {
+        RunLoop::current()->run([this]() {
+            this->source.entry_point->accept(this);
+        });
+    }
+    else {
         this->source.entry_point->accept(this);
-    });
+    }
 }
 
 void Interpreter::visit_string(AST::StringValue *str) {
