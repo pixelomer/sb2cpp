@@ -28,6 +28,7 @@ public:
     Vec2 pos;
     virtual void render(SDL_Renderer *renderer) = 0;
     Drawable(Vec2 pos): pos(pos) {}
+    virtual ~Drawable() = default;
 };
 
 class DrawableClear : public Drawable {
@@ -36,6 +37,7 @@ public:
         SDL_RenderClear(renderer);
     }
     DrawableClear(): Drawable({0, 0}) {}
+    virtual ~DrawableClear() = default;
 };
 
 class DrawablePath : public Drawable {
@@ -72,6 +74,7 @@ public:
         Color line_color, Color fill_color):
         Drawable(pos), points(points), line_width(line_width),
         line_color(line_color), fill_color(fill_color) {}
+    virtual ~DrawablePath() = default;
 };
 
 class DrawableOval : public Drawable {
@@ -101,6 +104,7 @@ public:
         Color line_color, Color fill_color): Drawable(pos), width(width),
         height(height), line_width(line_width), line_color(line_color),
         fill_color(fill_color) {}
+    virtual ~DrawableOval() = default;
 };
 
 }
