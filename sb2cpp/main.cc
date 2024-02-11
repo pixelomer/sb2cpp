@@ -13,11 +13,8 @@ int main() {
     auto input = buffer.str();
 
     try {
-        /*Interpreter interpreter(input);
-        interpreter.run();*/
-        Transpiler transpiler(input);
-        auto output = transpiler.transpile();
-        std::cout << output;
+        Interpreter interpreter(input);
+        interpreter.run();
     }
     catch (Parser::SyntaxError err) {
         std::cerr << "source(line " << err.line << "): error: " << err.what()

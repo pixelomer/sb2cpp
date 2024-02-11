@@ -35,6 +35,8 @@ public: \
     SB_METHOD(name, args[0], args[1], args[2], args[3])
 #define SB_METHOD_5(name) \
     SB_METHOD(name, args[0], args[1], args[2], args[3], args[4])
+#define SB_METHOD_6(name) \
+    SB_METHOD(name, args[0], args[1], args[2], args[3], args[4], args[5])
 
 #define SB_VALUE_GETTER(name) \
 public: \

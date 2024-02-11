@@ -1,4 +1,5 @@
 #include "interpreter.hpp"
+#include "../stdlib/RunLoop.hpp"
 
 using namespace SmallBasic;
 
@@ -9,7 +10,9 @@ void Interpreter::run() {
     for (auto &sym : this->source.variables) {
         this->variables[sym.first] = "";
     }
-    this->source.entry_point->accept(this);
+    RunLoop::current()->run([this]() {
+        this->source.entry_point->accept(this);
+    });
 }
 
 void Interpreter::visit_string(AST::StringValue *str) {
@@ -129,8 +132,8 @@ void Interpreter::visit_stdlib_assign(AST::StdlibAssign *assign) {
     auto rvalue = dynamic_cast<AST::VariableValue *>(assign->value);
     if (rvalue != nullptr && rvalue->is_subroutine) {
         auto sub_name = rvalue->variable;
-        AST::SubroutineCall call(sub_name);
-        auto callback = [&call, this]() {
+        auto callback = [sub_name, this]() {
+            AST::SubroutineCall call(sub_name);
             call.accept(this);
         };
         property->callback_setter(callback);

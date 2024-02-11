@@ -7,3 +7,4 @@
 #include "Text.hpp"
 #include "Stack.hpp"
 #include "Array.hpp"
+#include "GraphicsWindow.hpp"

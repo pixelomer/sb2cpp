@@ -69,7 +69,7 @@ void Source::visit_stdlib_call(AST::StdlibCall *call) {
     auto &method = cls.get_method(call->method_name);
     if (call->returns_value && !method.returns_value) {
         throw SourceError("Does not return value: '" + cls.cname + "." +
-            method.cname + "()");
+            method.cname + "()'");
     }
     if (call->arguments.size() != method.argc) {
         throw SourceError("Argument count mismatch (" + std::to_string(method.argc) +

@@ -56,7 +56,7 @@ std::string Transpiler::transpile() {
     // Program start
     this->out << "int main() {" << CodeWriter::endl;
     this->out.indent++;
-    this->out << "SmallBasic_EntryPoint();" << CodeWriter::endl;
+    this->out << "RunLoop::current()->run(SmallBasic_EntryPoint);" << CodeWriter::endl;
     this->out.indent--;
     this->out << "}";
 
@@ -230,6 +230,7 @@ void Transpiler::visit_if_statement(AST::IfStatement *if_statement) {
             this->out << "else";
         }
         if (part.condition != nullptr) {
+            if (!first) this->out << " ";
             this->out << "if";
             this->write_condition(part.condition);
         }

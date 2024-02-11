@@ -14,6 +14,9 @@ else()
     set(CMAKE_CXX_FLAGS "-Wall -Werror=return-type")
 endif()
 
+find_package(SDL2 REQUIRED)
+include_directories(${SDL2_INCLUDE_DIRS})
+
 add_custom_command(
     OUTPUT runtime_list
     COMMAND ./generate_runtime_list.py > stdlib/Runtime_generated.cc
@@ -40,8 +43,15 @@ add_library(
     stdlib/Stack.cc
     stdlib/util.cc
     stdlib/Array.cc
+    stdlib/RunLoop.cc
+    stdlib/GraphicsWindow.cc
+    stdlib/SBColor.cc
+    stdlib/SDL2_gfx/SDL2_gfxPrimitives.c
+    stdlib/SDL2_gfx/SDL2_rotozoom.c
 )
 add_dependencies(sb2cpp_lib stdlib)
+target_link_libraries(sb2cpp_lib ${SDL2_LIBRARIES})
+
 add_executable(sb2cpp main.cc)
 target_link_libraries(sb2cpp sb2cpp_lib)
 

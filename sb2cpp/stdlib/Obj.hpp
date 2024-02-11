@@ -159,6 +159,12 @@ public:
     operator std::string const&() const {
         return this->str;
     }
+    operator int() const {
+        return static_cast<int>((double)(*this));
+    }
+    operator long() const {
+        return static_cast<long>((double)(*this));
+    }
     Obj(): Obj("") {}
     Obj(std::string str) {
         this->str = str;

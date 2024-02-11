@@ -39,6 +39,8 @@ blacklist = ["Runtime_generated.hpp", "macros.hpp"]
 for file in os.scandir("."):
     if file.name in blacklist:
         continue
+    if not file.is_file():
+        continue
     header = open(file, "r")
     
     cls: Class = None
