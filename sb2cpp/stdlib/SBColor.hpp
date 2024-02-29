@@ -33,7 +33,7 @@ private:
         else {
             std::string lower = strtolower(name);
             if (colors.count(lower) != 0) {
-                color = colors.at(name);
+                color = colors.at(lower);
             }
             else {
                 color = { 0, 0, 0 };

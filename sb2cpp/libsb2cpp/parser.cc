@@ -300,13 +300,16 @@ void Parser::restore_state(std::tuple<int, int> state) {
 void Parser::parse_value_or_condition(AST::Value **value,
     AST::Condition **condition)
 {
+    this->try_token_next("(");
     auto state = this->save_state();
     try {
         *value = this->parse_value();
+        this->try_token_next(")");
     }
     catch (SyntaxError err) {
         this->restore_state(state);
         *condition = this->parse_condition();
+        this->try_token_next(")");
     }
 }
 
@@ -320,9 +323,7 @@ AST::Condition *Parser::parse_condition() {
         AST::Value *value = nullptr;
         AST::Condition *condition = nullptr;
         if (token == "(") {
-            this->idx++;
             this->parse_value_or_condition(&value, &condition);
-            this->try_token_next(")");
         }
         else {
             value = this->parse_value(false);
@@ -335,16 +336,19 @@ AST::Condition *Parser::parse_condition() {
                 value, next_comp) });
             lvalue = nullptr;
         }
-        else if (condition != nullptr) {
-            elems.push_back({ next_logic, condition });
-        }
-        else {
-            lvalue = value;
-            token = this->token_next();
+        else if (condition == nullptr) {
+            token = this->token_get(this->idx);
             if (comparators.count(token) == 0) {
-                throw SyntaxError(this->line, "<comparator>", token);
+                condition = new AST::TruthyOp(value);
             }
-            next_comp = comparators.at(token);
+            else {
+                this->idx++;
+                lvalue = value;
+                next_comp = comparators.at(token);
+            }
+        }
+        if (condition != nullptr) {
+            elems.push_back({ next_logic, condition });
         }
         if (lvalue == nullptr) {
             token = strtolower(this->token_get(this->idx));

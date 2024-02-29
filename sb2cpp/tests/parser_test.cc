@@ -322,7 +322,7 @@ TEST(ParserTest, IfStatement) {
         "Program.End()\n"
         "EndIf\n"
         "a = 1 / a\n"
-        "If a = 1 Then\n"
+        "If (a And a = 1) Then\n"
         "a = 0\n"
         "EndIf\n";
         
@@ -335,6 +335,17 @@ TEST(ParserTest, IfStatement) {
 
     auto if_statement2 = dynamic_cast<AST::IfStatement *>(parser.parse_next());
     ASSERT_NE(if_statement2, nullptr);
+
+    auto logic_op = dynamic_cast<AST::BinaryLogicOp *>(if_statement2->parts[0].condition);
+    ASSERT_NE(logic_op, nullptr);
+    ASSERT_EQ(logic_op->op, AST::And);
+
+    auto compare_op = dynamic_cast<AST::BinaryCompareOp *>(logic_op->rvalue);
+    ASSERT_NE(compare_op, nullptr);
+    ASSERT_EQ(compare_op->op, AST::Equal);
+
+    auto truthy_op = dynamic_cast<AST::TruthyOp *>(logic_op->lvalue);
+    ASSERT_NE(truthy_op, nullptr);
 
     auto end = parser.parse_next();
     ASSERT_EQ(end, nullptr);

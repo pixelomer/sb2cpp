@@ -30,6 +30,7 @@ namespace AST {
     class IfStatement;
     class Subroutine;
     class ForLoop;
+    class TruthyOp;
     class BaseVisitor {
     public:
         virtual void visit_string(StringValue *) = 0;
@@ -53,6 +54,7 @@ namespace AST {
         virtual void visit_if_statement(IfStatement *) = 0;
         virtual void visit_subroutine(Subroutine *) = 0;
         virtual void visit_for_loop(ForLoop *) = 0;
+        virtual void visit_truthy_op(TruthyOp *) = 0;
     };
     class Visitor;
     enum ComparisonOp {
@@ -138,6 +140,12 @@ namespace AST {
         BinaryCompareOp(Value *lvalue, Value *rvalue, AST::ComparisonOp op):
             BinaryOperation(lvalue, rvalue), op(op) {}
         ACCEPT(visit_compare_op)
+    };
+    class TruthyOp : virtual public Condition {
+    public:
+        AST::Value *value;
+        TruthyOp(Value *value): value(value) {}
+        ACCEPT(visit_truthy_op)
     };
     class AddGroup : virtual public Value {
     public:
@@ -462,6 +470,9 @@ namespace AST {
                 for_loop->step_value->accept(this);
             }
             for_loop->statement->accept(this);
+        }
+        virtual void visit_truthy_op(TruthyOp *truthy_op) override {
+            truthy_op->value->accept(this);
         }
         virtual void visit_string(StringValue *) override { }
         virtual void visit_number(NumberValue *) override { }

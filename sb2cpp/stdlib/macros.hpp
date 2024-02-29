@@ -14,7 +14,7 @@
     public:
 #define SB_CLASS_END };}
 
-#define SB_PRIVATE private: static
+#define SB_PRIVATE static
 
 #define SB_METHOD(name, arglist...) \
 public: \

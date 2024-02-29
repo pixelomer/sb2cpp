@@ -208,5 +208,11 @@ void Interpreter::visit_for_loop(AST::ForLoop *loop) {
     }
 }
 
+void Interpreter::visit_truthy_op(AST::TruthyOp *truthy_op) {
+    Obj obj;
+    obj = this->eval(truthy_op->value);
+    this->push_cond(obj.truthy());
+}
+
 
 }

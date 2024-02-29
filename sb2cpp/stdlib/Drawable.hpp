@@ -17,8 +17,9 @@ struct Color {
 };
 
 struct Vec2 {
-    int x=0;
-    int y=0;
+    double x=0;
+    double y=0;
+    Vec2(double x, double y): x(x), y(y) {}
     Vec2(int x, int y): x(x), y(y) {}
     Vec2() {}
 };
@@ -26,6 +27,7 @@ struct Vec2 {
 class Drawable {
 public:
     Vec2 pos;
+    uint8_t opacity;
     virtual void render(SDL_Renderer *renderer) const = 0;
     Drawable(Vec2 pos): pos(pos) {}
     virtual ~Drawable() = default;
@@ -33,7 +35,8 @@ public:
 
 class DrawableClear : public Drawable {
 public:
-    virtual void render(SDL_Renderer *renderer) const final {
+    virtual void render(SDL_Renderer *renderer) const override final {
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
         SDL_RenderClear(renderer);
     }
     DrawableClear(): Drawable({0, 0}) {}
@@ -47,7 +50,7 @@ public:
     Color line_color;
     Color fill_color;
 
-    virtual void render(SDL_Renderer *renderer) const final {
+    virtual void render(SDL_Renderer *renderer) const override final {
         int n = points.size();
         std::vector<Vec2> const& points = this->points;
         Sint16 abs_x[n];
@@ -85,7 +88,7 @@ public:
     Color line_color;
     Color fill_color;
 
-    virtual void render(SDL_Renderer *renderer) const final {
+    virtual void render(SDL_Renderer *renderer) const override final {
         int rx = width / 2;
         int ry = height / 2;
         int cx = pos.x + rx;
@@ -105,6 +108,22 @@ public:
         height(height), line_width(line_width), line_color(line_color),
         fill_color(fill_color) {}
     virtual ~DrawableOval() = default;
+};
+
+class DrawableText : public Drawable {
+public:
+    std::string text;
+    Color color;
+    int width; // -1 for no limit
+
+    virtual void render(SDL_Renderer *renderer) const override final {
+        stringRGBA(renderer, pos.x, pos.y, text.c_str(),
+            color.r, color.g, color.b, color.a);
+    }
+    DrawableText(Vec2 pos, std::string const& text,
+        Color color, int width = -1): Drawable(pos), text(text),
+        color(color), width(width) {}
+    virtual ~DrawableText() = default;
 };
 
 }

@@ -260,5 +260,9 @@ void Transpiler::visit_for_loop(AST::ForLoop *loop) {
     this->out << ")";
     this->write_block(loop->statement);
 }
+void Transpiler::visit_truthy_op(AST::TruthyOp *op) {
+    op->value->accept(this);
+    this->out << ".truthy()";
+}
 
 }

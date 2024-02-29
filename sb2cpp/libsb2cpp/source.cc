@@ -61,7 +61,7 @@ void Source::visit_subroutine_call(AST::SubroutineCall *call) {
 
 void Source::visit_subroutine(AST::Subroutine *subroutine) {
     Source::register_subroutine(subroutine->subroutine_name, subroutine);
-    AST::Visitor::visit_subroutine(subroutine);
+    subroutine->contents->accept(this);
 }
 
 void Source::visit_stdlib_call(AST::StdlibCall *call) {
@@ -139,6 +139,14 @@ void Source::visit_goto_label(AST::GotoLabel *label) {
 void Source::visit_goto_statement(AST::GotoStatement *goto_statement) {
     this->register_goto_label(goto_statement->label, nullptr);
     AST::Visitor::visit_goto_statement(goto_statement);
+}
+
+void Source::visit_statement_group(AST::StatementGroup *group) {
+    for (auto statement : group->statements) {
+        error_guard([statement, this]{
+            statement->accept(this);
+        });
+    }
 }
 
 }

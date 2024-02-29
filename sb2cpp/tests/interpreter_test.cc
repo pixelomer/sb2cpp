@@ -8,8 +8,7 @@ using namespace SmallBasic;
 
 static std::string output;
 
-Interpreter make_interpreter(std::string const& code) {
-    Interpreter interpreter(code);
+void prepare_interpreter() {
     auto &cls = Runtime::get_class("TextWindow");
     auto &writeline = cls.get_method("WriteLine");
     auto &write = cls.get_method("Write");
@@ -23,8 +22,6 @@ Interpreter make_interpreter(std::string const& code) {
         output += (std::string)args[0];
         return Obj();
     };
-
-    return interpreter;
 }
 
 static Obj foo;
@@ -47,7 +44,7 @@ static void callback_setter(std::function<void()> cb) {
 }
 
 TEST(InterpreterTest, ForLoop) {
-    auto code =
+    std::string code =
         "Sub main\n"
         "a = -3\n"
         "For i = 5 To 10\n"
@@ -55,7 +52,9 @@ TEST(InterpreterTest, ForLoop) {
         "EndFor\n"
         "EndSub\n"
         "main()\n";
-    auto runner = make_interpreter(code);
+    
+    prepare_interpreter();
+    Interpreter runner(code);
     runner.run();
 
     Obj a = runner.var("a");
@@ -75,7 +74,7 @@ TEST(InterpreterTest, StdlibCalls) {
     cls.register_property(callback_prop);
     Runtime::register_class(cls);
 
-    auto code =
+    std::string code =
         "Sub callback\n"
         "TextWindow.Write(\"!\")\n"
         "EndSub\n"
@@ -84,7 +83,8 @@ TEST(InterpreterTest, StdlibCalls) {
         "TextWindow.WriteLine(StdlibCalls.Foo)\n"
         "TextWindow.Write(StdlibCalls.Bar(3))\n";
     
-    Interpreter interpreter = make_interpreter(code);
+    prepare_interpreter();
+    Interpreter interpreter(code);
     interpreter.run();
 
     ASSERT_EQ(foo, 300);
@@ -92,7 +92,7 @@ TEST(InterpreterTest, StdlibCalls) {
 }
 
 TEST(InterpreterTest, SharedNames) {
-    auto code =
+    std::string code =
         "foo = 0\n"
         "Sub foo\n"
         "foo = foo + 1\n"
@@ -102,14 +102,15 @@ TEST(InterpreterTest, SharedNames) {
         "EndWhile\n"
         "TextWindow.WriteLine(foo)";
 
-    Interpreter interpreter = make_interpreter(code);
+    prepare_interpreter();
+    Interpreter interpreter(code);
     interpreter.run();
 
     ASSERT_EQ(output, "5\n");
 }
 
 TEST(InterpreterTest, Arrays) {
-    auto code =
+    std::string code =
         "array = \"1=apple;2=pear;3=1\\=banana\\;2\\=orange\\;;\"\n"
         "TextWindow.WriteLine(array[2])\n"
         "TextWindow.WriteLine(array[3])\n"
@@ -119,7 +120,8 @@ TEST(InterpreterTest, Arrays) {
         "TextWindow.WriteLine(array2)\n"
         "TextWindow.WriteLine(array[3][2])\n";
     
-    Interpreter interpreter = make_interpreter(code);
+    prepare_interpreter();
+    Interpreter interpreter(code);
     interpreter.run();
 
     auto expected =

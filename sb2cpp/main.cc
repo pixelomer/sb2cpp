@@ -13,7 +13,14 @@ int main() {
     auto input = buffer.str();
 
     try {
-        Interpreter interpreter(input);
+        Source source(input, true);
+        if (source.errors.size() != 0) {
+            for (auto &error : source.errors) {
+                std::cerr << error << std::endl;
+            }
+            return EXIT_FAILURE;
+        }
+        Interpreter interpreter(source);
         interpreter.run(true);
     }
     catch (Parser::SyntaxError err) {

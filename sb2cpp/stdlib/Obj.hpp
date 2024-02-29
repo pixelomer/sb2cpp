@@ -1,5 +1,6 @@
 #pragma once
 
+#include "util.hpp"
 #include <string>
 
 namespace SmallBasic {
@@ -69,6 +70,13 @@ private:
     std::string owner_key;
     std::string str;
 public:
+    bool truthy() const {
+        if (this->str.size() != 4) {
+            return false;
+        }
+        auto lower = strtolower(this->str);
+        return lower == "true";
+    }
     bool is_number(double *res = nullptr) const {
         try {
             size_t idx;

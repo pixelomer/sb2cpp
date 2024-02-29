@@ -29,6 +29,9 @@ public:
     Transpiler(std::string const& code): source(code) {
         this->node_parents.push(nullptr);
     }
+    Transpiler(Source const& source): source(source) {
+        this->node_parents.push(nullptr);
+    }
 
     std::string transpile();
 
@@ -53,6 +56,7 @@ public:
     virtual void visit_if_statement(AST::IfStatement *);
     virtual void visit_subroutine(AST::Subroutine *);
     virtual void visit_for_loop(AST::ForLoop *);
+    virtual void visit_truthy_op(AST::TruthyOp *);
 };
 
 }

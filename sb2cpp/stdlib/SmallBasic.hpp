@@ -8,3 +8,5 @@
 #include "Stack.hpp"
 #include "Array.hpp"
 #include "GraphicsWindow.hpp"
+#include "Desktop.hpp"
+#include "Shapes.hpp"

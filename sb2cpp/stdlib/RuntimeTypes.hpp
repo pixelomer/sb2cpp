@@ -5,8 +5,14 @@
 #include <vector>
 #include <functional>
 #include <map>
+#include <exception>
 
 namespace SmallBasic {
+
+class RuntimeError : public std::runtime_error {
+public:
+    RuntimeError(std::string const& msg) : std::runtime_error(msg) {}
+};
 
 typedef std::function<Obj(std::vector<Obj> const&)> MethodHandler;
 typedef std::function<void()> Callback;
@@ -46,7 +52,7 @@ public:
         value_setter(value_setter), callback_setter(callback_setter)
     {
         if (callback_setter != nullptr && value_setter != nullptr) {
-            throw std::runtime_error("A property cannot have multiple setters.");
+            throw RuntimeError("A property cannot have multiple setters.");
         }
     }
     Property(): RuntimeType() {}
@@ -60,14 +66,14 @@ public:
     Class(): RuntimeType() {}
     void register_method(Method const& method) {
         if (methods.count(method.name) != 0) {
-            throw std::runtime_error("Method '" + 
+            throw RuntimeError("Method '" + 
                 method.name + "' registered multiple times");
         }
         this->methods[method.name] = method;
     }
     void register_property(Property const& property) {
         if (properties.count(property.name) != 0) {
-            throw std::runtime_error("Property '" + 
+            throw RuntimeError("Property '" + 
                 property.name + "' registered multiple times");
         }
         this->properties[property.name] = property;
@@ -75,7 +81,7 @@ public:
     Method &get_method(std::string name) {
         name = strtolower(name);
         if (this->methods.count(name) == 0) {
-            throw std::runtime_error("Unrecognized method: '" + this->cname +
+            throw RuntimeError("Unrecognized method: '" + this->cname +
                 "." + name + "()" + "'");
         }
         return this->methods.at(name);
@@ -83,7 +89,7 @@ public:
     Property &get_property(std::string name) {
         name = strtolower(name);
         if (this->properties.count(name) == 0) {
-            throw std::runtime_error("Unrecognized property: '" + this->cname +
+            throw RuntimeError("Unrecognized property: '" + this->cname +
                 "." + name + "'");
         }
         return this->properties.at(name);

@@ -5,6 +5,8 @@
 #include "parser.hpp"
 #include "util.hpp"
 #include <exception>
+#include <functional>
+#include <set>
 
 /*
 
@@ -39,9 +41,45 @@ public:
         bool used = false;
         std::string cname;
     };
+
+    struct VariableSymbol : public Symbol {
+    };
+    template<typename T>
+    struct NodeSymbol : public Symbol {
+        T *node;
+    };
+    typedef NodeSymbol<AST::GotoLabel> GotoSymbol;
+    typedef NodeSymbol<AST::Subroutine> SubroutineSymbol;
+
+    std::map<std::string, VariableSymbol> variables;
+    std::map<std::string, SubroutineSymbol> subroutines;
+    std::map<std::string, GotoSymbol> goto_labels;
+
+    AST::StatementGroup *entry_point;
+    
+    std::set<std::string> errors;
 private:
+    bool error_reporting;
+
     static bool did_register_builtin;
     static void register_builtin();
+    
+    void error_guard(std::function<void()> callback) {
+        if (error_reporting) {
+            try {
+                callback();
+            }
+            catch (SourceError err) {
+                errors.insert(err.what());
+            }
+            catch (SmallBasic::RuntimeError err) {
+                errors.insert(err.what());
+            }
+        }
+        else {
+            callback();
+        }
+    }
 
     enum RegisterType {
         Use, Define
@@ -54,8 +92,10 @@ private:
         Tsym &elem = map[name_lower];
         if (node != nullptr) {
             if (elem.node != nullptr) {
-                throw SourceError(type_name + " '" + name_lower +
-                    "' declared multiple times");
+                error_guard([type_name, name_lower]{
+                    throw SourceError(type_name + " '" + name_lower +
+                        "' declared multiple times");
+                });
             }
             elem.node = node;
             elem.defined = true;
@@ -78,27 +118,21 @@ private:
     void canonicalize(std::map<std::string, T> &symbols) {
         std::map<std::string, T> new_symbols;
         for (auto &pair : symbols) {
-            auto &name = pair.first;
-            auto &symbol = pair.second;
-            if (!symbol.defined) {
-                throw SourceError("Undefined symbol: '" + name + "'");
-            }
-            new_symbols[symbol.cname] = symbol;
+            error_guard([pair, &new_symbols]{
+                auto &name = pair.first;
+                auto &symbol = pair.second;
+                if (!symbol.defined) {
+                    throw SourceError("Undefined symbol: '" + name + "'");
+                }
+                new_symbols[symbol.cname] = symbol;
+            });
         }
         symbols = new_symbols;
     }
 public:
-    struct VariableSymbol : public Symbol {
-    };
-    template<typename T>
-    struct NodeSymbol : public Symbol {
-        T *node;
-    };
-    typedef NodeSymbol<AST::GotoLabel> GotoSymbol;
-    typedef NodeSymbol<AST::Subroutine> SubroutineSymbol;
-
-    Source(std::string const& code) {
+    Source(std::string const& code, bool error_reporting = false) {
         register_builtin();
+        this->error_reporting = error_reporting;
         this->entry_point = new AST::StatementGroup({ });
         Parser parser(code);
         AST::Node *node;
@@ -107,18 +141,14 @@ public:
             if (statement != nullptr) {
                 this->entry_point->statements.push_back(statement);
             }
-            node->accept(this);
+            error_guard([this, node]{
+                node->accept(this);
+            });
         }
         canonicalize(this->variables);
         canonicalize(this->subroutines);
         canonicalize(this->goto_labels);
     }
-
-    std::map<std::string, VariableSymbol> variables;
-    std::map<std::string, SubroutineSymbol> subroutines;
-    std::map<std::string, GotoSymbol> goto_labels;
-
-    AST::StatementGroup *entry_point;
 
     virtual void visit_array_assign(AST::ArrayAssign *) override;
     virtual void visit_array_value(AST::ArrayValue *) override;
@@ -131,6 +161,7 @@ public:
     virtual void visit_stdlib_value(AST::StdlibValue *) override;
     virtual void visit_stdlib_assign(AST::StdlibAssign *) override;
     virtual void visit_stdlib_call(AST::StdlibCall *) override;
+    virtual void visit_statement_group(AST::StatementGroup *) override;
 };
 
 }
