@@ -10,7 +10,7 @@ namespace sb2cpp {
 
 class Interpreter : public AST::BaseVisitor {
 private:
-    Source source;
+    std::shared_ptr<Source> source;
     std::mutex mutex;
     std::map<std::thread::id, std::stack<SmallBasic::Obj>> stacks;
 
@@ -35,24 +35,27 @@ private:
         val->accept(this);
         return this->pop();
     }
+    SmallBasic::Obj eval(std::unique_ptr<AST::Value> const& val_pt) {
+        return this->eval(val_pt.get());
+    }
     bool eval(AST::Condition *cond) {
         cond->accept(this);
         return this->pop() == 1;
     }
+    bool eval(std::unique_ptr<AST::Condition> const& val_pt) {
+        return this->eval(val_pt.get());
+    }
 public:
     std::map<std::string, SmallBasic::Obj> variables;
-    Interpreter(Source const& source): source(source) {
-        if (source.errors.size() > 0) {
-            throw std::invalid_argument("cannot initialize interpreter "
-                "with invalid source");
-        }
-    }
-
     void run(bool use_run_loop = false);
 
     SmallBasic::Obj &var(std::string const& name) {
         return this->variables.at(name);
     }
+
+    Interpreter(std::shared_ptr<Source> source): source(source) {}
+    Interpreter(std::string const& code):
+        source(std::make_shared<Source>(code)) {}
 
     virtual void visit_string(AST::StringValue *) override;
     virtual void visit_number(AST::NumberValue *) override;

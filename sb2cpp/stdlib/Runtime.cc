@@ -2,6 +2,6 @@
 
 namespace SmallBasic {
 
-std::map<std::string, Class> Runtime::classes;
+std::map<std::string, std::shared_ptr<Class>> Runtime::classes;
 
 }

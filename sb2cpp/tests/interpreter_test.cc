@@ -9,16 +9,16 @@ using namespace SmallBasic;
 static std::string output;
 
 void prepare_interpreter() {
-    auto &cls = Runtime::get_class("TextWindow");
-    auto &writeline = cls.get_method("WriteLine");
-    auto &write = cls.get_method("Write");
+    auto cls = Runtime::get_class("TextWindow");
+    auto writeline = cls->get_method("WriteLine");
+    auto write = cls->get_method("Write");
     output.clear();
 
-    writeline.handler = [](std::vector<Obj> const& args) -> Obj {
+    writeline->handler = [](std::vector<Obj> const& args) -> Obj {
         output += (std::string)args[0] + "\n";
         return Obj();
     };
-    write.handler = [](std::vector<Obj> const& args) -> Obj {
+    write->handler = [](std::vector<Obj> const& args) -> Obj {
         output += (std::string)args[0];
         return Obj();
     };

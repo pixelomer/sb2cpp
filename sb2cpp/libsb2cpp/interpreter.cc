@@ -7,16 +7,16 @@ namespace sb2cpp {
 
 void Interpreter::run(bool use_run_loop) {
     // Initialize variables
-    for (auto &sym : this->source.variables) {
+    for (auto &sym : this->source->variables) {
         this->variables[sym.first] = "";
     }
     if (use_run_loop) {
         RunLoop::current()->run([this]() {
-            this->source.entry_point->accept(this);
+            this->source->entry_point->accept(this);
         });
     }
     else {
-        this->source.entry_point->accept(this);
+        this->source->entry_point->accept(this);
     }
 }
 
@@ -71,8 +71,8 @@ void Interpreter::visit_compare_op(AST::BinaryCompareOp *op) {
 void Interpreter::visit_add_group(AST::AddGroup *group) {
     Obj obj;
     for (auto &elem : group->elements) {
-        Obj rhs = this->eval(elem.value);
-        switch (elem.sign) {
+        Obj rhs = this->eval(elem->value);
+        switch (elem->sign) {
             case AST::Positive: obj += rhs; break;
             case AST::Negative: obj -= rhs; break;
             case AST::NoSignOp: obj += rhs; break;
@@ -84,7 +84,7 @@ void Interpreter::visit_add_group(AST::AddGroup *group) {
 void Interpreter::visit_array_assign(AST::ArrayAssign *assign) {
     Obj &var = this->var(assign->variable);
     std::vector<Obj> keys;
-    for (auto key : assign->keys) {
+    for (auto &key : assign->keys) {
         keys.push_back(this->eval(key));
     }
     var[keys] = this->eval(assign->value);
@@ -93,7 +93,7 @@ void Interpreter::visit_array_assign(AST::ArrayAssign *assign) {
 void Interpreter::visit_array_value(AST::ArrayValue *value) {
     Obj &var = this->var(value->variable);
     std::vector<Obj> keys;
-    for (auto key : value->keys) {
+    for (auto &key : value->keys) {
         keys.push_back(this->eval(key));
     }
     this->push_val(var[keys]);
@@ -134,7 +134,7 @@ void Interpreter::visit_stdlib_value(AST::StdlibValue *value) {
 void Interpreter::visit_stdlib_assign(AST::StdlibAssign *assign) {
     auto property = assign->property;
 
-    auto rvalue = dynamic_cast<AST::VariableValue *>(assign->value);
+    auto rvalue = dynamic_cast<AST::VariableValue *>(assign->value.get());
     if (rvalue != nullptr && rvalue->is_subroutine) {
         auto sub_name = rvalue->variable;
         auto callback = [sub_name, this]() {
@@ -154,7 +154,7 @@ void Interpreter::visit_assign(AST::Assign *assign) {
 }
 
 void Interpreter::visit_subroutine_call(AST::SubroutineCall *call) {
-    auto &subroutine = this->source.subroutines.at(call->subroutine_name);
+    auto &subroutine = this->source->subroutines.at(call->subroutine_name);
     subroutine.node->contents->accept(this);
 }
 
@@ -175,8 +175,8 @@ void Interpreter::visit_goto_statement(AST::GotoStatement *) {
 
 void Interpreter::visit_if_statement(AST::IfStatement *stmt) {
     for (auto &part : stmt->parts) {
-        if (part.condition == nullptr || this->eval(part.condition)) {
-            part.statement->accept(this);
+        if (part->condition == nullptr || this->eval(part->condition)) {
+            part->statement->accept(this);
             break;
         }
     }

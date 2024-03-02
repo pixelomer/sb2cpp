@@ -72,16 +72,17 @@ std::string Parser::parse_id(std::string token) {
     return token;
 }
 
-AST::Assign *Parser::parse_assign() {
+std::unique_ptr<AST::Assign> Parser::parse_assign() {
     auto variable = this->parse_id(this->token_next());
     this->try_token_next("=");
     auto value = this->parse_value();
-    return new AST::Assign(variable, value);
+    return std::make_unique<AST::Assign>(variable,
+        std::move(value));
 }
 
-AST::ArrayAssign *Parser::parse_array_assign() {
+std::unique_ptr<AST::ArrayAssign> Parser::parse_array_assign() {
     auto variable = this->parse_id(this->token_next());
-    std::vector<AST::Value *> keys;
+    std::vector<std::unique_ptr<AST::Value>> keys;
     while (this->token_get(this->idx) == "[") {
         this->try_token_next("[");
         keys.push_back(this->parse_value());
@@ -89,22 +90,23 @@ AST::ArrayAssign *Parser::parse_array_assign() {
     }
     this->try_token_next("=");
     auto value = this->parse_value();
-    return new AST::ArrayAssign(variable, keys, value);
+    return std::make_unique<AST::ArrayAssign>(variable, std::move(keys),
+        std::move(value));
 }
 
-AST::ArrayValue *Parser::parse_array_value() {
+std::unique_ptr<AST::ArrayValue> Parser::parse_array_value() {
     auto variable = this->parse_id(this->token_next());
-    std::vector<AST::Value *> keys;
+    std::vector<std::unique_ptr<AST::Value>> keys;
     while (this->token_get(this->idx) == "[") {
         this->try_token_next("[");
         keys.push_back(this->parse_value());
         this->try_token_next("]");
     }
-    return new AST::ArrayValue(variable, keys);
+    return std::make_unique<AST::ArrayValue>(variable, std::move(keys));
 }
 
-AST::IfStatement *Parser::parse_if_statement() {
-    std::vector<AST::IfStatement::IfStatementPart> parts;
+std::unique_ptr<AST::IfStatement> Parser::parse_if_statement() {
+    std::vector<std::unique_ptr<AST::IfStatement::IfStatementPart>> parts;
     
     while (true) {
         auto token = strtolower(this->token_next());
@@ -115,18 +117,20 @@ AST::IfStatement *Parser::parse_if_statement() {
             if (parts.size() > 0 && token != "elseif") {
                 throw SyntaxError(this->line, "ElseIf", token);
             }
-            AST::Condition *condition = this->parse_condition();
+            auto condition = this->parse_condition();
             this->try_token_next("Then");
             this->try_token_next("\n");
-            AST::Statement *statement = this->parse_statement_group({ "else",
+            auto statement = this->parse_statement_group({ "else",
                 "elseif", "endif" });
             this->idx--;
-            parts.push_back({ condition, statement });
+            parts.push_back(std::make_unique<AST::IfStatement::IfStatementPart>(
+                std::move(condition), std::move(statement)));
         }
         else if (token == "else") {
             this->try_token_next("\n");
-            AST::Statement *statement = this->parse_statement_group("endif");
-            parts.push_back({ nullptr, statement });
+            auto statement = this->parse_statement_group("endif");
+            parts.push_back(std::make_unique<AST::IfStatement::IfStatementPart>(
+                nullptr, std::move(statement)));
             break;
         }
         else if (token == "endif") {
@@ -137,29 +141,30 @@ AST::IfStatement *Parser::parse_if_statement() {
         }
     }
 
-    return new AST::IfStatement(parts);
+    return std::make_unique<AST::IfStatement>(std::move(parts));
 }
 
-AST::Statement *Parser::parse_statement_group(std::vector<std::string> end_tokens) {
-    std::vector<AST::Statement *> statements;
+std::unique_ptr<AST::StatementGroup> Parser::parse_statement_group(
+    std::vector<std::string> end_tokens)
+{
+    std::vector<std::shared_ptr<AST::Statement>> statements;
     while (std::find(end_tokens.begin(), end_tokens.end(),
         strtolower(this->token_get(this->idx))) == end_tokens.end())
     {
         statements.push_back(this->parse_statement());
     }
     this->idx++;
-    if (statements.size() == 1) {
-        return statements[0];
-    }
-    return new AST::StatementGroup(statements);
+    return std::make_unique<AST::StatementGroup>(statements);
 }
 
-AST::Statement *Parser::parse_statement_group(std::string end_token) {
+std::unique_ptr<AST::StatementGroup> Parser::parse_statement_group(
+    std::string end_token)
+{
     std::vector<std::string> tokens = { end_token };
     return this->parse_statement_group(tokens);
 }
 
-AST::Subroutine *Parser::parse_subroutine() {
+std::unique_ptr<AST::Subroutine> Parser::parse_subroutine() {
     this->try_token_next("Sub");
     auto name = this->parse_id(this->token_next());
     this->try_token_next("\n");
@@ -170,22 +175,23 @@ AST::Subroutine *Parser::parse_subroutine() {
         throw SyntaxError(this->line, "\n", token);
     }
 
-    return new AST::Subroutine(name, statement_group);
+    return std::make_unique<AST::Subroutine>(name,
+        std::move(statement_group));
 }
 
-AST::SubroutineCall *Parser::parse_subroutine_call() {
+std::unique_ptr<AST::SubroutineCall> Parser::parse_subroutine_call() {
     auto name = this->parse_id(this->token_next());
     this->try_token_next("(");
     this->try_token_next(")");
-    return new AST::SubroutineCall(name);
+    return std::make_unique<AST::SubroutineCall>(name);
 }
 
-AST::StdlibCall *Parser::parse_stdlib_call(bool returns_value) {
+std::unique_ptr<AST::StdlibCall> Parser::parse_stdlib_call(bool returns_value) {
     auto class_name = this->parse_id(this->try_token_next("<class>"));
     this->try_token_next(".");
     auto method_name = this->parse_id(this->try_token_next("<method>"));
     this->try_token_next("(");
-    std::vector<AST::Value *> arguments;
+    std::vector<std::unique_ptr<AST::Value>> arguments;
     while (this->token_get(this->idx) != ")") {
         arguments.push_back(this->parse_value());
         if (this->token_get(this->idx) == ",") {
@@ -196,17 +202,17 @@ AST::StdlibCall *Parser::parse_stdlib_call(bool returns_value) {
         }
     }
     this->idx++;
-    return new AST::StdlibCall(class_name, method_name, arguments,
-        returns_value);
+    return std::make_unique<AST::StdlibCall>(class_name,
+        method_name, std::move(arguments), returns_value);
 }
 
-AST::Value *Parser::parse_value(bool throw_on_comparator) {
-    std::vector<AST::ValueGroup::ValueGroupElement> elements;
+std::unique_ptr<AST::Value> Parser::parse_value(bool throw_on_comparator) {
+    std::vector<std::unique_ptr<AST::ValueGroup::ValueGroupElement>> elements;
     bool allow_add_sub = true;
     bool allow_mult_div = false;
     bool expect_value = true;
     while (true) {
-        AST::ValueGroup::ValueGroupElement elem;
+        auto elem = std::make_unique<AST::ValueGroup::ValueGroupElement>();
         auto token = this->token_get(this->idx);
         if (token == EOF_TOKEN || token == ")") {
             if (expect_value) {
@@ -221,10 +227,12 @@ AST::Value *Parser::parse_value(bool throw_on_comparator) {
             if (token != ")") {
                 throw SyntaxError(this->line, ")", token);
             }
-            elem = { AST::NoValueOp, subvalue };
+            elem->op = AST::NoValueOp;
+            elem->value = std::move(subvalue);
         }
         else if (expect_value && std::isdigit(token[0])) {
-            elem = { AST::NoValueOp, new AST::NumberValue(std::stod(token)) };
+            elem->op = AST::NoValueOp;
+            elem->value = std::make_unique<AST::NumberValue>(std::stod(token));
         }
         else if (expect_value && token[0] == '"') {
             int str_size = token.length()-2;
@@ -232,17 +240,18 @@ AST::Value *Parser::parse_value(bool throw_on_comparator) {
                 str_size += 1;
             }
             auto str = token.substr(1, str_size);
-            elem = { AST::NoValueOp, new AST::StringValue(str) };
+            elem->op = AST::NoValueOp;
+            elem->value = std::make_unique<AST::StringValue>(str);
         }
         else if (allow_add_sub && (token == "+" || token == "-")) {
-            if (token == "+") elem = { AST::Add, nullptr };
-            else elem = { AST::Subtract, nullptr };
+            if (token == "+") *elem = { AST::Add, nullptr };
+            else *elem = { AST::Subtract, nullptr };
             expect_value = true;
             allow_mult_div = false;
         }
         else if (allow_mult_div && (token == "*" || token == "/")) {
-            if (token == "*") elem = { AST::Multiply, nullptr };
-            else elem = { AST::Divide, nullptr };
+            if (token == "*") *elem = { AST::Multiply, nullptr };
+            else *elem = { AST::Divide, nullptr };
             expect_value = true;
             allow_add_sub = true;
             allow_mult_div = false;
@@ -250,23 +259,26 @@ AST::Value *Parser::parse_value(bool throw_on_comparator) {
         else if (expect_value && comparators.count(token) == 0) {
             if (this->token_get(this->idx + 1) == ".") {
                 if (this->token_get(this->idx + 3) == "(") {
-                    elem = { AST::NoValueOp, this->parse_stdlib_call(true) };
+                    elem->op = AST::NoValueOp; 
+                    elem->value = this->parse_stdlib_call(true);
                     this->idx--;
                 }
                 else {
-                    auto value = new AST::StdlibValue(this->token_get(this->idx),
-                        this->token_get(this->idx+2));
-                    elem = { AST::NoValueOp, value };
+                    elem->op = AST::NoValueOp;
+                    elem->value = std::make_unique<AST::StdlibValue>(
+                        this->token_get(this->idx), this->token_get(this->idx+2));
                     this->idx += 2;
                 }
             }
             else if (this->token_get(this->idx + 1) == "[") {
-                elem = { AST::NoValueOp, this->parse_array_value() };
+                elem->op = AST::NoValueOp;
+                elem->value = this->parse_array_value();
                 this->idx--;
             }
             else {
-                elem = { AST::NoValueOp,
-                    new AST::VariableValue(this->parse_id(token)) };
+                elem->op = AST::NoValueOp;
+                elem->value = std::make_unique<AST::VariableValue>(
+                    this->parse_id(token));
             }
         }
         else if (throw_on_comparator && comparators.count(token) != 0) {
@@ -276,17 +288,16 @@ AST::Value *Parser::parse_value(bool throw_on_comparator) {
             break;
         }
         this->idx++;
-        elements.push_back(elem);
-        if (elem.op == AST::NoValueOp) {
+        if (elem->op == AST::NoValueOp) {
             expect_value = false;
             allow_add_sub = true;
             allow_mult_div = true;
         }
+        elements.push_back(std::move(elem));
 
     }
-    AST::ValueGroup value_group(elements);
-    AST::Value *value = value_group.simplify();
-    return value;
+    AST::ValueGroup value_group(std::move(elements));
+    return value_group.simplify();
 }
 
 std::tuple<int, int> Parser::save_state() {
@@ -297,8 +308,8 @@ void Parser::restore_state(std::tuple<int, int> state) {
     std::tuple<int&, int&>(this->idx, this->line) = state;
 }
 
-void Parser::parse_value_or_condition(AST::Value **value,
-    AST::Condition **condition)
+void Parser::parse_value_or_condition(std::unique_ptr<AST::Value> *value,
+    std::unique_ptr<AST::Condition> *condition)
 {
     this->try_token_next("(");
     auto state = this->save_state();
@@ -313,15 +324,15 @@ void Parser::parse_value_or_condition(AST::Value **value,
     }
 }
 
-AST::Condition *Parser::parse_condition() {
-    std::vector<AST::ConditionGroup::ConditionGroupElement> elems;
+std::unique_ptr<AST::Condition> Parser::parse_condition() {
+    std::vector<std::unique_ptr<AST::ConditionGroup::ConditionGroupElement>> elems;
     AST::LogicOp next_logic = AST::NoLogicOp;
     AST::ComparisonOp next_comp = AST::NoComparisonOp;
-    AST::Value *lvalue = nullptr;
+    std::unique_ptr<AST::Value> lvalue = nullptr;
     while (true) {
         auto token = this->token_get(this->idx);
-        AST::Value *value = nullptr;
-        AST::Condition *condition = nullptr;
+        std::unique_ptr<AST::Value> value = nullptr;
+        std::unique_ptr<AST::Condition> condition = nullptr;
         if (token == "(") {
             this->parse_value_or_condition(&value, &condition);
         }
@@ -332,23 +343,25 @@ AST::Condition *Parser::parse_condition() {
             if (condition != nullptr) {
                 throw SyntaxError(this->line, "Expected value");
             }
-            elems.push_back({ next_logic, new AST::BinaryCompareOp(lvalue,
-                value, next_comp) });
+            elems.push_back(std::make_unique<AST::ConditionGroup::ConditionGroupElement>(
+                next_logic, std::make_unique<AST::BinaryCompareOp>(std::move(lvalue),
+                std::move(value), next_comp)));
             lvalue = nullptr;
         }
         else if (condition == nullptr) {
             token = this->token_get(this->idx);
             if (comparators.count(token) == 0) {
-                condition = new AST::TruthyOp(value);
+                condition = std::make_unique<AST::TruthyOp>(std::move(value));
             }
             else {
                 this->idx++;
-                lvalue = value;
+                lvalue = std::move(value);
                 next_comp = comparators.at(token);
             }
         }
         if (condition != nullptr) {
-            elems.push_back({ next_logic, condition });
+            elems.push_back(std::make_unique<AST::ConditionGroup::ConditionGroupElement>(
+                next_logic, std::move(condition)));
         }
         if (lvalue == nullptr) {
             token = strtolower(this->token_get(this->idx));
@@ -365,56 +378,59 @@ AST::Condition *Parser::parse_condition() {
     if (elems.size() == 0) {
         throw SyntaxError(this->line, "Expected condition");
     }
-    AST::ConditionGroup condition_group(elems);
+    AST::ConditionGroup condition_group(std::move(elems));
     return condition_group.simplify();
 }
 
-AST::WhileLoop *Parser::parse_while_loop() {
+std::unique_ptr<AST::WhileLoop> Parser::parse_while_loop() {
     this->try_token_next("While");
-    AST::Condition *condition = this->parse_condition();
+    std::unique_ptr<AST::Condition> condition = this->parse_condition();
     this->try_token_next("\n");
     auto statement_group = this->parse_statement_group("endwhile");
-    return new AST::WhileLoop(condition, statement_group);
+    return std::make_unique<AST::WhileLoop>(std::move(condition),
+        std::move(statement_group));
 }
 
-AST::StdlibAssign *Parser::parse_stdlib_assign() {
+std::unique_ptr<AST::StdlibAssign> Parser::parse_stdlib_assign() {
     auto class_name = this->parse_id(this->try_token_next("<class>"));
     this->try_token_next(".");
     auto property = this->parse_id(this->try_token_next("<property>"));
     this->try_token_next("=");
     auto value = this->parse_value();
-    return new AST::StdlibAssign(class_name, property, value);
+    return std::make_unique<AST::StdlibAssign>(class_name, property,
+        std::move(value));
 }
 
-AST::ForLoop *Parser::parse_for_loop() {
+std::unique_ptr<AST::ForLoop> Parser::parse_for_loop() {
     this->try_token_next("For");
     auto init = this->parse_assign();
     this->try_token_next("To");
     auto end = this->parse_value();
-    AST::Value *step = nullptr;
+    std::unique_ptr<AST::Value> step = nullptr;
     if (strtolower(this->token_get(this->idx)) == "step") {
         this->idx++;
         step = this->parse_value();
     }
     this->try_token_next("\n");
     auto statements = this->parse_statement_group("endfor");
-    return new AST::ForLoop(init, end, step, statements);
+    return std::make_unique<AST::ForLoop>(std::move(init), std::move(end),
+        std::move(step), std::move(statements));
 }
 
-AST::GotoLabel *Parser::parse_goto_label() {
+std::unique_ptr<AST::GotoLabel> Parser::parse_goto_label() {
     auto name = this->parse_id(this->token_next());
     this->try_token_next(":");
-    return new AST::GotoLabel(name);
+    return std::make_unique<AST::GotoLabel>(name);
 }
 
-AST::GotoStatement *Parser::parse_goto_statement() {
+std::unique_ptr<AST::GotoStatement> Parser::parse_goto_statement() {
     this->try_token_next("Goto");
     auto label = this->parse_id(this->token_next());
-    return new AST::GotoStatement(label);
+    return std::make_unique<AST::GotoStatement>(label);
 }
 
-AST::Statement *Parser::parse_statement() {
-    AST::Statement *node = nullptr;
+std::unique_ptr<AST::Statement> Parser::parse_statement() {
+    std::unique_ptr<AST::Statement> node = nullptr;
     
     auto first_token = this->token_get(this->idx);
     if (first_token == "\n") {
@@ -470,8 +486,8 @@ AST::Statement *Parser::parse_statement() {
     return node;
 }
 
-AST::Node *Parser::parse_next() {
-    AST::Node *node = nullptr;
+std::unique_ptr<AST::Node> Parser::parse_next() {
+    std::unique_ptr<AST::Node> node = nullptr;
     
     auto first_token = this->token_get(this->idx);
     auto first_keyword = strtolower(first_token);

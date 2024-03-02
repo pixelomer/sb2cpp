@@ -42,29 +42,31 @@ namespace sb2cpp {
         std::string try_token_next(std::string expected);
         std::string token_get(int idx, bool commit_nl = false);
 
-        AST::GotoLabel *parse_goto_label();
-        AST::GotoStatement *parse_goto_statement();
-        AST::Statement *parse_statement_group(std::vector<std::string> end_tokens);
-        AST::Statement *parse_statement_group(std::string end_token);
-        AST::Statement *parse_statement();
-        AST::Assign *parse_assign();
-        AST::ArrayAssign *parse_array_assign();
-        AST::ArrayValue *parse_array_value();
-        AST::StdlibAssign *parse_stdlib_assign();
-        AST::IfStatement *parse_if_statement();
-        AST::Subroutine *parse_subroutine();
-        AST::SubroutineCall *parse_subroutine_call();
-        AST::StdlibCall *parse_stdlib_call(bool returns_value);
-        AST::Value *parse_value(bool throw_on_comparator = true);
-        AST::Condition *parse_condition();
-        AST::WhileLoop *parse_while_loop();
-        AST::ForLoop *parse_for_loop();
+        std::unique_ptr<AST::GotoLabel> parse_goto_label();
+        std::unique_ptr<AST::GotoStatement> parse_goto_statement();
+        std::unique_ptr<AST::StatementGroup> parse_statement_group(std::vector<std::string> end_tokens);
+        std::unique_ptr<AST::StatementGroup> parse_statement_group(std::string end_token);
+        std::unique_ptr<AST::Statement> parse_statement();
+        std::unique_ptr<AST::Assign> parse_assign();
+        std::unique_ptr<AST::ArrayAssign> parse_array_assign();
+        std::unique_ptr<AST::ArrayValue> parse_array_value();
+        std::unique_ptr<AST::StdlibAssign> parse_stdlib_assign();
+        std::unique_ptr<AST::IfStatement> parse_if_statement();
+        std::unique_ptr<AST::Subroutine> parse_subroutine();
+        std::unique_ptr<AST::SubroutineCall> parse_subroutine_call();
+        std::unique_ptr<AST::StdlibCall> parse_stdlib_call(bool returns_value);
+        std::unique_ptr<AST::Value> parse_value(bool throw_on_comparator = true);
+        std::unique_ptr<AST::Condition> parse_condition();
+        std::unique_ptr<AST::WhileLoop> parse_while_loop();
+        std::unique_ptr<AST::ForLoop> parse_for_loop();
         std::string parse_id(std::string token);
         std::tuple<int, int> save_state();
         void restore_state(std::tuple<int, int> state);
-        void parse_value_or_condition(AST::Value **value, AST::Condition **condition);
+        void parse_value_or_condition(std::unique_ptr<AST::Value> *value,
+            std::unique_ptr<AST::Condition> *condition);
     public:
-        AST::Node *parse_next();
+        // Returns either AST::Subroutine or AST::Statement
+        std::unique_ptr<AST::Node> parse_next();
         Parser(std::string const& source) {
             this->tokens = tokenize(source);
         }

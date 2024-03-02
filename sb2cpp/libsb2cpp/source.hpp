@@ -46,7 +46,7 @@ public:
     };
     template<typename T>
     struct NodeSymbol : public Symbol {
-        T *node;
+        std::shared_ptr<T> node;
     };
     typedef NodeSymbol<AST::GotoLabel> GotoSymbol;
     typedef NodeSymbol<AST::Subroutine> SubroutineSymbol;
@@ -55,7 +55,7 @@ public:
     std::map<std::string, SubroutineSymbol> subroutines;
     std::map<std::string, GotoSymbol> goto_labels;
 
-    AST::StatementGroup *entry_point;
+    std::unique_ptr<AST::StatementGroup> entry_point;
     
     std::set<std::string> errors;
 private:
@@ -85,7 +85,7 @@ private:
         Use, Define
     };
     template<typename Tnode, typename Tsym>
-    void register_node(std::string &name, Tnode *node,
+    void register_node(std::string &name, std::shared_ptr<Tnode> node,
         std::map<std::string, Tsym> &map, std::string const& type_name)
     {
         auto name_lower = strtolower(name);
@@ -110,9 +110,30 @@ private:
             name = elem.cname;
         }
     }
-    void register_variable(std::string &name, RegisterType type);
-    void register_subroutine(std::string &name, AST::Subroutine *subroutine);
-    void register_goto_label(std::string &name, AST::GotoLabel *subroutine);
+    void register_variable(std::string &name, RegisterType type) {
+        auto name_lower = strtolower(name);
+        VariableSymbol &var = this->variables[name_lower];
+        // First name used for a variable is canonical
+        if (var.cname == "") {
+            var.cname = name;
+        }
+        else {
+            name = var.cname;
+        }
+        var.used = var.used || (type == Use);
+        var.defined = var.defined || (type == Define);
+    }
+
+    void register_subroutine(std::string &name, std::shared_ptr<AST::Subroutine>
+        subroutine)
+    {
+        this->register_node(name, subroutine, this->subroutines, "Subroutine");
+    }
+    void register_goto_label(std::string &name, std::shared_ptr<AST::GotoLabel>
+        label)
+    {
+        this->register_node(name, label, this->goto_labels, "Goto label");
+    }
 
     template<typename T>
     void canonicalize(std::map<std::string, T> &symbols) {
@@ -130,19 +151,37 @@ private:
         symbols = new_symbols;
     }
 public:
-    Source(std::string const& code, bool error_reporting = false) {
+    Source(std::string const& code, bool error_reporting = false):
+        entry_point(std::make_unique<AST::StatementGroup>())
+    {
         register_builtin();
         this->error_reporting = error_reporting;
-        this->entry_point = new AST::StatementGroup({ });
         Parser parser(code);
-        AST::Node *node;
-        while ((node = parser.parse_next()) != nullptr) {
-            AST::Statement *statement = dynamic_cast<AST::Statement *>(node);
-            if (statement != nullptr) {
-                this->entry_point->statements.push_back(statement);
-            }
-            error_guard([this, node]{
-                node->accept(this);
+        std::shared_ptr<AST::Node> node_ptr;
+        while ((node_ptr = parser.parse_next()) != nullptr) {
+            error_guard([this, &node_ptr]{
+                auto statement = std::dynamic_pointer_cast<AST::Statement>(node_ptr);
+                if (statement != nullptr) {
+                    this->entry_point->statements.push_back(statement);
+                    auto goto_label = std::dynamic_pointer_cast<AST::GotoLabel>(statement);
+                    if (goto_label != nullptr) {
+                        error_guard([goto_label, this]{
+                            this->register_goto_label(goto_label->name, goto_label);
+                        });
+                    }
+                    else {
+                        statement->accept(this);
+                    }
+                }
+                else {
+                    auto subroutine = std::dynamic_pointer_cast<AST::Subroutine>(
+                        node_ptr);
+                    if (subroutine != nullptr) {
+                        Source::register_subroutine(subroutine->subroutine_name,
+                            subroutine);
+                        subroutine->contents->accept(this);
+                    }
+                }
             });
         }
         canonicalize(this->variables);

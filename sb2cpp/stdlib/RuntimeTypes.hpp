@@ -6,6 +6,7 @@
 #include <functional>
 #include <map>
 #include <exception>
+#include <memory>
 
 namespace SmallBasic {
 
@@ -60,8 +61,8 @@ public:
 
 class Class : public RuntimeType {
 public:
-    std::map<std::string, Method> methods;
-    std::map<std::string, Property> properties;
+    std::map<std::string, std::shared_ptr<Method>> methods;
+    std::map<std::string, std::shared_ptr<Property>> properties;
     Class(std::string const& cname): RuntimeType(cname) {}
     Class(): RuntimeType() {}
     void register_method(Method const& method) {
@@ -69,16 +70,16 @@ public:
             throw RuntimeError("Method '" + 
                 method.name + "' registered multiple times");
         }
-        this->methods[method.name] = method;
+        this->methods[method.name] = std::make_shared<Method>(method);
     }
     void register_property(Property const& property) {
         if (properties.count(property.name) != 0) {
             throw RuntimeError("Property '" + 
                 property.name + "' registered multiple times");
         }
-        this->properties[property.name] = property;
+        this->properties[property.name] = std::make_shared<Property>(property);
     }
-    Method &get_method(std::string name) {
+    std::shared_ptr<Method> get_method(std::string name) {
         name = strtolower(name);
         if (this->methods.count(name) == 0) {
             throw RuntimeError("Unrecognized method: '" + this->cname +
@@ -86,7 +87,7 @@ public:
         }
         return this->methods.at(name);
     }
-    Property &get_property(std::string name) {
+    std::shared_ptr<Property> get_property(std::string name) {
         name = strtolower(name);
         if (this->properties.count(name) == 0) {
             throw RuntimeError("Unrecognized property: '" + this->cname +

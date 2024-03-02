@@ -13,9 +13,9 @@ int main() {
     auto input = buffer.str();
 
     try {
-        Source source(input, true);
-        if (source.errors.size() != 0) {
-            for (auto &error : source.errors) {
+        auto source = std::make_shared<Source>(input, true);
+        if (source->errors.size() != 0) {
+            for (auto &error : source->errors) {
                 std::cerr << error << std::endl;
             }
             return EXIT_FAILURE;

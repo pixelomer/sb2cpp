@@ -39,19 +39,19 @@ std::string Transpiler::transpile() {
             this->out << ";" << CodeWriter::endl; \
         } \
     } while (0)
-    DECLARE(this->source.variables, "Obj", VAR_LSTR, "");
-    DECLARE(this->source.subroutines, "void", SUB_LSTR, "()");
+    DECLARE(this->source->variables, "Obj", VAR_LSTR, "");
+    DECLARE(this->source->subroutines, "void", SUB_LSTR, "()");
     #undef DECLARE
 
     // Subroutines
-    for (auto &sub_elem : this->source.subroutines) {
+    for (auto &sub_elem : this->source->subroutines) {
         auto &sub = sub_elem.second.node;
         sub->accept(this);
     }
 
     // Entry point
     this->out << "void SmallBasic_EntryPoint()";
-    this->write_block(this->source.entry_point);
+    this->write_block(this->source->entry_point.get());
 
     // Program start
     this->out << "int main() {" << CodeWriter::endl;
@@ -98,7 +98,16 @@ void Transpiler::visit_value_op(AST::BinaryValueOp *op) {
         case AST::ValueOp::Divide:   this->out << " / "; break;
         default: throw TranspilerError("Illegal value operator");
     }
+    bool divide_paran = false;
+    if (op->op == AST::ValueOp::Divide) {
+        auto child_value = dynamic_cast<AST::BinaryValueOp *>(op->rvalue.get());
+        if (child_value != nullptr) {
+            divide_paran = true;
+        }
+    }
+    if (divide_paran) this->out << "(";
     op->rvalue->accept(this);
+    if (divide_paran) this->out << ")";
     this->node_parents.pop();
 }
 void Transpiler::visit_logic_op(AST::BinaryLogicOp *op) {
@@ -136,21 +145,30 @@ void Transpiler::visit_add_group(AST::AddGroup *group) {
     if (mult_div_op != nullptr) this->out << "(";
     this->node_parents.push(group);
     for (auto &elem : group->elements) {
-        if (elem.sign != AST::NoSignOp) {
-            switch (elem.sign) {
+        if (elem->sign != AST::NoSignOp) {
+            switch (elem->sign) {
                 case AST::Positive: this->out << " + "; break;
                 case AST::Negative: this->out << " - "; break;
                 default: throw TranspilerError("Illegal sign");
             }
         }
-        elem.value->accept(this);
+        bool negate_paran = false;
+        if (elem->sign == AST::Negative) {
+            auto child_value = dynamic_cast<AST::AddGroup *>(elem->value.get());
+            if (child_value != nullptr && child_value->elements.size() > 1) {
+                negate_paran = true;
+            }
+        }
+        if (negate_paran) this->out << "(";
+        elem->value->accept(this);
+        if (negate_paran) this->out << ")";
     }
     this->node_parents.pop();
     if (mult_div_op != nullptr) this->out << ")";
 }
 void Transpiler::visit_array_assign(AST::ArrayAssign *assign) {
     this->out << VAR(assign->variable);
-    for (auto key : assign->keys) {
+    for (auto &key : assign->keys) {
         this->out << "[";
         key->accept(this);
         this->out << "]";
@@ -161,7 +179,7 @@ void Transpiler::visit_array_assign(AST::ArrayAssign *assign) {
 }
 void Transpiler::visit_array_value(AST::ArrayValue *value) {
     this->out << VAR(value->variable);
-    for (auto key : value->keys) {
+    for (auto &key : value->keys) {
         this->out << "[";
         key->accept(this);
         this->out << "]";
@@ -214,8 +232,8 @@ void Transpiler::visit_subroutine_call(AST::SubroutineCall *call) {
 }
 void Transpiler::visit_while_loop(AST::WhileLoop *loop) {
     this->out << "while";
-    this->write_condition(loop->condition);
-    this->write_block(loop->statement);
+    this->write_condition(loop->condition.get());
+    this->write_block(loop->statement.get());
 }
 void Transpiler::visit_goto_label(AST::GotoLabel *label) {
     this->out << LABEL(label->name) << ":" << CodeWriter::endl;
@@ -229,22 +247,22 @@ void Transpiler::visit_if_statement(AST::IfStatement *if_statement) {
         if (!first) {
             this->out << "else";
         }
-        if (part.condition != nullptr) {
+        if (part->condition != nullptr) {
             if (!first) this->out << " ";
             this->out << "if";
-            this->write_condition(part.condition);
+            this->write_condition(part->condition.get());
         }
-        this->write_block(part.statement);
+        this->write_block(part->statement.get());
         first = false;
     }
 }
 void Transpiler::visit_subroutine(AST::Subroutine *sub) {
     this->out << "void " << SUB(sub->subroutine_name) << "()";
-    this->write_block(sub->contents);
+    this->write_block(sub->contents.get());
 }
 void Transpiler::visit_for_loop(AST::ForLoop *loop) {
     auto acc = loop->initializer->variable;
-    auto step = loop->step_value;
+    auto step = loop->step_value.get();
     AST::NumberValue default_step(1);
     if (step == nullptr) {
         step = &default_step;
@@ -258,7 +276,7 @@ void Transpiler::visit_for_loop(AST::ForLoop *loop) {
     this->out << "); " << VAR(acc) << " += ";
     step->accept(this);
     this->out << ")";
-    this->write_block(loop->statement);
+    this->write_block(loop->statement.get());
 }
 void Transpiler::visit_truthy_op(AST::TruthyOp *op) {
     op->value->accept(this);

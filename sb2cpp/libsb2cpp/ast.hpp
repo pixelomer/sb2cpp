@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 #include "../stdlib/RuntimeTypes.hpp"
 
 #define ACCEPT(visit_func) virtual void accept(BaseVisitor *visitor) { \
@@ -98,14 +99,10 @@ namespace AST {
     template <typename T>
     class BinaryOperation : virtual public Node {
     public:
-        T *lvalue;
-        T *rvalue;
-        BinaryOperation(T *lvalue, T *rvalue): lvalue(lvalue),
-            rvalue(rvalue) {}
-        ~BinaryOperation() {
-            delete lvalue;
-            delete rvalue;
-        }
+        std::unique_ptr<T> lvalue;
+        std::unique_ptr<T> rvalue;
+        BinaryOperation(std::unique_ptr<T> lvalue, std::unique_ptr<T> rvalue):
+            lvalue(std::move(lvalue)), rvalue(std::move(rvalue)) {}
     };
     class StringValue : virtual public Value {
     public:
@@ -122,74 +119,61 @@ namespace AST {
     };
     class BinaryValueOp : virtual public BinaryOperation<Value>, virtual public Value {
     public:
-        AST::ValueOp op; // May only be '*' or '/'
-        BinaryValueOp(Value *lvalue, Value *rvalue, AST::ValueOp op):
-            BinaryOperation(lvalue, rvalue), op(op) {}
+        ValueOp op; // May only be '*' or '/'
+        BinaryValueOp(std::unique_ptr<Value> lvalue, std::unique_ptr<Value> rvalue,
+            ValueOp op): BinaryOperation(std::move(lvalue), std::move(rvalue)), op(op) {}
         ACCEPT(visit_value_op)
     };
     class BinaryLogicOp : virtual public BinaryOperation<Condition>, virtual public Condition {
     public:
-        AST::LogicOp op;
-        BinaryLogicOp(Condition *lvalue, Condition *rvalue, AST::LogicOp op):
-            BinaryOperation(lvalue, rvalue), op(op) {}
+        LogicOp op;
+        BinaryLogicOp(std::unique_ptr<Condition> lvalue, std::unique_ptr<Condition> rvalue,
+            LogicOp op): BinaryOperation(std::move(lvalue), std::move(rvalue)), op(op) {}
         ACCEPT(visit_logic_op)
     };
     class BinaryCompareOp : virtual public BinaryOperation<Value>, virtual public Condition {
     public:
-        AST::ComparisonOp op;
-        BinaryCompareOp(Value *lvalue, Value *rvalue, AST::ComparisonOp op):
-            BinaryOperation(lvalue, rvalue), op(op) {}
+        ComparisonOp op;
+        BinaryCompareOp(std::unique_ptr<Value> lvalue, std::unique_ptr<Value> rvalue,
+            ComparisonOp op): BinaryOperation(std::move(lvalue),
+            std::move(rvalue)), op(op) {}
         ACCEPT(visit_compare_op)
     };
     class TruthyOp : virtual public Condition {
     public:
-        AST::Value *value;
-        TruthyOp(Value *value): value(value) {}
+        std::unique_ptr<Value> value;
+        TruthyOp(std::unique_ptr<Value> value): value(std::move(value)) {}
         ACCEPT(visit_truthy_op)
     };
     class AddGroup : virtual public Value {
     public:
         struct AddGroupElement {
             SignOp sign;
-            Value *value;
-            AddGroupElement(SignOp sign, Value *value): sign(sign),
-                value(value) {}
+            std::unique_ptr<Value> value;
+            AddGroupElement(SignOp sign, std::unique_ptr<Value> value):
+                sign(sign), value(std::move(value)) {}
         };
-        std::vector<AddGroupElement> elements;
-        AddGroup(std::vector<AddGroupElement> elements): elements(elements) {}
-        ~AddGroup() {
-            for (auto &elem : this->elements) {
-                delete elem.value;
-            }
-        }
+        std::vector<std::unique_ptr<AddGroupElement>> elements;
+        AddGroup(std::vector<std::unique_ptr<AddGroupElement>> elements):
+            elements(std::move(elements)) {}
         ACCEPT(visit_add_group)
     };
     class ArrayAssign : virtual public Statement {
     public:
         std::string variable;
-        std::vector<AST::Value *> keys;
-        Value *value;
-        ArrayAssign(std::string variable, std::vector<AST::Value *> keys, Value *value):
-            variable(variable), keys(keys), value(value) {}
-        ~ArrayAssign() {
-            for (auto value : keys) {
-                delete value;
-            }
-            delete value;
-        }
+        std::vector<std::unique_ptr<Value>> keys;
+        std::unique_ptr<Value> value;
+        ArrayAssign(std::string variable, std::vector<std::unique_ptr<Value>> keys,
+            std::unique_ptr<Value> value): variable(variable),
+            keys(std::move(keys)), value(std::move(value)) {}
         ACCEPT(visit_array_assign)
     };
     class ArrayValue : virtual public Value {
     public:
         std::string variable;
-        std::vector<Value *> keys;
-        ArrayValue(std::string variable, std::vector<Value *> keys):
-            variable(variable), keys(keys) {}
-        ~ArrayValue() {
-            for (auto key : keys) {
-                delete key;
-            }
-        }
+        std::vector<std::unique_ptr<Value>> keys;
+        ArrayValue(std::string variable, std::vector<std::unique_ptr<Value>> keys):
+            variable(variable), keys(std::move(keys)) {}
         ACCEPT(visit_array_value)
     };
     class VariableValue : virtual public Value {
@@ -197,46 +181,37 @@ namespace AST {
         std::string variable;
         bool is_subroutine = false;
         VariableValue(std::string variable): variable(variable) {}
-        ~VariableValue() {}
         ACCEPT(visit_variable_value)
     };
     class StatementGroup : virtual public Statement {
     public:
-        std::vector<Statement *> statements;
-        StatementGroup(std::vector<Statement *> statements):
+        std::vector<std::shared_ptr<Statement>> statements;
+        StatementGroup(std::vector<std::shared_ptr<Statement>> statements):
             statements(statements) {}
-        ~StatementGroup() {
-            for (auto statement : this->statements) {
-                delete statement;
-            }
-        }
+        StatementGroup() {}
         ACCEPT(visit_statement_group)
     };
     class StdlibCall : virtual public Value, virtual public Statement {
     public:
         std::string class_name;
         std::string method_name;
-        SmallBasic::Class *cls;
-        SmallBasic::Method *method;
-        std::vector<Value *> arguments;
+        std::shared_ptr<SmallBasic::Class> cls;
+        std::shared_ptr<SmallBasic::Method> method;
+        std::vector<std::unique_ptr<Value>> arguments;
         bool returns_value;
         StdlibCall(std::string class_name, std::string method_name,
-            std::vector<Value *> arguments, bool returns_value):
+            std::vector<std::unique_ptr<Value>> arguments, bool returns_value):
             class_name(class_name), method_name(method_name),
-            arguments(arguments), returns_value(returns_value) {}
-        ~StdlibCall() {
-            for (auto argument : this->arguments) {
-                delete argument;
-            }
-        }
+            arguments(std::move(arguments)),
+            returns_value(returns_value) {}
         ACCEPT(visit_stdlib_call)
     };
     class StdlibValue : virtual public Value {
     public:
         std::string class_name;
         std::string property_name;
-        SmallBasic::Class *cls;
-        SmallBasic::Property *property;
+        std::shared_ptr<SmallBasic::Class> cls;
+        std::shared_ptr<SmallBasic::Property> property;
         StdlibValue(std::string class_name, std::string property_name):
             class_name(class_name), property_name(property_name) {}
         ACCEPT(visit_stdlib_value)
@@ -245,16 +220,12 @@ namespace AST {
     public:
         std::string class_name;
         std::string property_name;
-        SmallBasic::Class *cls;
-        SmallBasic::Property *property;
-        Value *value;
-        StdlibAssign(std::string class_name, std::string property_name, Value *value):
-            class_name(class_name), property_name(property_name), value(value) {}
-        ~StdlibAssign() {
-            if (this->value != nullptr) {
-                delete this->value;
-            }
-        }
+        std::shared_ptr<SmallBasic::Class> cls;
+        std::shared_ptr<SmallBasic::Property> property;
+        std::unique_ptr<Value> value;
+        StdlibAssign(std::string class_name, std::string property_name,
+            std::unique_ptr<Value> value): class_name(class_name),
+            property_name(property_name), value(std::move(value)) {}
         ACCEPT(visit_stdlib_assign)
     };
     class ValueGroup : virtual public Value {
@@ -263,70 +234,57 @@ namespace AST {
         // Example:
         //   { '+', nullptr }
         //   { '*', nullptr }
-        //   { 0, new NumberValue(5) }
+        //   { 0, NumberValue(5) }
         struct ValueGroupElement {
             ValueOp op;
-            Value *value;
+            std::unique_ptr<Value> value;
             ValueGroupElement(): op(ValueOp::NoValueOp), value(nullptr) {}
             ValueGroupElement(ValueOp op, Value *value): op(op), value(value) {}
         };
-        std::vector<ValueGroupElement> values;
-        Value *simplify();
-        ValueGroup(std::vector<ValueGroupElement> values): values(values) {}
-        ~ValueGroup() {
-            for (auto const& value : this->values) {
-                if (value.value != nullptr) {
-                    delete value.value;
-                }
-            }
-        }
+        std::vector<std::unique_ptr<ValueGroupElement>> values;
+        // Side effect: Destroys object
+        std::unique_ptr<Value> simplify();
+        ValueGroup(std::vector<std::unique_ptr<ValueGroupElement>> values):
+            values(std::move(values)) {}
     };
     class ConditionGroup : virtual public Condition {
     private:
-        void group_by(AST::LogicOp op);
+        void group_by(LogicOp op);
     public:
         struct ConditionGroupElement {
             LogicOp op; // None for first element
-            Condition *condition;
+            std::unique_ptr<Condition> condition;
+            ConditionGroupElement(LogicOp op, std::unique_ptr<Condition> condition):
+                op(op), condition(std::move(condition)) {}
         };
-        std::vector<ConditionGroupElement> conditions;
-        Condition *simplify();
-        ConditionGroup(std::vector<ConditionGroupElement> const& conditions):
-            conditions(conditions) {}
-        ~ConditionGroup() {
-            for (auto const& condition : this->conditions) {
-                delete condition.condition;
-            }
-        }
+        std::vector<std::unique_ptr<ConditionGroupElement>> conditions;
+        // Side effect: Destroys object
+        std::unique_ptr<Condition> simplify();
+        ConditionGroup(std::vector<std::unique_ptr<ConditionGroupElement>> conditions):
+            conditions(std::move(conditions)) {}
     };
     class Assign : virtual public Statement {
     public:
         std::string variable;
-        Value *value;
-        Assign(std::string const& variable, Value *value):
-            variable(variable), value(value) {}
-        ~Assign() {
-            delete this->value;
-        }
+        std::unique_ptr<Value> value;
+        Assign(std::string variable, std::unique_ptr<Value> value):
+            variable(variable), value(std::move(value)) {}
         ACCEPT(visit_assign)
     };
     class SubroutineCall : virtual public Statement {
     public:
         std::string subroutine_name;
-        SubroutineCall(std::string const& subroutine_name):
+        SubroutineCall(std::string subroutine_name):
             subroutine_name(subroutine_name) {}
         ACCEPT(visit_subroutine_call)
     };
     class WhileLoop : virtual public Statement {
     public:
-        Condition *condition;
-        Statement *statement;
-        WhileLoop(Condition *condition, Statement *statement):
-            condition(condition), statement(statement) {}
-        ~WhileLoop() {
-            delete condition;
-            delete statement;
-        }
+        std::unique_ptr<Condition> condition;
+        std::shared_ptr<StatementGroup> statement;
+        WhileLoop(std::unique_ptr<Condition> condition,
+            std::shared_ptr<StatementGroup> statement):
+            condition(std::move(condition)), statement(statement) {}
         ACCEPT(visit_while_loop)
     };
     class GotoLabel : virtual public Statement {
@@ -344,31 +302,26 @@ namespace AST {
     class IfStatement : virtual public Statement {
     public:
         struct IfStatementPart {
-            Condition *condition;
-            Statement *statement;
+            std::unique_ptr<Condition> condition;
+            std::shared_ptr<StatementGroup> statement;
+            IfStatementPart(std::unique_ptr<Condition> condition,
+                std::shared_ptr<StatementGroup> statement):
+                condition(std::move(condition)),
+                statement(statement) {}
         };
-        std::vector<IfStatementPart> parts;
-        IfStatement(std::vector<IfStatementPart> const& parts):
-            parts(parts) {}
-        ~IfStatement() {
-            for (auto const& part : this->parts) {
-                if (part.condition) {
-                    delete part.condition;
-                }
-                delete part.statement;
-            }
-        }
+        std::vector<std::unique_ptr<IfStatementPart>> parts;
+        IfStatement(std::vector<std::unique_ptr<IfStatementPart>> parts):
+            parts(std::move(parts)) {}
         ACCEPT(visit_if_statement)
     };
     class Subroutine : virtual public Declaration {
     public:
         std::string subroutine_name;
-        Statement *contents;
-        Subroutine(std::string subroutine_name, Statement *contents):
-            subroutine_name(subroutine_name), contents(contents) {}
-        ~Subroutine() {
-            delete this->contents;
-        }
+        std::shared_ptr<StatementGroup> contents;
+        Subroutine(std::string subroutine_name,
+            std::shared_ptr<StatementGroup> contents):
+            subroutine_name(subroutine_name),
+            contents(contents) {}
         ACCEPT(visit_subroutine)
     };
 
@@ -385,20 +338,15 @@ namespace AST {
     //   For i = "a" To "aaa" Step "a"  'Runs forever ("aaa" becomes 0)
     class ForLoop : virtual public Statement {
     public:
-        Assign *initializer;
-        Value *last_value; // inclusive
-        Value *step_value; // optional
-        Statement *statement;
-        ForLoop(Assign *initializer, Value *last_value, Value *step_value,
-            Statement *statement): initializer(initializer), last_value(last_value),
-            step_value(step_value), statement(statement) {}
-        ~ForLoop() {
-            delete initializer;
-            delete last_value;
-            if (step_value != nullptr) {
-                delete step_value;
-            }
-        }
+        std::unique_ptr<Assign> initializer;
+        std::unique_ptr<Value> last_value; // inclusive
+        std::unique_ptr<Value> step_value; // optional
+        std::shared_ptr<StatementGroup> statement;
+        ForLoop(std::unique_ptr<Assign> initializer,
+            std::unique_ptr<Value> last_value, std::unique_ptr<Value> step_value,
+            std::shared_ptr<StatementGroup> statement): initializer(std::move(initializer)),
+            last_value(std::move(last_value)), step_value(std::move(step_value)),
+            statement(statement) {}
         ACCEPT(visit_for_loop)
     };
 
@@ -418,17 +366,17 @@ namespace AST {
         }
         virtual void visit_add_group(AddGroup *group) override {
             for (auto &elem : group->elements) {
-                elem.value->accept(this);
+                elem->value->accept(this);
             }
         }
         virtual void visit_array_assign(ArrayAssign *assign) override {
-            for (auto key : assign->keys) {
+            for (auto &key : assign->keys) {
                 key->accept(this);
             }
             assign->value->accept(this);
         }
         virtual void visit_array_value(ArrayValue *value) override {
-            for (auto key : value->keys) {
+            for (auto &key : value->keys) {
                 key->accept(this);
             }
         }
@@ -454,10 +402,10 @@ namespace AST {
         }
         virtual void visit_if_statement(IfStatement *if_stmt) override {
             for (auto &part : if_stmt->parts) {
-                if (part.condition != nullptr) {
-                    part.condition->accept(this);
+                if (part->condition != nullptr) {
+                    part->condition->accept(this);
                 }
-                part.statement->accept(this);
+                part->statement->accept(this);
             }
         }
         virtual void visit_subroutine(Subroutine *sub) override {

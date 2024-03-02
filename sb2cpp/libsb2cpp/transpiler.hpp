@@ -20,16 +20,16 @@ private:
         return cast_node;
     }
 public:
-    Source source;
+    const std::shared_ptr<const Source> source;
     CodeWriter out;
     class TranspilerError : public std::runtime_error {
     public:
         TranspilerError(std::string const& msg): std::runtime_error(msg) {}
     };
-    Transpiler(std::string const& code): source(code) {
+    Transpiler(std::string const& code): source(std::make_shared<Source>(code)) {
         this->node_parents.push(nullptr);
     }
-    Transpiler(Source const& source): source(source) {
+    Transpiler(std::shared_ptr<Source> source): source(source) {
         this->node_parents.push(nullptr);
     }
 
