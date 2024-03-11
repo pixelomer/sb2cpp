@@ -2,7 +2,8 @@
 
 #include <map>
 #include <iostream>
-#include "GraphicsWindow.hpp"
+#include "RunLoop.hpp"
+#include "Graphics.hpp"
 #include "Drawable.hpp"
 #include "macros.hpp"
 
@@ -33,6 +34,28 @@ void redraw_objects() {
     RunLoop::current()->queue_draw(ANIMATION_LAYER, drawables);
 }
 
+SB_PRIVATE
+void Clear() {
+    objects.clear();
+    RunLoop::current()->queue_draw(ANIMATION_LAYER, new DrawableClear());
+}
+
+SB_METHOD_1(Remove) (long id) {
+    auto it = objects.find(id);
+    if (it != objects.end()) {
+        objects.erase(it);
+    }
+    return SB_VOID;
+}
+
+SB_METHOD_1(GetTop) (long id) {
+    if (objects.count(id) == 0) {
+        std::cerr << "unknown object: " << id << std::endl;
+        return 0;
+    }
+    return objects.at(id)->pos.y;
+}
+
 SB_METHOD_1(GetLeft) (long id) {
     if (objects.count(id) == 0) {
         std::cerr << "unknown object: " << id << std::endl;
@@ -43,16 +66,16 @@ SB_METHOD_1(GetLeft) (long id) {
 
 SB_METHOD_2(AddEllipse) (int width, int height) {
     return create_object(new DrawableOval({ 0, 0 }, width, height,
-        (int)GraphicsWindow::pen_width, GraphicsWindow::pen_color.color,
-        GraphicsWindow::brush_color.color));
+        (int)Graphics::pen_width, Graphics::pen_color.color,
+        Graphics::brush_color.color));
 }
 
 SB_METHOD_2(AddRectangle) (int width, int height) {
     return create_object(new DrawablePath({ 0, 0 }, { { 0, 0 },
         { width, 0 }, { width, height }, { 0, height } },
-        (int)GraphicsWindow::pen_width,
-        GraphicsWindow::pen_color.color,
-        GraphicsWindow::brush_color.color));
+        (int)Graphics::pen_width,
+        Graphics::pen_color.color,
+        Graphics::brush_color.color));
 }
 
 SB_METHOD_3(Move) (long id, double x, double y) {

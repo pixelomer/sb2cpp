@@ -44,7 +44,7 @@ add_library(
     stdlib/util.cc
     stdlib/Array.cc
     stdlib/RunLoop.cc
-    stdlib/GraphicsWindow.cc
+    stdlib/Graphics.cc
     stdlib/Shapes.cc
     stdlib/SBColor.cc
     stdlib/SDL2_gfx/SDL2_gfxPrimitives.c

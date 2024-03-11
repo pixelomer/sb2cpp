@@ -60,6 +60,8 @@ private:
     SDL_Renderer *renderer;
     TaskQueue gui_queue;
 
+    std::string title = "Small Basic Graphics Window";
+
     bool can_resize = true;
     bool needs_redraw = true;
     
@@ -199,7 +201,10 @@ public:
             if (this->window != NULL) {
                 return;
             }
-            this->window = SDL_CreateWindow("Small Basic Graphics Window",
+            std::unique_lock<std::mutex> lock(mutex);
+            auto title = this->title;
+            lock.unlock();
+            this->window = SDL_CreateWindow(title.c_str(),
                 SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 600, 400,
                 SDL_WINDOW_RESIZABLE);
             this->renderer = SDL_CreateRenderer(this->window, -1,
@@ -254,20 +259,26 @@ public:
         SDL_PushEvent(&event);
     }
 
+    void show_message(std::string const& title, std::string const& message) {
+        dispatch_main_sync([this, title, message]() {
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
+                title.c_str(), message.c_str(), this->window);
+        });
+    }
+
     void set_window_title(std::string const& title) {
         dispatch_main_sync([this, title]() {
             initialize_window();
+            std::unique_lock<std::mutex> lock(mutex);
+            this->title = title;
             SDL_SetWindowTitle(window, title.c_str());
+            lock.unlock();
         });
     }
 
     std::string get_window_title() {
-        std::string title;
-        dispatch_main_sync([this, &title]() {
-            initialize_window();
-            title = SDL_GetWindowTitle(window);
-        });
-        return title;
+        std::lock_guard<std::mutex> lock(mutex);
+        return this->title;
     }
 
     void queue_draw(int idx, std::vector<Drawable *> drawables) {
