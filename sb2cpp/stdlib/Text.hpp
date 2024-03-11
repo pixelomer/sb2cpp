@@ -43,10 +43,16 @@ SB_METHOD_2(StartsWith) (std::string const& text, std::string const& subtext) {
 }
 
 SB_METHOD_3(GetSubText) (std::string const& text, long pos, long len) {
-    return text.substr(pos-1, len);
+    if (pos-1 >= text.length()) {
+        return Obj("");
+    }
+    return text.substr(pos-1, std::min(len, (long)(text.length()-pos+1)));
 }
 
 SB_METHOD_2(GetSubTextToEnd) (std::string const& text, long pos) {
+    if (pos-1 >= text.length()) {
+        return Obj("");
+    }
     return text.substr(pos-1);
 }
 
