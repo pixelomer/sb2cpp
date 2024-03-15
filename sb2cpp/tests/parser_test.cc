@@ -22,6 +22,31 @@ TEST(ParserTest, AssignNumber) {
     ASSERT_EQ(end, nullptr);
 }
 
+TEST(ParserTest, NegativeNumbers) {
+    auto input = "num = 10 / -2";
+    Parser parser(input);
+    
+    auto node = parser.parse_next();
+
+    auto result = dynamic_cast<AST::Assign *>(node.get());
+    ASSERT_NE(result, nullptr);
+    ASSERT_EQ(result->variable, "num");
+
+    auto value = dynamic_cast<AST::BinaryValueOp *>(result->value.get());
+    ASSERT_NE(value, nullptr);
+    ASSERT_EQ(value->op, AST::Divide);
+
+    auto lvalue = dynamic_cast<AST::NumberValue *>(value->lvalue.get());
+    ASSERT_NE(lvalue, nullptr);
+    ASSERT_EQ(lvalue->number, 10);
+
+    auto rvalue = dynamic_cast<AST::AddGroup *>(value->rvalue.get());
+    ASSERT_NE(rvalue, nullptr);
+
+    auto end = parser.parse_next();
+    ASSERT_EQ(end, nullptr);
+}
+
 TEST(ParserTest, StdlibAssign) {
     auto input = "TextWindow.Title = \"Hello\"\n";
     Parser parser(input);

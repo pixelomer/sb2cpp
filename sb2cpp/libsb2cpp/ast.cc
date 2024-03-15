@@ -41,7 +41,18 @@ std::unique_ptr<AST::Value> AST::ValueGroup::simplify() {
     for (int opidx=0; opidx < values.size(); opidx++) {
         std::unique_ptr<Value> new_value;
         auto &opelem = values[opidx];
-        if (opelem->op == AST::Multiply || opelem->op == AST::Divide) {
+        if (opelem->op == Multiply || opelem->op == Divide) {
+            if (values[opidx+1]->op != NoValueOp) {
+                auto value_op = values[opidx+1]->op;
+                if (value_op == Subtract) {
+                    std::vector<std::unique_ptr<AddGroup::AddGroupElement>> elems;
+                    elems.push_back(std::make_unique<AddGroup::AddGroupElement>
+                        (Negative, std::move(values[opidx+2]->value)));
+                    values[opidx+1]->value = std::make_unique<AddGroup>(std::move(elems));
+                }
+                values.erase(values.begin() + opidx + 2,
+                    values.begin() + opidx + 3);
+            }
             new_value = std::make_unique<BinaryValueOp>(
                 std::move(values[opidx-1]->value),
                 std::move(values[opidx+1]->value), opelem->op);
