@@ -59,6 +59,10 @@ public:
         str[7] = '\0';
         this->name = str;
     }
+    SBColor(std::string name, uint8_t r, uint8_t g, uint8_t b) {
+        color = { r, g, b, 255 };
+        this->name = name;
+    }
 };
 
 }

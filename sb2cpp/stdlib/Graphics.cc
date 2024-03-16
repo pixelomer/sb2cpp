@@ -3,7 +3,7 @@
 
 namespace SmallBasic {
 
-SBColor Graphics::background_color = "white";
+SBColor Graphics::background_color = { "white", 0xFF, 0xFF, 0xFF };
 SBColor Graphics::brush_color = "#6A5ACD";
 Obj Graphics::pen_width = Obj(10);
 SBColor Graphics::pen_color = "#000000";
