@@ -14,4 +14,7 @@ sb2cpp/stdlib/Runtime_generated.cc
 !sb2cpp/tests/*.cc
 !sb2cpp/main.cc
 !sb2cpp/CMakeLists.txt
+!sb2cpp/stdlib/SDL2_gfx
+!sb2cpp/stdlib/SDL2_gfx/*.h
+!sb2cpp/stdlib/SDL2_gfx/*.c
 !README.md
