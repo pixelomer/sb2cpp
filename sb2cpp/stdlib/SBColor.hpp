@@ -2,6 +2,7 @@
 
 #include "Drawable.hpp"
 #include "util.hpp"
+#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
@@ -36,6 +37,7 @@ private:
                 color = colors.at(lower);
             }
             else {
+                std::cerr << "Unknown color: \"" << lower << "\"" << std::endl;
                 color = { 0, 0, 0 };
             }
         }
