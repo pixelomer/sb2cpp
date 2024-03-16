@@ -56,8 +56,8 @@ private:
     std::mutex mutex;
     std::map<int, SDL_Texture *> textures;
     std::map<int, std::queue<Drawable *>> draw_queue;
-    SDL_Window *window;
-    SDL_Renderer *renderer;
+    SDL_Window *window = NULL;
+    SDL_Renderer *renderer = NULL;
     TaskQueue gui_queue;
 
     std::string title = "Small Basic Graphics Window";
@@ -152,6 +152,9 @@ private:
     }
 
     void render_window() {
+        if (this->renderer == NULL) {
+            return;
+        }
         flush_draw_queue();
 
         SDL_SetRenderTarget(renderer, NULL);
