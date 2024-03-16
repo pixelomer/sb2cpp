@@ -50,6 +50,9 @@ public:
         lock.unlock();
         condition.notify_one();
     }
+    size_t size() const {
+        return this->tasks.size();
+    }
 };
 
 }
