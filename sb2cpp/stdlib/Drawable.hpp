@@ -67,7 +67,7 @@ public:
         if (line_color.a > 0) {
             for (int i=0; i<n; i++) {
                 thickLineRGBA(renderer, abs_x[i], abs_y[i], abs_x[(i+1)%n], abs_y[(i+1)%n],
-                    (Uint8)line_width, line_color.r, line_color.r, line_color.g,
+                    (Uint8)line_width, line_color.r, line_color.g, line_color.b,
                     line_color.a);
             }
         }
