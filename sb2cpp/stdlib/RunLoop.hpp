@@ -96,7 +96,12 @@ private:
             get_window_size(&width, &height);
             texture = SDL_CreateTexture(this->renderer, SDL_GetWindowPixelFormat(window),
                 SDL_TEXTUREACCESS_TARGET, width, height);
-            SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+            if (idx == BACKGROUND_LAYER) {
+                SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_NONE);
+            }
+            else {
+                SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+            }
         }
         return texture;
     }
