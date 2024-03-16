@@ -9,7 +9,7 @@
 !sb2cpp/stdlib/
 !sb2cpp/stdlib/*.hpp
 !sb2cpp/stdlib/*.cc
-sb2cpp/stdlib/Runtime_generated.cc
+sb2cpp/stdlib/Runtime_generated_.cc
 !sb2cpp/tests/
 !sb2cpp/tests/*.cc
 !sb2cpp/main.cc

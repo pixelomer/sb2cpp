@@ -19,7 +19,7 @@ include_directories(${SDL2_INCLUDE_DIRS})
 
 add_custom_command(
     OUTPUT runtime_list
-    COMMAND ./generate_runtime_list.py > stdlib/Runtime_generated.cc
+    COMMAND ./generate_runtime_list.py > stdlib/Runtime_generated_.cc
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     DEPENDS generate_runtime_list.py
 )
