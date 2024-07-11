@@ -2,6 +2,7 @@
 
 #include <string>
 #include <memory>
+#include <stdexcept>
 #include "../stdlib/RuntimeTypes.hpp"
 
 #define ACCEPT(visit_func) virtual void accept(BaseVisitor *visitor) { \

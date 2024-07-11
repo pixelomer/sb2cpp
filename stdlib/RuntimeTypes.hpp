@@ -33,7 +33,7 @@ public:
 class Method : public RuntimeType {
 public:
     MethodHandler handler;
-    int argc;
+    unsigned int argc;
     bool returns_value;
     Method(std::string const& cname, MethodHandler handler, int argc,
         bool returns_value):

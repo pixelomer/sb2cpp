@@ -23,16 +23,16 @@ int main() {
         Interpreter interpreter(source);
         interpreter.run(true);
     }
-    catch (Parser::SyntaxError err) {
+    catch (Parser::SyntaxError &err) {
         std::cerr << "source(line " << err.line << "): error: " << err.what()
             << std::endl;
         return EXIT_FAILURE;
     }
-    catch (Source::SourceError err) {
+    catch (Source::SourceError &err) {
         std::cerr << "source: error: " << err.what() << std::endl;
         return EXIT_FAILURE;
     }
-    catch (std::runtime_error err) {
+    catch (std::runtime_error &err) {
         std::cerr << "source: error: " << err.what() << std::endl;
     }
     return EXIT_SUCCESS;

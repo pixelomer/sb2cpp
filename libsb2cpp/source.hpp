@@ -69,10 +69,10 @@ private:
             try {
                 callback();
             }
-            catch (SourceError err) {
+            catch (SourceError &err) {
                 errors.insert(err.what());
             }
-            catch (SmallBasic::RuntimeError err) {
+            catch (SmallBasic::RuntimeError &err) {
                 errors.insert(err.what());
             }
         }

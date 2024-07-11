@@ -14,8 +14,8 @@ std::vector<std::string> tokenize(std::string const& source) {
     std::vector<std::string> tokens;
     std::string last_token, token;
     const std::string special = "()[]<>+-/*=.',:";
-    size_t len = source.length();
-    for (int i=0; i<len; i++) {
+    long len = source.length();
+    for (long i=0; i<len; i++) {
         char c = source[i];
         if (std::isspace(c)) {
             // whitespace

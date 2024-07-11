@@ -117,7 +117,7 @@ void Interpreter::visit_stdlib_call(AST::StdlibCall *call) {
     auto method = call->method;
 
     std::vector<Obj> args;
-    for (int i=0; i<method->argc; i++) {
+    for (unsigned int i=0; i<method->argc; i++) {
         args.push_back(this->eval(call->arguments[i]));
     }
     

@@ -2,6 +2,7 @@
 #include "util.hpp"
 #include <string>
 #include <map>
+#include <algorithm>
 
 #define EOF_TOKEN ""
 
@@ -22,7 +23,7 @@ const std::map<std::string, AST::LogicOp> Parser::logic_ops = {
 };
 
 std::string Parser::token_get(int idx, bool commit_nl) {
-    if (idx < this->tokens.size()) {
+    if (idx < (long)this->tokens.size()) {
         std::string token = this->tokens[idx];
         if (token[0] == '\n') {
             if (commit_nl) {
@@ -36,7 +37,7 @@ std::string Parser::token_get(int idx, bool commit_nl) {
 }
 
 std::string Parser::token_next() {
-    if (this->idx >= this->tokens.size()) return EOF_TOKEN;
+    if (this->idx >= (long)this->tokens.size()) return EOF_TOKEN;
     return token_get(this->idx++, true);
 }
 
@@ -300,12 +301,12 @@ std::unique_ptr<AST::Value> Parser::parse_value(bool throw_on_comparator) {
     return value_group.simplify();
 }
 
-std::tuple<int, int> Parser::save_state() {
+std::tuple<long, long> Parser::save_state() {
     return { this->idx, this->line };
 }
 
-void Parser::restore_state(std::tuple<int, int> state) {
-    std::tuple<int&, int&>(this->idx, this->line) = state;
+void Parser::restore_state(std::tuple<long, long> state) {
+    std::tuple<long&, long&>(this->idx, this->line) = state;
 }
 
 void Parser::parse_value_or_condition(std::unique_ptr<AST::Value> *value,
@@ -317,7 +318,7 @@ void Parser::parse_value_or_condition(std::unique_ptr<AST::Value> *value,
         *value = this->parse_value();
         this->try_token_next(")");
     }
-    catch (SyntaxError err) {
+    catch (SyntaxError &err) {
         this->restore_state(state);
         *condition = this->parse_condition();
         this->try_token_next(")");

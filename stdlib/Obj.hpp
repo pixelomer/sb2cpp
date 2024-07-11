@@ -2,6 +2,8 @@
 
 #include "util.hpp"
 #include <string>
+#include <vector>
+#include <stdexcept>
 
 namespace SmallBasic {
 
@@ -89,10 +91,10 @@ public:
             }
             return false;
         }
-        catch (std::invalid_argument err) {
+        catch (std::invalid_argument &err) {
             return false;
         }
-        catch (std::out_of_range err) {
+        catch (std::out_of_range &err) {
             //FIXME: correct response?
             return false;
         }
@@ -289,7 +291,7 @@ public:
         Obj obj;
         obj = (*this)[keys[0]];
         std::vector<Obj> incomplete_objects;
-        for (int i=1; i<keys.size(); i++) {
+        for (size_t i=1; i<keys.size(); i++) {
             incomplete_objects.push_back(obj);
             obj = obj[keys[i]];
         }
@@ -298,7 +300,7 @@ public:
         auto &objects = obj.associated_objects;
         objects[0].owner = this;
         objects[0].owner_key = (std::string)keys[0];
-        for (int i=1; i<objects.size(); i++) {
+        for (size_t i=1; i<objects.size(); i++) {
             objects[i].owner = &objects[i-1];
             objects[i].owner_key = (std::string)keys[i];
         }

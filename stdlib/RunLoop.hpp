@@ -5,6 +5,7 @@
 #include "TaskQueue.hpp"
 #include "RuntimeTypes.hpp"
 #include "Drawable.hpp"
+#include <atomic>
 #include <iostream>
 
 #define BACKGROUND_LAYER 0

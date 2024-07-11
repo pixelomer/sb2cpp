@@ -34,8 +34,8 @@ namespace sb2cpp {
     private:
         static const std::map<std::string, AST::ComparisonOp> comparators;
         static const std::map<std::string, AST::LogicOp> logic_ops;
-        int line = 1;
-        int idx = 0;
+        long line = 1;
+        long idx = 0;
         std::vector<std::string> tokens;
         
         std::string token_next();
@@ -60,8 +60,8 @@ namespace sb2cpp {
         std::unique_ptr<AST::WhileLoop> parse_while_loop();
         std::unique_ptr<AST::ForLoop> parse_for_loop();
         std::string parse_id(std::string token);
-        std::tuple<int, int> save_state();
-        void restore_state(std::tuple<int, int> state);
+        std::tuple<long, long> save_state();
+        void restore_state(std::tuple<long, long> state);
         void parse_value_or_condition(std::unique_ptr<AST::Value> *value,
             std::unique_ptr<AST::Condition> *condition);
     public:

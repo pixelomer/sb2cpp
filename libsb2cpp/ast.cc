@@ -5,7 +5,7 @@ namespace sb2cpp {
 std::unique_ptr<AST::Value> AST::ValueGroup::simplify() {
     auto &values = this->values;
     // Simplify addition and subtraction
-    for (int start=0; start < values.size(); start++) {
+    for (size_t start=0; start < values.size(); start++) {
         auto &first = values[start];
         int sign;
         if (first->op == AST::Add) {
@@ -17,7 +17,7 @@ std::unique_ptr<AST::Value> AST::ValueGroup::simplify() {
         else {
             continue;
         }
-        int end;
+        size_t end;
         for (end=start+1; end < values.size(); end++) {
             auto &next = values[end];
             if (next->op == AST::Add) {}
@@ -38,7 +38,7 @@ std::unique_ptr<AST::Value> AST::ValueGroup::simplify() {
     }
 
     // Merge multiplication and division
-    for (int opidx=0; opidx < values.size(); opidx++) {
+    for (size_t opidx=0; opidx < values.size(); opidx++) {
         std::unique_ptr<Value> new_value;
         auto &opelem = values[opidx];
         if (opelem->op == Multiply || opelem->op == Divide) {
@@ -67,7 +67,7 @@ std::unique_ptr<AST::Value> AST::ValueGroup::simplify() {
     }
 
     // Merge values and signs
-    for (int validx=0; validx < values.size(); validx++) {
+    for (size_t validx=0; validx < values.size(); validx++) {
         auto &value = values[validx];
         if (value->op != NoValueOp) {
             continue;
@@ -109,7 +109,7 @@ std::unique_ptr<AST::Value> AST::ValueGroup::simplify() {
 void AST::ConditionGroup::group_by(AST::LogicOp group_op) {
     auto &elems = this->conditions;
 
-    for (int i=0; i < elems.size(); i++) {
+    for (size_t i=0; i<elems.size(); i++) {
         auto &elem = elems[i];
         if (elem->op != group_op) continue;
         elems[i-1]->condition = std::make_unique<AST::BinaryLogicOp>(

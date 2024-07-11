@@ -29,7 +29,7 @@ std::string Transpiler::transpile() {
     #define DECLARE(map, type, lstr, rstr) do { \
         if (map.size() > 0) { \
             this->out << type " "; \
-            int i=0; \
+            size_t i=0; \
             for (auto &pair : map) { \
                 this->out << lstr + pair.first + rstr; \
                 if (++i != map.size()) { \
@@ -79,7 +79,7 @@ void Transpiler::write_condition(AST::Condition *condition) {
 }
 void Transpiler::visit_string(AST::StringValue *str_value) {
     auto str = str_value->value;
-    for (int i=0; i<str.length(); i++) {
+    for (size_t i=0; i<str.length(); i++) {
         if (str[i] == '\\') {
             str.insert(i, "\\");
             i++;
@@ -201,7 +201,7 @@ void Transpiler::visit_statement_group(AST::StatementGroup *group) {
 void Transpiler::visit_stdlib_call(AST::StdlibCall *call) {
     this->out << call->class_name << "::" << call->method_name
         << "(";
-    for (int i=0; i<call->arguments.size(); i++) {
+    for (size_t i=0; i<call->arguments.size(); i++) {
         call->arguments[i]->accept(this);
         if (i != call->arguments.size()-1) {
             this->out << ", ";
